@@ -13,7 +13,7 @@ export default class TasksMapPlugin extends Plugin {
 
 		this.addCommand({
 			id: "open-tasks-map-view",
-			name: "Open Tasks Map View",
+			name: "Open map view",
 			callback: () => {
 				this.activateViewInMainArea();
 			},

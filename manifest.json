@@ -1,9 +1,9 @@
 {
 	"id": "tasks-map",
 	"name": "Tasks Map",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"minAppVersion": "1.8.0",
-	"description": "A visual graph view of your tasks in Obsidian.",
+	"description": "A graph view of your tasks.",
 	"author": "NicoKNL",
 	"authorUrl": "https://github.com/NicoKNL",
 	"isDesktopOnly": false

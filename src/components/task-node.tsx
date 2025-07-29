@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
+import { useApp } from "src/hooks/hooks";
 import { Task } from "src/types/task";
+import { App } from "obsidian";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -13,17 +15,17 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const { task } = data;
 	const [expanded, setExpanded] = useState(false);
 	const [completed, setCompleted] = useState(task.completed);
+	const app = useApp();
 
 	async function updateTaskCompletedInVault(
 		task: Task,
-		completed: boolean
+		completed: boolean,
+		app: App
 	): Promise<boolean> {
 		if (!task.link || !task.text) return false;
-		// @ts-ignore
-		const obsApp = (window as any).app;
-		const vault = obsApp?.vault;
+		const vault = app?.vault;
 		if (!vault) return false;
-		const file = vault.getAbstractFileByPath(task.link);
+		const file = vault.getFileByPath(task.link);
 		if (!file) return false;
 		const fileContent = await vault.read(file);
 		const lines = fileContent.split(/\r?\n/);
@@ -31,7 +33,6 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 			line.includes(task.text)
 		);
 		if (taskLineIdx === -1) return false;
-
 		lines[taskLineIdx] = lines[taskLineIdx].replace(
 			/\[( |x)\]/,
 			completed ? "[x]" : "[ ]"
@@ -43,7 +44,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const handleToggleCompleted = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		const newCompleted = !completed;
-		const ok = await updateTaskCompletedInVault(task, newCompleted);
+		const ok = await updateTaskCompletedInVault(task, newCompleted, app!);
 		setCompleted(newCompleted);
 	};
 
@@ -120,11 +121,9 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 						title="Open file"
 						onClick={(e) => {
 							e.stopPropagation();
-							// @ts-ignore
-							const obsApp = (window as any).app;
-							if (obsApp && obsApp.workspace) {
-								obsApp.workspace.openLinkText(
-									task.link,
+							if (app && app.workspace) {
+								app.workspace.openLinkText(
+									task.link!,
 									"/",
 									false
 								);
