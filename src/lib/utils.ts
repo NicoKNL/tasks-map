@@ -120,7 +120,7 @@ export async function removeSignFromTaskInFile(
 	return true;
 }
 
-export function getAllDataviewTasks(app: App): Task[] {
+export function getAllDataviewTasks(app: any): Task[] {
 	let tasks: any[] = [];
 
 	// plugins exists, just not on the Obsidian App API?:
