@@ -102,7 +102,7 @@ export default class TaskMapGraphView extends ItemView {
 			};
 
 			const reloadTasks = () => {
-				const newTasks = getAllDataviewTasks(app);
+				const newTasks = getAllDataviewTasks(app!);
 				setTasks(newTasks);
 			};
 

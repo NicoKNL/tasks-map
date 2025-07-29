@@ -1,10 +1,12 @@
-import Select from "react-select";
+import Select, { MultiValue } from "react-select";
 
 interface TagSelectProps {
 	allTags: string[];
 	selectedTags: string[];
 	setSelectedTags: (tags: string[]) => void;
 }
+
+type TagOption = { value: string; label: string };
 
 export default function TagSelect({
 	allTags,
@@ -16,7 +18,9 @@ export default function TagSelect({
 			isMulti
 			options={allTags.map((tag) => ({ value: tag, label: tag }))}
 			value={selectedTags.map((tag) => ({ value: tag, label: tag }))}
-			onChange={(opts) => setSelectedTags(opts.map((o: any) => o.value))}
+			onChange={(opts: MultiValue<TagOption>) =>
+				setSelectedTags(opts.map((o) => o.value))
+			}
 			placeholder="Filter by tags..."
 			styles={{
 				menu: (base) => ({

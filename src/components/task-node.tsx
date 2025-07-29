@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { useApp } from "src/hooks/hooks";
 import { Task } from "src/types/task";
+import { App } from "obsidian";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -19,7 +20,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	async function updateTaskCompletedInVault(
 		task: Task,
 		completed: boolean,
-		app: any
+		app: App
 	): Promise<boolean> {
 		if (!task.link || !task.text) return false;
 		const vault = app?.vault;
@@ -43,7 +44,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const handleToggleCompleted = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		const newCompleted = !completed;
-		const ok = await updateTaskCompletedInVault(task, newCompleted, app);
+		const ok = await updateTaskCompletedInVault(task, newCompleted, app!);
 		setCompleted(newCompleted);
 	};
 

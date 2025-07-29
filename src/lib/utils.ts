@@ -1,6 +1,5 @@
 import dagre from "@dagrejs/dagre";
-import { TFile, Vault } from "obsidian";
-import crypto from "crypto";
+import { App, TFile, Vault } from "obsidian";
 import { Task } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
@@ -121,9 +120,12 @@ export async function removeSignFromTaskInFile(
 	return true;
 }
 
-export function getAllDataviewTasks(app: any): Task[] {
+export function getAllDataviewTasks(app: App): Task[] {
 	let tasks: any[] = [];
-	const dataviewApi = app?.plugins?.plugins?.["dataview"]?.api;
+
+	// plugins exists, just not on the Obsidian App API?:
+	//     https://blacksmithgu.github.io/obsidian-dataview/api/intro/#plugin-access
+	const dataviewApi = app.plugins!.plugins?.["dataview"]?.api;
 	if (dataviewApi && dataviewApi.pages) {
 		const pages = dataviewApi.pages();
 		for (const page of pages) {
