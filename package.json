@@ -1,7 +1,7 @@
 {
 	"name": "tasks-map",
-	"version": "0.0.1",
-	"description": "A graph view of your tasks in Obsidian.",
+	"version": "0.0.2",
+	"description": "A graph view of your tasks.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
