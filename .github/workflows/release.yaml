@@ -10,7 +10,6 @@ permissions:
     contents: write
     pull-requests: read
 
-
 jobs:
     validate:
         if: github.event_name == 'pull_request'
@@ -73,7 +72,7 @@ jobs:
     release:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
         runs-on: ubuntu-latest
-        depends-on: validate
+        needs: validate
         steps:
             - uses: actions/checkout@v3
               with:
