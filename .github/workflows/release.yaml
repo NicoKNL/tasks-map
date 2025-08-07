@@ -59,11 +59,16 @@ jobs:
               run: |
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
                   NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
-                  echo $NEW_VERSION
                   echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
                   echo -e "\nFiles that would be modified:"
                   git status --porcelain
+
+            - name: Use Node.js
+              if: steps.check-labels.outputs.should_release == 'true'
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "22"
 
             - name: Build test
               run: |
@@ -107,6 +112,13 @@ jobs:
               uses: actions/setup-python@v4
               with:
                   python-version: "3.13"
+                  
+            - name: Update version
+              if: steps.check-labels.outputs.should_release == 'true'
+              id: version
+              run: |
+                  NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
+                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
             - name: Use Node.js
               if: steps.check-labels.outputs.should_release == 'true'
@@ -125,13 +137,6 @@ jobs:
               run: |
                   git config user.name "GitHub Actions"
                   git config user.email "actions@github.com"
-
-            - name: Update version
-              if: steps.check-labels.outputs.should_release == 'true'
-              id: version
-              run: |
-                  NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }})"
-                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
             - name: Create release commit and tag
               if: steps.check-labels.outputs.should_release == 'true'
