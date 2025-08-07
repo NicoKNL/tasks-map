@@ -5,12 +5,53 @@ import os
 import re
 import tomllib
 
+class SemVer:
+    def __init__(self, major, minor, patch):
+        self.major = int(major)
+        self.minor = int(minor)
+        self.patch = int(patch)
+
+    @staticmethod
+    def from_str(version_str):
+        """Parse a version string into a SemVer object"""
+        match = re.match(r'(\d+)\.(\d+)\.(\d+)', version_str)
+        if not match:
+            raise ValueError(f"Invalid version string: {version_str}")
+        return SemVer(*match.groups())
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return f"{self.major}.{self.minor}.{self.patch}"
+
+    def __eq__(self, other):
+        if not isinstance(other, SemVer):
+            return NotImplemented
+        return (self.major, self.minor, self.patch) == (other.major, other.minor, other.patch)
+
+    def __lt__(self, other):
+        if not isinstance(other, SemVer):
+            return NotImplemented
+        return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
+
+    def __le__(self, other):
+        return self < other or self == other
+
+    def __gt__(self, other):
+        return not (self <= other)
+
+    def __ge__(self, other):
+        return not (self < other)
+
+
 def get_latest_version():
     """Get the latest version from the tags"""
     try:
         with open('versions.json', 'r') as f:
-            versions = json.load(f)
-            return versions.get('latest', '0.0.0')
+            versions = [SemVer.from_str(k) for k in json.load(f).keys()]
+            return str(max(versions))
+
     except FileNotFoundError:
         return '0.0.0'
 
