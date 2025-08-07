@@ -54,6 +54,9 @@ jobs:
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
                   python .github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }}
 
+                  echo -e "\nFiles that would be modified:"
+                  git status --porcelain
+
             - name: Build test
               run: |
                   npm install
