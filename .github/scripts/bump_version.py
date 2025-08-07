@@ -143,6 +143,7 @@ def main():
         sys.exit(0)
 
     current_version = get_latest_version()
+    print(f"Current version: {current_version}")
     new_version = bump_version(current_version, bump_type)
 
     # Update all files with new version
