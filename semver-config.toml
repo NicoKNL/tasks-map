@@ -1,0 +1,22 @@
+# Default version marker for development
+default_marker = "0.0.0+dev"
+
+# Release configurations
+[[releases.obsidian]]
+file = "package.json"
+mode = "replace"
+key = "version"
+
+[[releases.obsidian]]
+file = "package-lock.json"
+mode = "replace"
+key = "version"
+
+[[releases.obsidian]]
+file = "manifest.json"
+mode = "replace"
+key = "version"
+
+[[releases.obsidian]]
+file = "versions.json"
+mode = "append"
