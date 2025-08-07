@@ -14,7 +14,7 @@ jobs:
     validate:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
@@ -49,7 +49,7 @@ jobs:
 
             - name: Set up Python
               if: steps.check-labels.outputs.bump_type != 'noimpact'
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
                   python-version: "3.13"
 
@@ -65,7 +65,7 @@ jobs:
                   git status --porcelain
 
             - name: Use Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: "22"
 
@@ -79,7 +79,7 @@ jobs:
         runs-on: ubuntu-latest
         needs: validate
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
                   # Ensure we're on the main branch after the PR is merged
@@ -107,7 +107,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Set up Python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
                   python-version: "3.13"
 
@@ -118,7 +118,7 @@ jobs:
                   echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
             - name: Use Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: "22"
 
