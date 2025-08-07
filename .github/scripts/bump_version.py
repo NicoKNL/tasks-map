@@ -88,11 +88,7 @@ def update_json_file(file_path, new_version, mode, key=None):
     elif mode == "append":
         # For versions.json, we update both the latest version and append to the list
         if file_path.endswith("versions.json"):
-            data["latest"] = new_version
-            if "versions" not in data:
-                data["versions"] = []
-            if new_version not in data["versions"]:
-                data["versions"].append(new_version)
+            data[new_version] = "1.8.0" # TODO: Make this dynamic
 
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
