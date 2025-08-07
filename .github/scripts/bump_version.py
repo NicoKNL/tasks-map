@@ -61,7 +61,7 @@ def get_latest_version():
         # Parse the output to get the tag
         if result.stdout.strip():
             # Output format is: TITLE	TAG	...
-            latest_tag = result.stdout.strip().split('	')[1]
+            latest_tag = result.stdout.strip().split('	')[0]
             return latest_tag
         return '0.0.0'  # No releases yet
     except (subprocess.CalledProcessError, IndexError):

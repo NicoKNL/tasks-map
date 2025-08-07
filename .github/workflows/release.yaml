@@ -60,7 +60,6 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
-                  .github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }}
                   NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
                   echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
