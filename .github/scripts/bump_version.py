@@ -57,6 +57,7 @@ def get_latest_version():
             check=True
         )
 
+        print(result.stdout)
         # Parse the output to get the tag
         if result.stdout.strip():
             # Output format is: TITLE	TAG	...
