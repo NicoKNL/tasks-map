@@ -1,6 +1,3 @@
-# Default version marker for development
-default_marker = "0.0.0+dev"
-
 # Release configurations
 [[releases.obsidian]]
 file = "package.json"

@@ -27,6 +27,35 @@ def bump_version(current_version, bump_type):
     else:
         return current_version
 
+def update_json_file(file_path, new_version, mode, key=None):
+    """Update version in a JSON file"""
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"Warning: {file_path} not found, skipping...")
+        return
+    except json.JSONDecodeError:
+        print(f"Warning: {file_path} is not valid JSON, skipping...")
+        return
+
+    if mode == "replace" and key:
+        if key in data:
+            data[key] = new_version
+        else:
+            print(f"Warning: key '{key}' not found in {file_path}")
+    elif mode == "append":
+        # For versions.json, we update both the latest version and append to the list
+        if file_path.endswith("versions.json"):
+            data["latest"] = new_version
+            if "versions" not in data:
+                data["versions"] = []
+            if new_version not in data["versions"]:
+                data["versions"].append(new_version)
+
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=4)
+
 def update_file_versions(new_version, config_path):
     """Update version in all configured files"""
     try:
@@ -36,21 +65,19 @@ def update_file_versions(new_version, config_path):
         print(f"Error: {config_path} not found")
         sys.exit(1)
 
-    files_to_update = config.get('files_to_update', [])
-    version_pattern = config.get('version_pattern', r'\d+\.\d+\.\d+')
+    # Process each release configuration
+    for release_type, files in config.get('releases', {}).items():
+        print(f"Processing {release_type} release updates...")
+        for file_config in files:
+            file_path = file_config['file']
+            mode = file_config.get('mode', 'replace')
+            key = file_config.get('key', 'version')
 
-    for file_path in files_to_update:
-        if not os.path.exists(file_path):
-            print(f"Warning: {file_path} not found, skipping...")
-            continue
+            if not os.path.exists(file_path):
+                print(f"Warning: {file_path} not found, skipping...")
+                continue
 
-        with open(file_path, 'r') as f:
-            content = f.read()
-
-        updated_content = re.sub(version_pattern, new_version, content)
-
-        with open(file_path, 'w') as f:
-            f.write(updated_content)
+            update_json_file(file_path, new_version, mode, key)
 
 def main():
     if len(sys.argv) != 2:
