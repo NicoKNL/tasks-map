@@ -128,7 +128,7 @@ jobs:
               if: steps.check-labels.outputs.should_release == 'true'
               id: version
               run: |
-                  NEW_VERSION=$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }})
+                  NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }})"
                   echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
             - name: Create release commit and tag
