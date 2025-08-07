@@ -45,18 +45,12 @@ jobs:
               if: steps.check-labels.outputs.bump_type != 'noimpact'
               uses: actions/setup-python@v4
               with:
-                  python-version: "3.x"
-
-            - name: Install Python dependencies
-              if: steps.check-labels.outputs.bump_type != 'noimpact'
-              run: |
-                  pip install toml
+                  python-version: "3.13"
 
             - name: Dry run version bump
               if: steps.check-labels.outputs.bump_type != 'noimpact'
               id: version-bump
               run: |
-                  chmod +x .github/scripts/bump_version.py
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
                   python .github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }}
 

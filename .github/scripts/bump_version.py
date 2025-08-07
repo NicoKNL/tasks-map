@@ -3,8 +3,7 @@ import json
 import sys
 import os
 import re
-import toml
-from pathlib import Path
+import tomllib
 
 def get_latest_version():
     """Get the latest version from the tags"""
@@ -31,7 +30,8 @@ def bump_version(current_version, bump_type):
 def update_file_versions(new_version, config_path):
     """Update version in all configured files"""
     try:
-        config = toml.load(config_path)
+        with open(config_path, 'rb') as f:
+            config = tomllib.load(f)
     except FileNotFoundError:
         print(f"Error: {config_path} not found")
         sys.exit(1)
