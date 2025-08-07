@@ -46,14 +46,25 @@ class SemVer:
 
 
 def get_latest_version():
-    """Get the latest version from the tags"""
+    """Get the latest version from GitHub releases using gh CLI"""
+    import subprocess
     try:
-        with open('versions.json', 'r') as f:
-            versions = [SemVer.from_str(k) for k in json.load(f).keys()]
-            return str(max(versions))
+        # Get the latest release tag using gh CLI
+        result = subprocess.run(
+            ['gh', 'release', 'list', '--limit', '1'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
 
-    except FileNotFoundError:
-        return '0.0.0'
+        # Parse the output to get the tag
+        if result.stdout.strip():
+            # Output format is: TITLE	TAG	...
+            latest_tag = result.stdout.strip().split('	')[1]
+            return latest_tag
+        return '0.0.0'  # No releases yet
+    except (subprocess.CalledProcessError, IndexError):
+        return '0.0.0'  # Error or no releases yet
 
 def bump_version(current_version, bump_type):
     """Bump the version according to semver rules"""

@@ -56,6 +56,8 @@ jobs:
             - name: Dry run version bump
               if: steps.check-labels.outputs.bump_type != 'noimpact'
               id: version-bump
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
                   NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
@@ -110,9 +112,11 @@ jobs:
               uses: actions/setup-python@v4
               with:
                   python-version: "3.13"
-                  
+
             - name: Update version
               id: version
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
                   echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
