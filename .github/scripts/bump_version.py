@@ -135,7 +135,7 @@ def main():
 
     # Update all files with new version
     update_file_versions(new_version, 'semver-config.toml')
-    print(new_version)
+    print(new_version, end="")
 
 if __name__ == "__main__":
     main()
