@@ -137,7 +137,7 @@ jobs:
                   # Create a new commit that's not attached to any branch
                   git add -A
                   git commit -m "chore: release version ${{ steps.version.outputs.new_version }}"
-
+                  git push origin ${{ github.event.pull_request.base.ref }}
                   # Tag the orphaned commit
                   git tag ${{ steps.version.outputs.new_version }}
 
