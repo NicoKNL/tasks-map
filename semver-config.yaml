@@ -1,0 +1,18 @@
+default_marker: "0.0.0+dev"
+
+releases:
+  - obsidian:
+      - file: "package.json"
+        mode: "replace"
+        key: "version"
+
+      - file: "package-lock.json"
+        mode: "replace"
+        key: "version
+
+      - file: "manifest.json"
+        mode: "replace"
+        key: "version"
+
+      - file: "versions.json"
+        mode: "append"

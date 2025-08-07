@@ -1,0 +1,34 @@
+name: PR Validation
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Check semver labels
+              id: check-labels
+              run: |
+                  LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' || echo "")
+
+                  # Count semver labels
+                  SEMVER_COUNT=$(echo "$LABELS" | grep -c "semver-" || true)
+
+                  if [ "$SEMVER_COUNT" -eq 0 ]; then
+                    echo "::error::PR must have exactly one semver label (semver-major, semver-minor, semver-patch, or semver-noimpact)"
+                    exit 1
+                  elif [ "$SEMVER_COUNT" -gt 1 ]; then
+                    echo "::error::PR must have exactly one semver label, found multiple"
+                    exit 1
+                  fi
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build test
+              run: |
+                  npm install
+                  npm run build

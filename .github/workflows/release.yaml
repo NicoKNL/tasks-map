@@ -2,16 +2,67 @@ name: Release Obsidian plugin
 
 on:
     push:
-        tags:
-            - "*"
+        branches:
+            - main
+
+permissions:
+    contents: write
+    pull-requests: read
 
 jobs:
-    build:
+    prepare-release:
         runs-on: ubuntu-latest
-        permissions:
-            contents: write
+        outputs:
+            should_release: ${{ steps.check-labels.outputs.should_release }}
+            bump_type: ${{ steps.check-labels.outputs.bump_type }}
+        steps:
+            - name: Get merged PR
+              id: get-pr
+              run: |
+                  PR_NUMBER=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].number')
+                  echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Check labels
+              id: check-labels
+              run: |
+                  LABELS=$(gh pr view ${{ steps.get-pr.outputs.pr_number }} --json labels -q '.labels[].name')
+
+                  if echo "$LABELS" | grep -q "semver-major"; then
+                    echo "bump_type=major" >> $GITHUB_OUTPUT
+                    echo "should_release=true" >> $GITHUB_OUTPUT
+                  elif echo "$LABELS" | grep -q "semver-minor"; then
+                    echo "bump_type=minor" >> $GITHUB_OUTPUT
+                    echo "should_release=true" >> $GITHUB_OUTPUT
+                  elif echo "$LABELS" | grep -q "semver-patch"; then
+                    echo "bump_type=patch" >> $GITHUB_OUTPUT
+                    echo "should_release=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "bump_type=noimpact" >> $GITHUB_OUTPUT
+                    echo "should_release=false" >> $GITHUB_OUTPUT
+                  fi
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    release:
+        needs: prepare-release
+        if: needs.prepare-release.outputs.should_release == 'true'
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.x"
+
+            - name: Install Python dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install toml
 
             - name: Use Node.js
               uses: actions/setup-node@v3
@@ -23,13 +74,30 @@ jobs:
                   npm install
                   npm run build
 
+            - name: Configure Git
+              run: |
+                  git config user.name "GitHub Actions"
+                  git config user.email "actions@github.com"
+
+            - name: Update version
+              id: version
+              run: |
+                  chmod +x .github/scripts/bump_version.py
+                  NEW_VERSION=$(.github/scripts/bump_version.py ${{ needs.prepare-release.outputs.bump_type }})
+                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+            - name: Create release commit
+              run: |
+                  git add -A
+                  git commit -m "chore: release version ${{ steps.version.outputs.new_version }}"
+                  git tag ${{ steps.version.outputs.new_version }}
+                  git push origin ${{ steps.version.outputs.new_version }}
+
             - name: Create release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  tag="${GITHUB_REF#refs/tags/}"
-
-                  gh release create "$tag" \
-                    --title="$tag" \
+                  gh release create "${{ steps.version.outputs.new_version }}" \
+                    --title="${{ steps.version.outputs.new_version }}" \
                     --draft \
                     main.js manifest.json styles.css
