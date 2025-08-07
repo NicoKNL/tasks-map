@@ -58,7 +58,9 @@ jobs:
               id: version-bump
               run: |
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
-                  python .github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }}
+                  NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }})"
+                  echo $NEW_VERSION
+                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
                   echo -e "\nFiles that would be modified:"
                   git status --porcelain
@@ -110,7 +112,7 @@ jobs:
               if: steps.check-labels.outputs.should_release == 'true'
               uses: actions/setup-node@v3
               with:
-                  node-version: "18"
+                  node-version: "22"
 
             - name: Build plugin
               if: steps.check-labels.outputs.should_release == 'true'
