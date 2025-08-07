@@ -54,12 +54,6 @@ jobs:
                   echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
                   python .github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }}
 
-                  # Create a list of files that would be modified
-                  echo "The following files would be updated:"
-                  for file in $(toml get semver-config.toml files_to_update | tr -d '[]," '); do
-                    echo "- $file"
-                  done
-
             - name: Build test
               run: |
                   npm install
