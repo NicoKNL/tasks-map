@@ -1,9 +1,10 @@
-name: Release Obsidian plugin
+name: PR Validation and Release
 
 on:
-    push:
-        tags:
-            - "*"
+    pull_request:
+        types: [opened, synchronize, reopened, labeled, unlabeled]
+    pull_request_target:
+        types: [closed]
 
 jobs:
     build:
