@@ -26,7 +26,6 @@ import {
 import { Task } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
-import { create } from "domain";
 
 export const VIEW_TYPE = "task-map-graph-view";
 
@@ -309,8 +308,12 @@ export default class TaskMapGraphView extends ItemView {
 						/>
 						<MiniMap
 							nodeColor={(n) =>
-								n.data?.task?.completed
+								n.data?.task?.status === "done"
 									? "var(--task-completed-green)"
+									: n.data?.task?.status === "in_progress"
+									? "var(--task-in-progress-blue)"
+									: n.data?.task?.status === "canceled"
+									? "var(--task-canceled-red)"
 									: "var(--background-secondary)"
 							}
 							nodeStrokeWidth={2}

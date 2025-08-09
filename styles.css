@@ -14,10 +14,14 @@ If your plugin does not need CSS, delete this file.
 
 .theme-dark {
   --task-completed-green: #1e3821;
+  --task-in-progress-blue: #1c5e8e;
+  --task-canceled-red: #5c1a1a;
 }
 
 .theme-light {
   --task-completed-green: #6de27b;
+  --task-in-progress-blue: #77b4d3;
+  --task-canceled-red: #ff6b6b;
 }
 
 /* node_modules/reactflow/dist/style.css */
