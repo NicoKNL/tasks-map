@@ -126,7 +126,6 @@ export default class TaskMapGraphView extends ItemView {
 							id: `${parentTaskId}-${task.id}`,
 							source: parentTaskId,
 							target: task.id,
-							animated: true,
 							type: "hash",
 							data: { hash: `${parentTaskId}-${task.id}` },
 						});
@@ -289,7 +288,6 @@ export default class TaskMapGraphView extends ItemView {
 										addEdge(
 											{
 												...params,
-												animated: true,
 												type: "hash",
 												data: { hash: hash },
 											},
