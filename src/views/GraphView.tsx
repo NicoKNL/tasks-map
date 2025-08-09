@@ -26,7 +26,6 @@ import {
 import { Task } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
-import { create } from "domain";
 
 export const VIEW_TYPE = "task-map-graph-view";
 

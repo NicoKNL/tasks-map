@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { useApp } from "src/hooks/hooks";
-import { Task } from "src/types/task";
+import { Task, TaskStatus } from "src/types/task";
 import { App } from "obsidian";
 
 export const NODEWIDTH = 250;
@@ -14,12 +14,12 @@ interface TaskNodeData {
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const { task } = data;
 	const [expanded, setExpanded] = useState(false);
-	const [completed, setCompleted] = useState(task.completed);
+	const [status, setStatus] = useState(task.status);
 	const app = useApp();
 
-	async function updateTaskCompletedInVault(
+	async function updateTaskStatusInVault(
 		task: Task,
-		completed: boolean,
+		newStatus: TaskStatus,
 		app: App
 	): Promise<boolean> {
 		if (!task.link || !task.text) return false;
@@ -33,30 +33,47 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 			line.includes(task.text)
 		);
 		if (taskLineIdx === -1) return false;
-		lines[taskLineIdx] = lines[taskLineIdx].replace(
-			/\[( |x)\]/,
-			completed ? "[x]" : "[ ]"
-		);
 		await vault.modify(file, lines.join("\n"));
 		return true;
 	}
 
-	const handleToggleCompleted = async (e: React.MouseEvent) => {
+	const handleToggleStatus = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		const newCompleted = !completed;
-		const ok = await updateTaskCompletedInVault(task, newCompleted, app!);
-		setCompleted(newCompleted);
+		// Cycle through statuses: todo -> in_progress -> done
+		// (canceled status is set through a separate action)
+		const statusCycle: TaskStatus[] = ["todo", "in_progress", "done"];
+		const currentIndex = statusCycle.indexOf(status);
+		const newStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
+		const ok = await updateTaskStatusInVault(task, newStatus, app!);
+		if (ok) setStatus(newStatus);
+	};
+
+	const handleCancelTask = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		const newStatus: TaskStatus = "canceled";
+		const ok = await updateTaskStatusInVault(task, newStatus, app!);
+		if (ok) setStatus(newStatus);
 	};
 
 	return (
 		<div
 			style={{
-				background: completed
-					? "var(--task-completed-green)"
-					: "var(--background-secondary)",
-				border: completed
-					? "1px solid var(--color-green)"
-					: "1px solid rgba(var(--color-black-rgb), 0.1)",
+				background:
+					status === "done"
+						? "var(--task-completed-green)"
+						: status === "in_progress"
+						? "var(--task-in-progress-blue)"
+						: status === "canceled"
+						? "var(--task-canceled-red)"
+						: "var(--background-secondary)",
+				border:
+					status === "done"
+						? "1px solid var(--color-green)"
+						: status === "in_progress"
+						? "1px solid var(--color-blue)"
+						: status === "canceled"
+						? "1px solid var(--color-red)"
+						: "1px solid rgba(var(--color-black-rgb), 0.1)",
 				borderRadius: "var(--radius-m)",
 				padding: 12,
 				width: NODEWIDTH,
@@ -64,7 +81,14 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 				maxHeight: expanded ? undefined : NODEHEIGHT,
 				boxShadow: "0 2px 8px rgba(var(--color-black-rgb),0.07)",
 				fontWeight: 500,
-				color: completed ? "var(--text-success)" : "var(--text-normal)",
+				color:
+					status === "done"
+						? "var(--text-success)"
+						: status === "in_progress"
+						? "var(--color-blue)"
+						: status === "canceled"
+						? "var(--text-error)"
+						: "var(--text-normal)",
 				display: "flex",
 				flexDirection: "column",
 				gap: 4,
@@ -82,18 +106,40 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 				}}
 			>
 				<div
-					onClick={handleToggleCompleted}
 					style={{
-						width: 22,
-						height: 22,
-						cursor: "pointer",
-						marginRight: 4,
 						display: "flex",
+						gap: 8,
 						alignItems: "center",
-						justifyContent: "center",
 					}}
 				>
-					{completed ? "✅" : "⬜"}
+					<div
+						onClick={handleToggleStatus}
+						style={{
+							width: 22,
+							height: 22,
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						{status === "todo" && "⬜"}
+						{status === "in_progress" && "🔵"}
+						{status === "done" && "✅"}
+						{status === "canceled" && "❌"}
+					</div>
+					{status !== "canceled" && (
+						<div
+							onClick={handleCancelTask}
+							style={{
+								fontSize: 12,
+								opacity: 0.7,
+								cursor: "pointer",
+							}}
+						>
+							Cancel
+						</div>
+					)}
 				</div>
 				{/* Priority and summary */}
 				{task.priority && (
@@ -137,9 +183,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 							border: "none",
 							padding: 4,
 							cursor: "pointer",
-							color: completed
-								? "var(--text-success)"
-								: "var(--text-normal)",
+							color:
+								status === "done"
+									? "var(--text-success)"
+									: status === "canceled"
+									? "var(--text-error)"
+									: "var(--text-normal)",
 						}}
 					>
 						<svg
@@ -222,7 +271,9 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 						<b>ID:</b> {task.id}
 					</div>
 					<div>
-						<b>Completed:</b> {completed ? "Yes" : "No"}
+						<b>Status:</b>{" "}
+						{status.charAt(0).toUpperCase() +
+							status.slice(1).replace("_", " ")}
 					</div>
 					<div>
 						<b>Summary:</b> {task.summary}

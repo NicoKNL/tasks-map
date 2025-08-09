@@ -1,7 +1,8 @@
-import { Task } from "src/types/task";
+import { Task, TaskStatus } from "src/types/task";
 
 export class TaskFactory {
 	public parse(rawTask: any): Task {
+		const status = rawTask.status;
 		const text = rawTask.text;
 
 		return {
@@ -9,8 +10,8 @@ export class TaskFactory {
 			summary: this.makeSummary(text),
 			text: text,
 			tags: this.parseTags(text),
-			priority: this.parsePriority(text), // new field
-			completed: rawTask.completed,
+			priority: this.parsePriority(text),
+			status: this.parseStatus(status),
 			link: rawTask.link?.path,
 			incomingLinks: this.parseIncomingLinks(text),
 		};
@@ -47,6 +48,19 @@ export class TaskFactory {
 		return tags;
 	}
 
+
+	private parseStatus(status: string): TaskStatus {
+		switch (status) {
+			case 'x':
+				return 'done';
+			case '/':
+				return 'in_progress';
+			case '-':
+				return 'canceled';
+			default:
+				return 'todo';
+		}
+	}
 
 	private parseIncomingLinks(text: string): string[] {
 		const stopSignRegex = /⛔\s*([a-zA-Z0-9]{6})/g;
