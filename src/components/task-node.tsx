@@ -11,6 +11,13 @@ interface TaskNodeData {
 	task: Task;
 }
 
+const statusSymbols = {
+	todo: "[ ]",
+	in_progress: "[/]",
+	canceled: "[-]",
+	done: "[x]",
+};
+
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const { task } = data;
 	const [expanded, setExpanded] = useState(false);
@@ -33,6 +40,10 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 			line.includes(task.text)
 		);
 		if (taskLineIdx === -1) return false;
+		lines[taskLineIdx] = lines[taskLineIdx].replace(
+			/\[([ x/\-])\]/,
+			statusSymbols[newStatus]
+		);
 		await vault.modify(file, lines.join("\n"));
 		return true;
 	}
@@ -128,18 +139,6 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 						{status === "done" && "✅"}
 						{status === "canceled" && "❌"}
 					</div>
-					{status !== "canceled" && (
-						<div
-							onClick={handleCancelTask}
-							style={{
-								fontSize: 12,
-								opacity: 0.7,
-								cursor: "pointer",
-							}}
-						>
-							Cancel
-						</div>
-					)}
 				</div>
 				{/* Priority and summary */}
 				{task.priority && (
