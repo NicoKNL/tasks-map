@@ -7,7 +7,7 @@ export const useApp = (): App => {
 
 	if (!app) {
 		console.error("App context is not available");
-		return {} as App; // Return an empty App object if context is not available
+		throw new Error("App context is not available");
 	}
 
 	return app;
