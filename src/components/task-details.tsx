@@ -32,7 +32,7 @@ export function TaskDetails({ task, status }: TaskDetailsProps) {
 				<b>Tags:</b> {task.tags.join(", ")}
 			</div>
 			<div>
-				<b>Priority:</b> {task.priority || "-"}
+				<b>Priority:</b> {task.priority}
 			</div>
 			<div>
 				<b>Link:</b> {task.link || "-"}
