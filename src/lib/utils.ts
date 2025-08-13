@@ -24,7 +24,7 @@ export async function updateTaskStatusInVault(
 	const fileContent = await vault.read(file);
 	const lines = fileContent.split(/\r?\n/);
 	const taskLineIdx = lines.findIndex((line: string) =>
-		line.includes(`📎 ${task.id}`)
+		line.includes(`🆔 ${task.id}`)
 	);
 	if (taskLineIdx === -1) return false;
 	lines[taskLineIdx] = lines[taskLineIdx].replace(

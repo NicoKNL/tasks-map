@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { useApp } from "src/hooks/hooks";
-import { Task, TaskStatus } from "src/types/task";
+import { Task } from "src/types/task";
 import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
 import { Tag } from "./tag";
-import { updateTaskStatusInVault } from "src/lib/utils";
+import { TaskStatusToggle } from "./task-status";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -20,17 +20,6 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const [expanded, setExpanded] = useState(false);
 	const [status, setStatus] = useState(task.status);
 	const app = useApp();
-
-	const handleToggleStatus = async (e: React.MouseEvent) => {
-		e.stopPropagation();
-		// Cycle through statuses: todo -> in_progress -> done
-		// (canceled status is set through a separate action)
-		const statusCycle: TaskStatus[] = ["todo", "in_progress", "done"];
-		const currentIndex = statusCycle.indexOf(status);
-		const newStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-		const ok = await updateTaskStatusInVault(task, newStatus, app!);
-		if (ok) setStatus(newStatus);
-	};
 
 	return (
 		<div
@@ -89,22 +78,11 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 						alignItems: "center",
 					}}
 				>
-					<div
-						onClick={handleToggleStatus}
-						style={{
-							width: 22,
-							height: 22,
-							cursor: "pointer",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-						}}
-					>
-						{status === "todo" && "⬜"}
-						{status === "in_progress" && "🔵"}
-						{status === "done" && "✅"}
-						{status === "canceled" && "❌"}
-					</div>
+					<TaskStatusToggle
+						status={status}
+						task={task}
+						onStatusChange={setStatus}
+					/>
 				</div>
 				{/* Priority and summary */}
 				{task.priority && (
