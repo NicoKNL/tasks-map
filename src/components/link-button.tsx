@@ -1,51 +1,65 @@
 import React from "react";
+import { App } from "obsidian";
 
 interface LinkButtonProps {
-	title: string;
-	onClick: (e: React.MouseEvent) => void;
-	status?: "success" | "error" | "normal";
+	title?: string;
+	taskStatus?: "todo" | "done" | "canceled" | "in_progress";
+	link: string;
+	app: App;
 }
 
-export function LinkButton({
+export const LinkButton = ({
 	title,
-	onClick,
-	status = "normal",
-}: LinkButtonProps) {
+	link,
+	app,
+	taskStatus = "todo",
+}: LinkButtonProps) => {
+	const status =
+		taskStatus === "done"
+			? "success"
+			: taskStatus === "canceled"
+			? "error"
+			: "normal";
+	const handleClick = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		app.workspace.openLinkText(link, link);
+	};
+
 	return (
 		<button
-			title={title}
-			onClick={onClick}
+			className={`link-button link-button--${status}`}
+			onClick={handleClick}
 			style={{
-				position: "absolute",
-				bottom: 0,
-				right: 0,
-				background: "none",
-				border: "none",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
 				padding: 4,
+				position: "absolute",
+				bottom: 8,
+				right: 8,
+				border: "none",
+				background: "transparent",
 				cursor: "pointer",
-				color:
-					status === "success"
-						? "var(--text-success)"
-						: status === "error"
-						? "var(--text-error)"
-						: "var(--text-normal)",
+				width: 28,
+				height: 28,
 			}}
 		>
 			<svg
-				width="20"
-				height="20"
-				viewBox="0 0 20 20"
+				width="16"
+				height="16"
+				viewBox="0 0 16 16"
 				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
+				style={{ display: "block" }}
 			>
 				<path
-					d="M7 13L13 7M13 7H8M13 7V12"
+					d="M5 3H13V11M13 3L3 13"
 					stroke="currentColor"
-					strokeWidth="1.5"
+					strokeWidth="2"
 					strokeLinecap="round"
 					strokeLinejoin="round"
 				/>
 			</svg>
 		</button>
 	);
-}
+};
