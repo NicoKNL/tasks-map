@@ -1,8 +1,39 @@
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
-import { Task } from "src/types/task";
+import { Task, TaskStatus } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
+
+const statusSymbols = {
+	todo: "[ ]",
+	in_progress: "[/]",
+	canceled: "[-]",
+	done: "[x]",
+};
+
+export async function updateTaskStatusInVault(
+	task: Task,
+	newStatus: TaskStatus,
+	app: App
+): Promise<boolean> {
+	if (!task.link || !task.text) return false;
+	const vault = app?.vault;
+	if (!vault) return false;
+	const file = vault.getFileByPath(task.link);
+	if (!file) return false;
+	const fileContent = await vault.read(file);
+	const lines = fileContent.split(/\r?\n/);
+	const taskLineIdx = lines.findIndex((line: string) =>
+		line.includes(`📎 ${task.id}`)
+	);
+	if (taskLineIdx === -1) return false;
+	lines[taskLineIdx] = lines[taskLineIdx].replace(
+		/\[([ x/\-])\]/,
+		statusSymbols[newStatus]
+	);
+	await vault.modify(file, lines.join("\n"));
+	return true;
+}
 
 export function getLayoutedElements(nodes: any[], edges: any[]) {
 	const dagreGraph = new dagre.graphlib.Graph();
