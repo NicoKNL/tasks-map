@@ -26,7 +26,16 @@ export async function updateTaskStatusInVault(
 	const taskLineIdx = lines.findIndex((line: string) =>
 		line.includes(`🆔 ${task.id}`)
 	);
-	if (taskLineIdx === -1) return false;
+	let taskLineIdx = lines.findIndex((line: string) =>
+		line.includes(`🆔 ${task.id}`)
+	);
+	if (taskLineIdx === -1) {
+		// Fallback: try to find by matching the task text (legacy format)
+		taskLineIdx = lines.findIndex((line: string) =>
+			line.includes(task.text)
+		);
+		if (taskLineIdx === -1) return false;
+	}
 	lines[taskLineIdx] = lines[taskLineIdx].replace(
 		/\[([ x/\-])\]/,
 		statusSymbols[newStatus]
