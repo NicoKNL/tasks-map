@@ -21,6 +21,7 @@ import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
+import { DeleteEdgeButton } from "src/components/delete-edge-button";
 
 export default function TaskMapGraphView() {
 	const app = useApp();
@@ -99,7 +100,7 @@ export default function TaskMapGraphView() {
 
 		setTimeout(() => {
 			reactFlowInstance.fitView({ duration: 400 });
-		}, 50);
+		}, 1000); // Allow time for DOM updates
 	}, [tasks, selectedTags]);
 
 	const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
@@ -193,29 +194,7 @@ export default function TaskMapGraphView() {
 				<Background />
 			</ReactFlow>
 			{selectedEdge && (
-				<div
-					style={{
-						position: "fixed",
-						bottom: 100,
-						left: "50%",
-						transform: "translateX(-50%)",
-						zIndex: 100,
-					}}
-				>
-					<button
-						onClick={onDeleteSelectedEdge}
-						style={{
-							padding: 10,
-							background: "var(--color-red)",
-							color: "var(--color-white)",
-							border: "none",
-							borderRadius: 6,
-							fontWeight: 600,
-						}}
-					>
-						Delete Edge
-					</button>
-				</div>
+				<DeleteEdgeButton onDelete={onDeleteSelectedEdge} />
 			)}
 		</div>
 	);
