@@ -26,6 +26,7 @@ import {
 import { Task } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
+import { TaskMinimap } from "src/components/task-minimap";
 
 export const VIEW_TYPE = "task-map-graph-view";
 
@@ -306,26 +307,7 @@ export default class TaskMapGraphView extends ItemView {
 							setSelectedTags={setSelectedTags}
 							reloadTasks={reloadTasks}
 						/>
-						<MiniMap
-							nodeColor={(n) =>
-								n.data?.task?.status === "done"
-									? "var(--task-completed-green)"
-									: n.data?.task?.status === "in_progress"
-									? "var(--task-in-progress-blue)"
-									: n.data?.task?.status === "canceled"
-									? "var(--task-canceled-red)"
-									: "var(--background-secondary)"
-							}
-							nodeStrokeWidth={2}
-							pannable
-							zoomable
-							style={{
-								background: "var(--background-primary)",
-								borderRadius: 8,
-								boxShadow:
-									"0 2px 8px rgba(var(--color-black), 0.12)",
-							}}
-						/>
+						<TaskMinimap />
 						<Background />
 					</ReactFlow>
 					{selectedEdge && (
