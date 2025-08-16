@@ -6,7 +6,7 @@ export interface Task {
 	text: string;
 	tags: string[];
 	status: TaskStatus;  // [ ] todo, [/] in_progress, [-] canceled, [x] done
-    priority?: string | undefined;
-	link?: string | undefined;
+    priority: string;
+	link: string;
 	incomingLinks: string[];
 }

@@ -30,7 +30,7 @@ export class TaskFactory {
 		).join("");
 	}
 
-	private parsePriority(text: string): string | undefined  {
+	private parsePriority(text: string): string  {
 		// Obsidian Tasks plugin priority emoji: 🔺 (highest), ⏫ (high), 🔼 (medium), 🔽 (low), ⏬ (lowest)
 		const priorityRegex = /([\u{1F53A}\u{23EB}\u{1F53C}\u{1F53D}\u{23EC}])/u;
 		const priorityMatch = text.match(priorityRegex);
@@ -39,7 +39,7 @@ export class TaskFactory {
 			return priorityMatch[1];
 		}
 
-		return undefined;
+		return "";
 	}
 
 	private parseTags(text: string): string[] {
