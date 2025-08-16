@@ -1,3 +1,5 @@
+import { Node, Edge, Position } from "reactflow";
+
 export type TaskStatus = 'todo' | 'in_progress' | 'canceled' | 'done';
 
 export interface Task {
@@ -10,3 +12,14 @@ export interface Task {
 	link: string;
 	incomingLinks: string[];
 }
+
+export interface TaskNodeData {
+	task: Task;
+}
+
+export interface TaskEdgeData {
+	hash: string;
+}
+
+export type TaskNode = Node<TaskNodeData, 'task'>;
+export type TaskEdge = Edge<TaskEdgeData>;

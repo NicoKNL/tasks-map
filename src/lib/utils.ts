@@ -1,8 +1,9 @@
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
-import { Task, TaskStatus } from "src/types/task";
+import { Task, TaskStatus, TaskNode, TaskEdge } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
+import { Position } from "reactflow";
 
 const statusSymbols = {
 	todo: "[ ]",
@@ -173,5 +174,33 @@ export function getAllDataviewTasks(app: any): Task[] {
 	}
 	const factory = new TaskFactory();
 	return tasks.map((rawTask: any) => factory.parse(rawTask));
+}
+
+export function createNodesFromTasks(tasks: Task[]): TaskNode[] {
+	return tasks.map((task, idx) => ({
+		id: task.id,
+		position: { x: 0, y: idx * 80 },
+		data: { task },
+		type: "task" as const,
+		sourcePosition: Position.Right,
+		targetPosition: Position.Left,
+		draggable: true,
+	}));
+}
+
+export function createEdgesFromTasks(tasks: Task[]): TaskEdge[] {
+	const edges: TaskEdge[] = [];
+	tasks.forEach((task) => {
+		task.incomingLinks.forEach((parentTaskId) => {
+			edges.push({
+				id: `${parentTaskId}-${task.id}`,
+				source: parentTaskId,
+				target: task.id,
+				type: "hash" as const,
+				data: { hash: `${parentTaskId}-${task.id}` },
+			});
+		});
+	});
+	return edges;
 }
 
