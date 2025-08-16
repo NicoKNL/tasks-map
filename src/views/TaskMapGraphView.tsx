@@ -1,13 +1,10 @@
 import React, { useEffect, useCallback, useMemo } from "react";
 import ReactFlow, {
 	Background,
-	Position,
 	useNodesState,
 	useEdgesState,
 	addEdge,
 	useReactFlow,
-	EdgeProps,
-	getBezierPath,
 } from "reactflow";
 import { useApp } from "src/hooks/hooks";
 import "reactflow/dist/style.css";
@@ -23,59 +20,7 @@ import { Task } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
 import { TaskMinimap } from "src/components/task-minimap";
-
-function HashEdge({
-	id,
-	data,
-	sourceX,
-	sourceY,
-	targetX,
-	targetY,
-	markerEnd,
-	style,
-}: EdgeProps) {
-	const [edgePath, labelX, labelY] = getBezierPath({
-		sourceX,
-		sourceY,
-		targetX,
-		targetY,
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-	});
-	return (
-		<g>
-			{/* Invisible thick path for easier selection */}
-			<path
-				className="react-flow__edge-interaction"
-				d={edgePath}
-				stroke="transparent"
-				strokeWidth={16}
-				fill="none"
-				style={{ cursor: "pointer" }}
-			/>
-			<path
-				id={id}
-				style={style}
-				className="react-flow__edge-path"
-				d={edgePath}
-				markerEnd={markerEnd}
-			/>
-			<text
-				x={labelX}
-				y={labelY - 8}
-				textAnchor="middle"
-				fontSize={12}
-				fill="#888"
-				style={{
-					userSelect: "none",
-					pointerEvents: "none",
-				}}
-			>
-				{data?.hash}
-			</text>
-		</g>
-	);
-}
+import HashEdge from "src/components/hash-edge";
 
 export default function TaskMapGraphView() {
 	const app = useApp();
@@ -153,9 +98,7 @@ export default function TaskMapGraphView() {
 		setEdges(newEdges);
 
 		setTimeout(() => {
-			try {
-				reactFlowInstance.fitView({ duration: 400 });
-			} catch {}
+			reactFlowInstance.fitView({ duration: 400 });
 		}, 50);
 	}, [tasks, selectedTags]);
 
@@ -193,7 +136,35 @@ export default function TaskMapGraphView() {
 			setEdges((eds) => eds.filter((e) => e.id !== selectedEdge));
 			setSelectedEdge(null);
 		}
-	}, [selectedEdge, edges, tasks, vault, setEdges, reloadTasks]);
+	}, [selectedEdge, edges, tasks, vault, setEdges]);
+
+	const onConnect = useCallback(
+		async (params: any) => {
+			const sourceTask = tasks.find((t) => t.id === params.source);
+			const targetTask = tasks.find((t) => t.id === params.target);
+
+			if (!vault || !sourceTask || !targetTask) return;
+
+			const hash = await addLinkSignsBetweenTasks(
+				vault,
+				sourceTask,
+				targetTask
+			);
+			if (hash) {
+				setEdges((eds) =>
+					addEdge(
+						{
+							...params,
+							type: "hash",
+							data: { hash },
+						},
+						eds
+					)
+				);
+			}
+		},
+		[vault, tasks, setEdges]
+	);
 
 	return (
 		<div style={{ width: "100%", height: "100%" }}>
@@ -207,34 +178,7 @@ export default function TaskMapGraphView() {
 				proOptions={{ hideAttribution: true }}
 				minZoom={0.1}
 				fitView
-				onConnect={async (params) => {
-					const sourceTask = tasks.find(
-						(t) => t.id === params.source
-					);
-					const targetTask = tasks.find(
-						(t) => t.id === params.target
-					);
-
-					if (vault && sourceTask && targetTask) {
-						const hash = await addLinkSignsBetweenTasks(
-							vault,
-							sourceTask,
-							targetTask
-						);
-						if (hash) {
-							setEdges((eds) =>
-								addEdge(
-									{
-										...params,
-										type: "hash",
-										data: { hash: hash },
-									},
-									eds
-								)
-							);
-						}
-					}
-				}}
+				onConnect={onConnect}
 				onEdgeClick={onEdgeClick}
 				onNodeClick={onNodeClick}
 				onPaneClick={onPaneClick}
