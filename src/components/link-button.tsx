@@ -30,28 +30,8 @@ export const LinkButton = ({
 		<button
 			className={`link-button link-button--${status}`}
 			onClick={handleClick}
-			style={{
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				padding: 4,
-				position: "absolute",
-				bottom: 8,
-				right: 8,
-				border: "none",
-				background: "transparent",
-				cursor: "pointer",
-				width: 28,
-				height: 28,
-			}}
 		>
-			<svg
-				width="16"
-				height="16"
-				viewBox="0 0 16 16"
-				fill="none"
-				style={{ display: "block" }}
-			>
+			<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 				<path
 					d="M5 3H13V11M13 3L3 13"
 					stroke="currentColor"

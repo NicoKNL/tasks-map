@@ -23,12 +23,11 @@ export default function HashEdge({
 		<g>
 			{/* Invisible thick path for easier selection */}
 			<path
-				className="react-flow__edge-interaction"
+				className="react-flow__edge-interaction hash-edge-interaction"
 				d={edgePath}
 				stroke="transparent"
 				strokeWidth={16}
 				fill="none"
-				style={{ cursor: "pointer" }}
 			/>
 			<path
 				id={id}
@@ -43,10 +42,7 @@ export default function HashEdge({
 				textAnchor="middle"
 				fontSize={12}
 				fill="#888"
-				style={{
-					userSelect: "none",
-					pointerEvents: "none",
-				}}
+				className="hash-edge-text"
 			>
 				{data?.hash}
 			</text>

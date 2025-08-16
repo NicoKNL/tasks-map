@@ -15,17 +15,5 @@ export const TaskMinimap = () => {
 		}
 	};
 
-	return (
-		<MiniMap
-			nodeColor={getNodeColor}
-			pannable
-			zoomable
-			style={{
-				background: "var(--background-primary)",
-				borderRadius: 8,
-				overflow: "hidden",
-				boxShadow: "0 2px 8px rgba(var(--color-black), 0.12)",
-			}}
-		/>
-	);
+	return <MiniMap nodeColor={getNodeColor} pannable zoomable />;
 };

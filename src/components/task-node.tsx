@@ -33,14 +33,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
 
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: 8,
-					marginBottom: 2,
-				}}
-			>
+			<div className="task-node-header">
 				<TaskStatusToggle
 					status={status}
 					task={task}
@@ -50,7 +43,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 				<span>{task.summary}</span>
 			</div>
 
-			<div style={{ position: "relative", flex: 1 }}>
+			<div className="task-node-content">
 				{task.tags.map((tag) => (
 					<Tag key={tag} tag={tag} />
 				))}
