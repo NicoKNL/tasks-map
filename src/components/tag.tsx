@@ -7,17 +7,7 @@ interface TagProps {
 
 export function Tag({ tag, style }: TagProps) {
 	return (
-		<span
-			style={{
-				display: "inline-block",
-				fontSize: 12,
-				marginRight: 6,
-				color: "var(--text-muted)",
-				padding: "2px 6px",
-				borderRadius: "var(--radius-xs)",
-				...style,
-			}}
-		>
+		<span className="tag" style={style}>
 			#{tag}
 		</span>
 	);

@@ -7,15 +7,7 @@ interface TaskPriorityProps {
 
 export function TaskPriority({ priority, style }: TaskPriorityProps) {
 	return (
-		<span
-			title="Priority"
-			style={{
-				fontSize: 18,
-				lineHeight: 1,
-				cursor: "pointer",
-				...style,
-			}}
-		>
+		<span title="Priority" className="task-priority" style={style}>
 			{priority}
 		</span>
 	);

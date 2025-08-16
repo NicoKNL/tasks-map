@@ -1,14 +1,14 @@
 import { WorkspaceLeaf } from "obsidian";
 import { Plugin } from "obsidian";
 
-import TaskMapGraphView, { VIEW_TYPE } from "./views/GraphView";
+import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
 
 export default class TasksMapPlugin extends Plugin {
 	async onload() {
 		// Configure resources needed by the plugin.
 		this.registerView(
 			VIEW_TYPE,
-			(leaf: WorkspaceLeaf) => new TaskMapGraphView(leaf)
+			(leaf: WorkspaceLeaf) => new TaskMapGraphItemView(leaf)
 		);
 
 		this.addCommand({

@@ -39,24 +39,8 @@ export function TaskStatusToggle({
 	};
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				gap: 8,
-				alignItems: "center",
-			}}
-		>
-			<div
-				onClick={handleToggleStatus}
-				style={{
-					width: 22,
-					height: 22,
-					cursor: "pointer",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
+		<div className="task-status-container">
+			<div onClick={handleToggleStatus} className="task-status-toggle">
 				{statusIcons[status]}
 			</div>
 		</div>

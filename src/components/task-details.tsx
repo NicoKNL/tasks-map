@@ -7,16 +7,7 @@ interface TaskDetailsProps {
 
 export function TaskDetails({ task, status }: TaskDetailsProps) {
 	return (
-		<div
-			style={{
-				marginTop: 10,
-				fontSize: 13,
-				background: "var(--background-secondary-alt)",
-				borderRadius: 6,
-				padding: 8,
-				boxShadow: "0 1px 4px rgba(var(--color-black-rgb),0.04)",
-			}}
-		>
+		<div className="task-details">
 			<div>
 				<b>ID:</b> {task.id}
 			</div>

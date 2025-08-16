@@ -430,3 +430,186 @@ If your plugin does not need CSS, delete this file.
   border-bottom-width: 1px;
   top: 100%;
 }
+
+/* Expand Button Styles */
+.expand-button {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--background-modifier-hover);
+  border: 1px solid var(--background-modifier-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(var(--color-black-rgb), 0.08);
+  z-index: 2;
+  cursor: pointer;
+}
+
+.expand-button:hover {
+  background: var(--background-modifier-hover-active);
+}
+
+/* Delete Edge Button Styles */
+.delete-edge-button-container {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.delete-edge-button {
+  padding: 10px;
+  background: var(--color-red);
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-edge-button:hover {
+  background: var(--color-red-hover, #c53030);
+}
+
+/* Link Button Styles */
+.link-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+}
+
+.link-button--success {
+  color: var(--task-completed-green);
+}
+
+.link-button--error {
+  color: var(--task-canceled-red);
+}
+
+.link-button--normal {
+  color: inherit;
+}
+
+.link-button:hover {
+  background: rgba(var(--color-black-rgb), 0.1);
+}
+
+/* Task Node Styles */
+.task-node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.task-node-content {
+  position: relative;
+  flex: 1;
+}
+
+/* Task Details Styles */
+.task-details {
+  margin-top: 10px;
+  font-size: 13px;
+  background: var(--background-secondary-alt);
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 1px 4px rgba(var(--color-black-rgb), 0.04);
+}
+
+/* Tag Styles */
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  margin-right: 6px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+/* GUI Overlay Styles */
+.gui-overlay-bottom {
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.gui-overlay-tag-select {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 30;
+  min-width: 220px;
+}
+
+.gui-overlay-reload-button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Task Priority Styles */
+.task-priority {
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Task Status Styles */
+.task-status-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.task-status-toggle {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hash Edge Styles */
+.hash-edge-interaction {
+  cursor: pointer;
+}
+
+.hash-edge-text {
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Link Button SVG Styles */
+.link-button svg {
+  display: block;
+}
+
+/* Task Minimap Styles */
+.react-flow__minimap {
+  background: var(--background-primary) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(var(--color-black), 0.12) !important;
+}
