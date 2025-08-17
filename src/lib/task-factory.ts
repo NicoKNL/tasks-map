@@ -8,7 +8,7 @@ export class TaskFactory {
 		return {
 			id: this.parseIdFromText(text),
 			summary: this.makeSummary(text),
-			text: text,
+			text: text.trim(),
 			tags: this.parseTags(text),
 			priority: this.parsePriority(text),
 			status: this.parseStatus(status),
