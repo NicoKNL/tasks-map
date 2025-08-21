@@ -8,13 +8,19 @@ export class TaskFactory {
 		return {
 			id: this.parseIdFromText(text),
 			summary: this.makeSummary(text),
-			text: text.trim(),
+			text: this.cleanText(text),
 			tags: this.parseTags(text),
 			priority: this.parsePriority(text),
 			status: this.parseStatus(status),
 			link: rawTask.link?.path,
 			incomingLinks: this.parseIncomingLinks(text),
 		};
+	}
+
+	private cleanText(text: string): string {
+		return text
+			.split('\n')[0]
+			.trim();
 	}
 
 	private parseIdFromText(text: string): string {
