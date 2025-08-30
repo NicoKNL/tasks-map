@@ -9,6 +9,7 @@ import { Tag } from "./tag";
 import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
+import { renderSummaryLinks } from "../lib/render-summary-links";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -40,7 +41,11 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 					onStatusChange={setStatus}
 				/>
 				<TaskPriority priority={task.priority} />
-				<span>{task.summary}</span>
+				<span
+					dangerouslySetInnerHTML={{
+						__html: renderSummaryLinks(task.summary),
+					}}
+				/>
 			</div>
 
 			<div className="task-node-content">
