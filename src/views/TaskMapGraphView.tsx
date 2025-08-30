@@ -23,6 +23,10 @@ import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
 
+import { TaskStatus } from "src/types/task";
+
+const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
+
 export default function TaskMapGraphView() {
 	const app = useApp();
 	const vault = app.vault;
@@ -31,6 +35,9 @@ export default function TaskMapGraphView() {
 	const [tasks, setTasks] = React.useState<Task[]>([]);
 	const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
 	const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
+	const [selectedStatuses, setSelectedStatuses] = React.useState<
+		TaskStatus[]
+	>([...ALL_STATUSES]);
 	const selectedEdgeRef = React.useRef<string | null>(null);
 	const edgesRef = React.useRef(edges);
 	const tasksRef = React.useRef(tasks);
@@ -62,14 +69,21 @@ export default function TaskMapGraphView() {
 	const getFilteredNodeIds = (
 		tasks: Task[],
 		nodes: any[],
-		selectedTags: string[]
+		selectedTags: string[],
+		selectedStatuses: TaskStatus[]
 	) => {
-		if (selectedTags.length === 0) return nodes.map((n) => n.id);
-		return tasks
-			.filter((task) =>
+		let filtered = tasks;
+		if (selectedTags.length > 0) {
+			filtered = filtered.filter((task) =>
 				selectedTags.some((tag) => task.tags.includes(tag))
-			)
-			.map((task) => task.id);
+			);
+		}
+		if (selectedStatuses.length > 0) {
+			filtered = filtered.filter((task) =>
+				selectedStatuses.includes(task.status)
+			);
+		}
+		return filtered.map((task) => task.id);
 	};
 
 	const reloadTasks = () => {
@@ -81,19 +95,19 @@ export default function TaskMapGraphView() {
 		let newNodes = createNodesFromTasks(tasks);
 		let newEdges = createEdgesFromTasks(tasks);
 
-		if (selectedTags.length > 0) {
-			const filteredNodeIds = getFilteredNodeIds(
-				tasks,
-				newNodes,
-				selectedTags
-			);
-			newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
-			newEdges = newEdges.filter(
-				(e) =>
-					filteredNodeIds.includes(e.source) &&
-					filteredNodeIds.includes(e.target)
-			);
-		}
+		const filteredNodeIds = getFilteredNodeIds(
+			tasks,
+			newNodes,
+			selectedTags,
+			selectedStatuses
+		);
+		newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
+		newEdges = newEdges.filter(
+			(e) =>
+				filteredNodeIds.includes(e.source) &&
+				filteredNodeIds.includes(e.target)
+		);
+
 		const layoutedNodes = getLayoutedElements(newNodes, newEdges);
 		setNodes(layoutedNodes);
 		setEdges(newEdges);
@@ -101,7 +115,7 @@ export default function TaskMapGraphView() {
 		setTimeout(() => {
 			reactFlowInstance.fitView({ duration: 400 });
 		}, 1000); // Allow time for DOM updates
-	}, [tasks, selectedTags]);
+	}, [tasks, selectedTags, selectedStatuses]);
 
 	const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
 	const edgeTypes = useMemo(() => ({ hash: HashEdge }), []);
@@ -189,6 +203,9 @@ export default function TaskMapGraphView() {
 					selectedTags={selectedTags}
 					setSelectedTags={setSelectedTags}
 					reloadTasks={reloadTasks}
+					allStatuses={ALL_STATUSES}
+					selectedStatuses={selectedStatuses}
+					setSelectedStatuses={setSelectedStatuses}
 				/>
 				<TaskMinimap />
 				<Background />

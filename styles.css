@@ -562,6 +562,14 @@ If your plugin does not need CSS, delete this file.
   min-width: 220px;
 }
 
+.gui-overlay-status-select {
+  position: absolute;
+  top: 80px;
+  right: 32px;
+  z-index: 30;
+  min-width: 220px;
+}
+
 .gui-overlay-reload-button {
   padding: 8px 20px;
   border-radius: 6px;
