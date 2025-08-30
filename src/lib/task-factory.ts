@@ -49,7 +49,8 @@ export class TaskFactory {
 	}
 
 	private parseTags(text: string): string[] {
-		const tagRegex = /#([a-zA-Z0-9_-]+)/g;
+		// Tag must be preceded by whitespace or line start, and is any non-whitespace after #
+		const tagRegex = /(?:^|\s)#(\S+)/g;
 		const tags = Array.from(text.matchAll(tagRegex)).map((m) => m[1]);
 		return tags;
 	}
