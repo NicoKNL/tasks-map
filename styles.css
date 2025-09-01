@@ -558,7 +558,7 @@ If your plugin does not need CSS, delete this file.
   position: absolute;
   top: 24px;
   right: 32px;
-  z-index: 30;
+  z-index: 35;
   min-width: 220px;
 }
 
