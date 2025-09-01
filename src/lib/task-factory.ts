@@ -77,7 +77,7 @@ export class TaskFactory {
 
 	private makeSummary(text: string): string {
 		return text
-			.replace(/#[a-zA-Z0-9_-]+/g, "")
+			.replace(/(?:^|\s)#\S+/g, "")
 			.replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "")
 			.replace(/([\p{Extended_Pictographic}]+)/gu, "")
 			.trim();
