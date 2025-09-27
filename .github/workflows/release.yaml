@@ -49,7 +49,7 @@ jobs:
 
             - name: Set up Python
               if: steps.check-labels.outputs.bump_type != 'noimpact'
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version: "3.13"
 
@@ -107,7 +107,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Set up Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version: "3.13"
 
