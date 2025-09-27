@@ -3,5 +3,17 @@
 	"extends": [
 		"config:recommended"
 	],
-	"baseBranch": "develop"
+	"baseBranch": "main",
+	"automerge": true,
+	"automergeType": "pr",
+	"packageRules": [
+		{
+			"matchDepTypes": ["devDependencies"],
+			"labels": ["semver-noimpact"]
+		},
+		{
+			"matchManagers": ["github-actions"],
+			"labels": ["semver-noimpact"]
+		}
+	]
 }
