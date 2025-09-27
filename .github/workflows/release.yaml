@@ -65,7 +65,7 @@ jobs:
                   git status --porcelain
 
             - name: Use Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: "22"
 
@@ -118,7 +118,7 @@ jobs:
                   echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
             - name: Use Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: "22"
 
