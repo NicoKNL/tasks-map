@@ -7,6 +7,8 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+@import "reactflow/dist/style.css";
+
 :root {
   --tasks-map-color-black-rgb: 0,0,0;
   --tasks-map-color-white: #ffffff;

@@ -7,7 +7,6 @@ import ReactFlow, {
 	useReactFlow,
 } from "reactflow";
 import { useApp } from "src/hooks/hooks";
-import "reactflow/dist/style.css";
 import {
 	addLinkSignsBetweenTasks,
 	getAllDataviewTasks,
