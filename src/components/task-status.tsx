@@ -24,17 +24,13 @@ export function TaskStatusToggle({
 	const app = useApp();
 
 	const handleToggleStatus = async (e: React.MouseEvent) => {
-		console.log("Toggling status for task:", task.id);
 		e.stopPropagation();
 		// Cycle through statuses: todo -> in_progress -> done
 		// (canceled status is set through a separate action)
 		const statusCycle: TaskStatus[] = ["todo", "in_progress", "done"];
 		const currentIndex = statusCycle.indexOf(status);
-		console.log("Current status index:", currentIndex);
 		const newStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-		console.log("New status:", newStatus);
 		const ok = await updateTaskStatusInVault(task, newStatus, app);
-		console.log("Update status in vault result:", ok);
 		if (ok) onStatusChange(newStatus);
 	};
 
