@@ -6,7 +6,7 @@ export const DeleteEdgeButton = ({ onDelete }: DeleteEdgeButtonProps) => {
 	return (
 		<div className="delete-edge-button-container">
 			<button onClick={onDelete} className="delete-edge-button">
-				Delete Edge
+				Delete edge
 			</button>
 		</div>
 	);

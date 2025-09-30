@@ -45,7 +45,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 					onClick={reloadTasks}
 					className="gui-overlay-reload-button"
 				>
-					Reload Tasks
+					Reload tasks
 				</button>
 			</div>
 		</>

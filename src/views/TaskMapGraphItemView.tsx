@@ -18,7 +18,7 @@ export default class TaskMapGraphItemView extends ItemView {
 	}
 
 	getDisplayText() {
-		return "Tasks Map";
+		return "Tasks map";
 	}
 
 	async onOpen() {
