@@ -29,7 +29,7 @@ export function TaskDetails({ task, status }: TaskDetailsProps) {
 				<b>Link:</b> {task.link}
 			</div>
 			<div>
-				<b>Incoming Links:</b> {task.incomingLinks?.join(", ") || "-"}
+				<b>Incoming links:</b> {task.incomingLinks?.join(", ") || "-"}
 			</div>
 		</div>
 	);

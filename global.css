@@ -1,0 +1,268 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+@import "reactflow/dist/style.css";
+
+:root {
+  --tasks-map-color-black-rgb: 0,0,0;
+  --tasks-map-color-white: #ffffff;
+}
+
+.theme-dark {
+  --tasks-map-task-completed-green: #1e3821;
+  --tasks-map-task-in-progress-blue: #1c5e8e;
+  --tasks-map-task-canceled-red: #5c1a1a;
+}
+
+.theme-light {
+  --tasks-map-task-completed-green: #6de27b;
+  --tasks-map-task-in-progress-blue: #77b4d3;
+  --tasks-map-task-canceled-red: #ff6b6b;
+}
+
+/* Expand Button Styles */
+.tasks-map-expand-button {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--background-modifier-hover);
+  border: 1px solid var(--background-modifier-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(var(--tasks-map-color-black-rgb), 0.08);
+  z-index: 2;
+  cursor: pointer;
+}
+
+.tasks-map-expand-button:hover {
+  background: var(--background-modifier-hover-active);
+}
+
+/* Delete Edge Button Styles */
+.tasks-map-delete-edge-button-container {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.tasks-map-delete-edge-button {
+  padding: 10px;
+  background: var(--tasks-map-color-red);
+  color: var(--tasks-map-color-white);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tasks-map-delete-edge-button:hover {
+  background: var(--tasks-map-color-red-hover, #c53030);
+}
+
+/* Link Button Styles */
+.tasks-map-link-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+}
+
+.tasks-map-link-button--success {
+  color: var(--tasks-map-task-completed-green);
+}
+
+.tasks-map-link-button--error {
+  color: var(--tasks-map-task-canceled-red);
+}
+
+.tasks-map-link-button--normal {
+  color: inherit;
+}
+
+.tasks-map-link-button:hover {
+  background: rgba(var(--tasks-map-color-black-rgb), 0.1);
+}
+
+/* Task Node Styles */
+.tasks-map-task-node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.tasks-map-task-node-content {
+  position: relative;
+  flex: 1;
+}
+
+/* Task Details Styles */
+.task-details {
+  margin-top: 10px;
+  font-size: 13px;
+  background: var(--background-secondary-alt);
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 1px 4px rgba(var(--tasks-map-color-black-rgb), 0.04);
+}
+
+/* Tag Styles */
+.tasks-map-tag {
+  display: inline-block;
+  font-size: 12px;
+  margin-right: 6px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+/* GUI Overlay Styles */
+.tasks-map-gui-overlay-bottom {
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.tasks-map-gui-overlay-tag-select {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 35;
+  min-width: 220px;
+}
+
+.tasks-map-gui-overlay-status-select {
+  position: absolute;
+  top: 80px;
+  right: 32px;
+  z-index: 30;
+  min-width: 220px;
+}
+
+.tasks-map-gui-overlay-reload-button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Task Priority Styles */
+.tasks-map-task-priority {
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Task Status Styles */
+.tasks-map-status-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tasks-map-task-status-toggle {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hash Edge Styles */
+.tasks-map-hash-edge-interaction {
+  cursor: pointer;
+}
+
+.tasks-map-hash-edge-text {
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Link Button SVG Styles */
+.tasks-map-link-button svg {
+  display: block;
+}
+
+/* Task Minimap Styles */
+.tasks-map-react-flow__minimap {
+  background: var(--background-primary) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black), 0.12) !important;
+}
+
+/* Task Map Graph View Styles */
+.tasks-map-graph-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Task Background Styles */
+.tasks-map-task-background {
+  border-radius: var(--radius-m);
+  padding: 12px;
+  width: 250px;
+  min-height: 120px;
+  max-height: 120px;
+  box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black-rgb),0.07);
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  transition: max-height 0.2s, min-height 0.2s, width 0.2s;
+}
+
+.tasks-map-task-background--expanded {
+  max-height: none;
+}
+
+.tasks-map-task-background--todo {
+  background: var(--background-secondary);
+  border: 1px solid rgba(var(--tasks-map-color-black-rgb), 0.1);
+  color: var(--text-normal);
+}
+
+.tasks-map-task-background--done {
+  background: var(--tasks-map-task-completed-green);
+  border: 1px solid var(--tasks-map-color-green);
+  color: var(--text-success);
+}
+
+.tasks-map-task-background--in-progress {
+  background: var(--tasks-map-task-in-progress-blue);
+  border: 1px solid var(--tasks-map-color-blue);
+  color: var(--tasks-map-color-blue);
+}
+
+.tasks-map-task-background--canceled {
+  background: var(--tasks-map-task-canceled-red);
+  border: 1px solid var(--tasks-map-color-red);
+  color: var(--text-error);
+}

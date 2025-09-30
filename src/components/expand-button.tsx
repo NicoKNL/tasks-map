@@ -10,7 +10,7 @@ export function ExpandButton({ expanded, onClick }: ExpandButtonProps) {
 		<button
 			onClick={onClick}
 			title={expanded ? "Collapse" : "Expand"}
-			className="expand-button"
+			className="tasks-map-expand-button"
 		>
 			<svg
 				width="20"

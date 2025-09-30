@@ -2,12 +2,11 @@ import React from "react";
 
 interface TaskPriorityProps {
 	priority: string;
-	style?: React.CSSProperties;
 }
 
-export function TaskPriority({ priority, style }: TaskPriorityProps) {
+export function TaskPriority({ priority }: TaskPriorityProps) {
 	return (
-		<span title="Priority" className="task-priority" style={style}>
+		<span title="Priority" className="tasks-map-task-priority">
 			{priority}
 		</span>
 	);

@@ -24,7 +24,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 
 	return (
 		<>
-			<div className="gui-overlay-tag-select">
+			<div className="tasks-map-gui-overlay-tag-select">
 				<MultiSelect
 					options={allTags}
 					selected={selectedTags}
@@ -32,7 +32,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 					placeholder="Filter by tags..."
 				/>
 			</div>
-			<div className="gui-overlay-status-select">
+			<div className="tasks-map-gui-overlay-status-select">
 				<MultiSelect
 					options={allStatuses}
 					selected={selectedStatuses}
@@ -40,12 +40,12 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 					placeholder="Filter by status..."
 				/>
 			</div>
-			<div className="gui-overlay-bottom">
+			<div className="tasks-map-gui-overlay-bottom">
 				<button
 					onClick={reloadTasks}
-					className="gui-overlay-reload-button"
+					className="tasks-map-gui-overlay-reload-button"
 				>
-					Reload Tasks
+					Reload tasks
 				</button>
 			</div>
 		</>

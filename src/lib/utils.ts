@@ -38,7 +38,9 @@ export async function updateTaskStatusInVault(
 		/\[([ x/\-])\]/,
 		statusSymbols[newStatus]
 	);
-	await vault.modify(file, lines.join("\n"));
+	await vault.process(file, (data) => {
+		return lines.join("\n");
+	});
 	return true;
 }
 
@@ -125,7 +127,9 @@ export async function addSignToTaskInFile(
 	}
 	if (lines[taskLineIdx].includes(sign)) return;
 	lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
-	await vault.modify(file, lines.join("\n"));
+	await vault.process(file, (data) => {
+		return lines.join("\n");
+	});
 }
 
 // Remove a link hash from both source and target tasks in their files
@@ -154,7 +158,9 @@ export async function removeSignFromTaskInFile(
 	const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
 	if (!lines[taskLineIdx].includes(sign)) return false;
 	lines[taskLineIdx] = lines[taskLineIdx].replace(sign, "").replace(/\s+$/, "");
-	await vault.modify(file, lines.join("\n"));
+	await vault.process(file, (data) => {
+		return lines.join("\n");
+	});
 	return true;
 }
 

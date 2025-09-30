@@ -8,7 +8,6 @@ export default function HashEdge({
 	targetX,
 	targetY,
 	markerEnd,
-	style,
 }: EdgeProps) {
 	const [edgePath, labelX, labelY] = getBezierPath({
 		sourceX,
@@ -23,7 +22,7 @@ export default function HashEdge({
 		<g>
 			{/* Invisible thick path for easier selection */}
 			<path
-				className="react-flow__edge-interaction hash-edge-interaction"
+				className="react-flow__edge-interaction tasks-map-hash-edge-interaction"
 				d={edgePath}
 				stroke="transparent"
 				strokeWidth={16}
@@ -31,7 +30,6 @@ export default function HashEdge({
 			/>
 			<path
 				id={id}
-				style={style}
 				className="react-flow__edge-path"
 				d={edgePath}
 				markerEnd={markerEnd}
@@ -42,7 +40,7 @@ export default function HashEdge({
 				textAnchor="middle"
 				fontSize={12}
 				fill="#888"
-				className="hash-edge-text"
+				className="tasks-map-hash-edge-text"
 			>
 				{data?.hash}
 			</text>

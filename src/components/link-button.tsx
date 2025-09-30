@@ -28,7 +28,7 @@ export const LinkButton = ({
 
 	return (
 		<button
-			className={`link-button link-button--${status}`}
+			className={`tasks-map-link-button tasks-map-link-button--${status}`}
 			onClick={handleClick}
 		>
 			<svg width="16" height="16" viewBox="0 0 16 16" fill="none">

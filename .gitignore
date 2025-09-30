@@ -10,7 +10,7 @@ node_modules
 
 # Obsidian plugin build results
 main.js
-main.css
+styles.css
 
 # Exclude sourcemaps
 *.map

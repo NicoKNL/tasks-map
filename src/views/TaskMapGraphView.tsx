@@ -7,7 +7,6 @@ import ReactFlow, {
 	useReactFlow,
 } from "reactflow";
 import { useApp } from "src/hooks/hooks";
-import "reactflow/dist/style.css";
 import {
 	addLinkSignsBetweenTasks,
 	getAllDataviewTasks,
@@ -182,7 +181,7 @@ export default function TaskMapGraphView() {
 	);
 
 	return (
-		<div style={{ width: "100%", height: "100%" }}>
+		<div className="tasks-map-graph-container">
 			<ReactFlow
 				nodes={nodes}
 				edges={edges}

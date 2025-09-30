@@ -9,7 +9,7 @@ import { Tag } from "./tag";
 import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
-import { renderSummaryLinks } from "../lib/render-summary-links";
+import { useSummaryRenderer } from "../hooks/use-summary-renderer";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -23,32 +23,24 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 	const [expanded, setExpanded] = useState(false);
 	const [status, setStatus] = useState(task.status);
 	const app = useApp();
+	const summaryRef = useSummaryRenderer(task.summary);
 
 	return (
-		<TaskBackground
-			status={status}
-			expanded={expanded}
-			width={NODEWIDTH}
-			height={NODEHEIGHT}
-		>
+		<TaskBackground status={status} expanded={expanded}>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
 
-			<div className="task-node-header">
+			<div className="tasks-map-task-node-header">
 				<TaskStatusToggle
 					status={status}
 					task={task}
 					onStatusChange={setStatus}
 				/>
 				<TaskPriority priority={task.priority} />
-				<span
-					dangerouslySetInnerHTML={{
-						__html: renderSummaryLinks(task.summary),
-					}}
-				/>
+				<span ref={summaryRef} />
 			</div>
 
-			<div className="task-node-content">
+			<div className="tasks-map-task-node-content">
 				{task.tags.map((tag) => (
 					<Tag key={tag} tag={tag} />
 				))}
