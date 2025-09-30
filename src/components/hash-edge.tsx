@@ -8,7 +8,6 @@ export default function HashEdge({
 	targetX,
 	targetY,
 	markerEnd,
-	style,
 }: EdgeProps) {
 	const [edgePath, labelX, labelY] = getBezierPath({
 		sourceX,
@@ -31,7 +30,6 @@ export default function HashEdge({
 			/>
 			<path
 				id={id}
-				style={style}
 				className="react-flow__edge-path"
 				d={edgePath}
 				markerEnd={markerEnd}
