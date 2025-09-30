@@ -15,18 +15,18 @@ export function TaskBackground({
 	const getStatusClass = () => {
 		switch (status) {
 			case "done":
-				return "task-background--done";
+				return "tasks-map-task-background--done";
 			case "in_progress":
-				return "task-background--in-progress";
+				return "tasks-map-task-background--in-progress";
 			case "canceled":
-				return "task-background--canceled";
+				return "tasks-map-task-background--canceled";
 			default:
-				return "task-background--todo";
+				return "tasks-map-task-background--todo";
 		}
 	};
 
-	const className = `task-background ${getStatusClass()}${
-		expanded ? " task-background--expanded" : ""
+	const className = `tasks-map-task-background ${getStatusClass()}${
+		expanded ? " tasks-map-task-background--expanded" : ""
 	}`;
 
 	return <div className={className}>{children}</div>;

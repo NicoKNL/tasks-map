@@ -4,7 +4,7 @@ import { ReactFlowProvider } from "reactflow";
 import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
 
-export const VIEW_TYPE = "task-map-graph-view";
+export const VIEW_TYPE = "tasks-map-graph-view";
 
 export default class TaskMapGraphItemView extends ItemView {
 	root: Root | null = null;

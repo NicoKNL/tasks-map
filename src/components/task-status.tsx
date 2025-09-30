@@ -35,8 +35,11 @@ export function TaskStatusToggle({
 	};
 
 	return (
-		<div className="task-status-container">
-			<div onClick={handleToggleStatus} className="task-status-toggle">
+		<div className="tasks-map-status-container">
+			<div
+				onClick={handleToggleStatus}
+				className="tasks-map-task-status-toggle"
+			>
 				{statusIcons[status]}
 			</div>
 		</div>

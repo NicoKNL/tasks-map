@@ -5,5 +5,5 @@ interface TagProps {
 }
 
 export function Tag({ tag }: TagProps) {
-	return <span className="tag">#{tag}</span>;
+	return <span className="tasks-map-tag">#{tag}</span>;
 }

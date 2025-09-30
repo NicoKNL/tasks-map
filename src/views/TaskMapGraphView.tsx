@@ -182,7 +182,7 @@ export default function TaskMapGraphView() {
 	);
 
 	return (
-		<div className="task-map-graph-container">
+		<div className="tasks-map-graph-container">
 			<ReactFlow
 				nodes={nodes}
 				edges={edges}

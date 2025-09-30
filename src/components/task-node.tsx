@@ -30,7 +30,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
 
-			<div className="task-node-header">
+			<div className="tasks-map-task-node-header">
 				<TaskStatusToggle
 					status={status}
 					task={task}
@@ -40,7 +40,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 				<span ref={summaryRef} />
 			</div>
 
-			<div className="task-node-content">
+			<div className="tasks-map-task-node-content">
 				{task.tags.map((tag) => (
 					<Tag key={tag} tag={tag} />
 				))}

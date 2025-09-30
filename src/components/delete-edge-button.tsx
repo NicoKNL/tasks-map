@@ -4,8 +4,8 @@ interface DeleteEdgeButtonProps {
 
 export const DeleteEdgeButton = ({ onDelete }: DeleteEdgeButtonProps) => {
 	return (
-		<div className="delete-edge-button-container">
-			<button onClick={onDelete} className="delete-edge-button">
+		<div className="tasks-map-delete-edge-button-container">
+			<button onClick={onDelete} className="tasks-map-delete-edge-button">
 				Delete edge
 			</button>
 		</div>
