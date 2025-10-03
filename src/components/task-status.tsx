@@ -30,8 +30,8 @@ export function TaskStatusToggle({
 		const statusCycle: TaskStatus[] = ["todo", "in_progress", "done"];
 		const currentIndex = statusCycle.indexOf(status);
 		const newStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-		const ok = await updateTaskStatusInVault(task, newStatus, app);
-		if (ok) onStatusChange(newStatus);
+		await updateTaskStatusInVault(task, newStatus, app);
+		onStatusChange(newStatus);
 	};
 
 	return (
