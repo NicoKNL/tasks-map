@@ -16,32 +16,31 @@ export async function updateTaskStatusInVault(
 	task: Task,
 	newStatus: TaskStatus,
 	app: App
-): Promise<boolean> {
-	if (!task.link || !task.text) return false;
+): Promise<void> {
+	if (!task.link || !task.text) return;
 	const vault = app?.vault;
-	if (!vault) return false;
+	if (!vault) return;
 	const file = vault.getFileByPath(task.link);
-	if (!file) return false;
-	const fileContent = await vault.read(file);
-	const lines = fileContent.split(/\r?\n/);
-	let taskLineIdx = lines.findIndex((line: string) =>
-		line.includes(`🆔 ${task.id}`)
-	);
-	if (taskLineIdx === -1) {
-		// Fallback: try to find by matching the task text (legacy format)
-		taskLineIdx = lines.findIndex((line: string) =>
-			line.includes(task.text)
+	if (!file) return;
+
+	await vault.process(file, (fileContent) => {
+		const lines = fileContent.split(/\r?\n/);
+		let taskLineIdx = lines.findIndex((line: string) =>
+			line.includes(`🆔 ${task.id}`)
 		);
-		if (taskLineIdx === -1) return false;
-	}
-	lines[taskLineIdx] = lines[taskLineIdx].replace(
-		/\[([ x/\-])\]/,
-		statusSymbols[newStatus]
-	);
-	await vault.process(file, (data) => {
+		if (taskLineIdx === -1) {
+			// Fallback: try to find by matching the task text (legacy format)
+			taskLineIdx = lines.findIndex((line: string) =>
+				line.includes(task.text)
+			);
+			if (taskLineIdx === -1) return fileContent;
+		}
+		lines[taskLineIdx] = lines[taskLineIdx].replace(
+			/\[([ x/\-])\]/,
+			statusSymbols[newStatus]
+		);
 		return lines.join("\n");
 	});
-	return true;
 }
 
 export function getLayoutedElements(nodes: any[], edges: any[]) {
@@ -95,7 +94,7 @@ export async function addLinkSignsBetweenTasks(
 	await addSignToTaskInFile(vault, fromTask, "id", id);
 	await addSignToTaskInFile(vault, toTask, "stop", id);
 
-    return id + "-" + toTask.id;;
+    return id + "-" + toTask.id;
 }
 
 /**
@@ -115,19 +114,20 @@ export async function addSignToTaskInFile(
 	if (!task.link || !task.text) return;
 	const file = vault.getAbstractFileByPath(task.link);
 	if (!(file instanceof TFile)) return;
-	const fileContent = await vault.read(file);
-	const lines = fileContent.split(/\r?\n/);
-	const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
-	if (taskLineIdx === -1) return;
-	const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
-	if (type === "id") {
-		// If any 🆔 <6-hex> is already present, do not add another
-		const idPresent = /🆔\s*[a-fA-F0-9]{6}/.test(lines[taskLineIdx]);
-		if (idPresent) return;
-	}
-	if (lines[taskLineIdx].includes(sign)) return;
-	lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
-	await vault.process(file, (data) => {
+
+	await vault.process(file, (fileContent) => {
+		const lines = fileContent.split(/\r?\n/);
+		const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+		if (taskLineIdx === -1) return fileContent;
+		const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
+		if (type === "id") {
+			// If any 🆔 <6-hex> is already present, do not add another
+			const idPresent = /🆔\s*[a-fA-F0-9]{6}/.test(lines[taskLineIdx]);
+			if (idPresent) return fileContent;
+		}
+		if (lines[taskLineIdx].includes(sign)) return fileContent;
+		lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+
 		return lines.join("\n");
 	});
 }
@@ -147,21 +147,20 @@ export async function removeSignFromTaskInFile(
 	task: Task,
 	type: "stop" | "id",
 	hash: string
-): Promise<boolean> {
-	if (!task.link || !task.text) return false;
+): Promise<void> {
+	if (!task.link || !task.text) return;
 	const file = vault.getAbstractFileByPath(task.link);
-	if (!(file instanceof TFile)) return false;
-	const fileContent = await vault.read(file);
-	const lines = fileContent.split(/\r?\n/);
-	const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
-	if (taskLineIdx === -1) return false;
-	const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
-	if (!lines[taskLineIdx].includes(sign)) return false;
-	lines[taskLineIdx] = lines[taskLineIdx].replace(sign, "").replace(/\s+$/, "");
-	await vault.process(file, (data) => {
+	if (!(file instanceof TFile)) return;
+
+	await vault.process(file, (fileContent) => {
+		const lines = fileContent.split(/\r?\n/);
+		const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+		if (taskLineIdx === -1) return fileContent;
+		const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
+		if (!lines[taskLineIdx].includes(sign)) return fileContent;
+		lines[taskLineIdx] = lines[taskLineIdx].replace(sign, "").replace(/\s+$/, "");
 		return lines.join("\n");
 	});
-	return true;
 }
 
 export function getAllDataviewTasks(app: any): Task[] {
