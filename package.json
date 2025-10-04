@@ -5,12 +5,17 @@
     "main": "main.js",
     "scripts": {
         "dev": "node esbuild.config.mjs",
-        "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+        "build": "npm run lint && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+        "lint": "eslint src --ext .ts,.tsx",
+        "lint:fix": "eslint src --ext .ts,.tsx --fix"
     },
     "keywords": [],
     "author": "",
     "license": "MIT",
     "devDependencies": {
+        "@eslint/compat": "^1.4.0",
+        "@eslint/eslintrc": "^3.3.1",
+        "@eslint/js": "^9.37.0",
         "@types/node": "^22.0.0",
         "@types/react": "^19.1.8",
         "@types/react-dom": "^19.1.6",
@@ -18,7 +23,13 @@
         "@typescript-eslint/parser": "8.45.0",
         "builtin-modules": "5.0.0",
         "esbuild": "0.25.10",
+        "eslint": "^9.37.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^6.1.1",
+        "globals": "^16.4.0",
         "obsidian": "latest",
+        "prettier": "^3.6.2",
         "tslib": "2.8.1",
         "typescript": "5.9.3"
     },
