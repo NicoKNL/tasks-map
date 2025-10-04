@@ -1,7 +1,8 @@
 import { MiniMap } from "reactflow";
 
 export const TaskMinimap = () => {
-  const getNodeColor = (node: any) => {
+  // TODO: Would be nice to have better typing for node here
+  const getNodeColor = (node: { data?: { task?: { status?: string } } }) => {
     const status = node.data?.task?.status;
     switch (status) {
       case "done":

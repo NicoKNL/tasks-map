@@ -2,14 +2,12 @@ import React from "react";
 import { App } from "obsidian";
 
 interface LinkButtonProps {
-  title?: string;
   taskStatus?: "todo" | "done" | "canceled" | "in_progress";
   link: string;
   app: App;
 }
 
 export const LinkButton = ({
-  title,
   link,
   app,
   taskStatus = "todo",

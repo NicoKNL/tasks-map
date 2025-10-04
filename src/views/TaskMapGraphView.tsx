@@ -67,7 +67,6 @@ export default function TaskMapGraphView() {
 
   const getFilteredNodeIds = (
     tasks: Task[],
-    nodes: any[],
     selectedTags: string[],
     selectedStatuses: TaskStatus[]
   ) => {
@@ -96,7 +95,6 @@ export default function TaskMapGraphView() {
 
     const filteredNodeIds = getFilteredNodeIds(
       tasks,
-      newNodes,
       selectedTags,
       selectedStatuses
     );
@@ -119,6 +117,7 @@ export default function TaskMapGraphView() {
   const edgeTypes = useMemo(() => ({ hash: HashEdge }), []);
 
   const onEdgeClick = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (event: any, edge: any) => {
       event.stopPropagation();
       setSelectedEdge(edge.id);
@@ -152,6 +151,7 @@ export default function TaskMapGraphView() {
   }, [selectedEdge, edges, tasks, vault, setEdges]);
 
   const onConnect = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (params: any) => {
       const sourceTask = tasks.find((t) => t.id === params.source);
       const targetTask = tasks.find((t) => t.id === params.target);

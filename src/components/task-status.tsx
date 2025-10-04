@@ -6,7 +6,7 @@ import { useApp } from "src/hooks/hooks";
 interface TaskStatusProps {
   status: TaskStatus;
   task: Task;
-  onStatusChange: (newStatus: TaskStatus) => void;
+  onStatusChange: (newStatus: TaskStatus) => void; // eslint-disable-line no-unused-vars
 }
 
 const statusIcons = {

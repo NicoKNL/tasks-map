@@ -33,14 +33,17 @@ export async function updateTaskStatusInVault(
       taskLineIdx = lines.findIndex((line: string) => line.includes(task.text));
       if (taskLineIdx === -1) return fileContent;
     }
+
+    // TODO: Verify if the escape is really useless here (or change this parsing completely). It was added by the linter, but it seems necessary for correct regex.
     lines[taskLineIdx] = lines[taskLineIdx].replace(
-      /\[([ x/\-])\]/,
+      /\[([ x/\-])\]/, // eslint-disable-line no-useless-escape
       statusSymbols[newStatus]
     );
     return lines.join("\n");
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getLayoutedElements(nodes: any[], edges: any[]) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -163,8 +166,11 @@ export async function removeSignFromTaskInFile(
   });
 }
 
+// TODO: Improve typing for app parameter
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAllDataviewTasks(app: any): Task[] {
-  let tasks: any[] = [];
+  // TODO: Tasks should use typing, either from dataview or the tasks plugin if available
+  let tasks: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   // plugins exists, just not on the Obsidian App API?:
   //     https://blacksmithgu.github.io/obsidian-dataview/api/intro/#plugin-access
@@ -178,7 +184,7 @@ export function getAllDataviewTasks(app: any): Task[] {
     }
   }
   const factory = new TaskFactory();
-  return tasks.map((rawTask: any) => factory.parse(rawTask));
+  return tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export function createNodesFromTasks(tasks: Task[]): TaskNode[] {

@@ -1,7 +1,11 @@
 import { Task, TaskStatus } from "src/types/task";
 
 export class TaskFactory {
-  public parse(rawTask: any): Task {
+  public parse(rawTask: {
+    status: string;
+    text: string;
+    link: { path: string };
+  }): Task {
     const status = rawTask.status;
     const text = rawTask.text;
 
@@ -12,7 +16,7 @@ export class TaskFactory {
       tags: this.parseTags(text),
       priority: this.parsePriority(text),
       status: this.parseStatus(status),
-      link: rawTask.link?.path,
+      link: rawTask.link.path,
       incomingLinks: this.parseIncomingLinks(text),
     };
   }

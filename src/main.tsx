@@ -23,7 +23,7 @@ export default class TasksMapPlugin extends Plugin {
   }
 
   private checkDataviewPlugin(): boolean {
-    const plugins = (this.app as any).plugins;
+    const plugins = (this.app as any).plugins; // eslint-disable-line @typescript-eslint/no-explicit-any
     const dataviewPlugin = plugins?.plugins?.["dataview"];
 
     if (!dataviewPlugin) {

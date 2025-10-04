@@ -3,7 +3,7 @@ import Select, { MultiValue } from "react-select";
 interface MultiSelectProps<T extends string> {
   options: T[];
   selected: T[];
-  setSelected: (selected: T[]) => void;
+  setSelected: (selected: T[]) => void; // eslint-disable-line no-unused-vars
   placeholder?: string;
 }
 

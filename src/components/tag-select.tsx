@@ -3,7 +3,7 @@ import Select, { MultiValue } from "react-select";
 interface TagSelectProps {
   allTags: string[];
   selectedTags: string[];
-  setSelectedTags: (tags: string[]) => void;
+  setSelectedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars
 }
 
 type TagOption = { value: string; label: string };

@@ -1,4 +1,4 @@
-import { Node, Edge, Position } from "reactflow";
+import { Node, Edge } from "reactflow";
 
 export type TaskStatus = "todo" | "in_progress" | "canceled" | "done";
 

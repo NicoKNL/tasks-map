@@ -2,7 +2,7 @@ import React from "react";
 
 interface ExpandButtonProps {
   expanded: boolean;
-  onClick: (e: React.MouseEvent) => void;
+  onClick: (e: React.MouseEvent) => void; // eslint-disable-line no-unused-vars
 }
 
 export function ExpandButton({ expanded, onClick }: ExpandButtonProps) {

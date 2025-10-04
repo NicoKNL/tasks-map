@@ -4,11 +4,11 @@ import { TaskStatus } from "src/types/task";
 interface GuiOverlayProps {
   allTags: string[];
   selectedTags: string[];
-  setSelectedTags: (tags: string[]) => void;
+  setSelectedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars
   reloadTasks: () => void;
   allStatuses: TaskStatus[];
   selectedStatuses: TaskStatus[];
-  setSelectedStatuses: (statuses: TaskStatus[]) => void;
+  setSelectedStatuses: (statuses: TaskStatus[]) => void; // eslint-disable-line no-unused-vars
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
