@@ -9,6 +9,7 @@ import { FlatCompat } from "@eslint/eslintrc";
 import globals from "globals";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsparser from "@typescript-eslint/parser";
+import prettierConfig from "eslint-config-prettier";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +49,7 @@ export default defineConfig([
             },
         },
         rules: {
+            ...prettierConfig.rules,
             "react/react-in-jsx-scope": "off",
             "react/jsx-uses-react": "error",
             "react/jsx-uses-vars": "error",

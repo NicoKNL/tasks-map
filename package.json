@@ -5,9 +5,11 @@
     "main": "main.js",
     "scripts": {
         "dev": "node esbuild.config.mjs",
-        "build": "npm run lint && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+        "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
         "lint": "eslint src --ext .ts,.tsx",
-        "lint:fix": "eslint src --ext .ts,.tsx --fix"
+        "lint:fix": "eslint src --ext .ts,.tsx --fix",
+        "format": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+        "format:fix": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
     },
     "keywords": [],
     "author": "",

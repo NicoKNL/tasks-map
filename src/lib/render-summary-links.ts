@@ -6,7 +6,11 @@ export function renderSummaryLinks(summary: string): string {
   const obsidianLink = /\[\[([^\]]+)\]\]/g;
 
   return summary
-    .replace(mdLink, (_match, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`)
+    .replace(
+      mdLink,
+      (_match, text, link) =>
+        `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`
+    )
     .replace(obsidianLink, (_match, file) => {
       return `${file}`;
     });
