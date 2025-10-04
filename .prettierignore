@@ -1,0 +1,17 @@
+# Build outputs
+main.js
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.d.ts
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

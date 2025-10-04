@@ -2,52 +2,52 @@ import MultiSelect from "./multi-select";
 import { TaskStatus } from "src/types/task";
 
 interface GuiOverlayProps {
-	allTags: string[];
-	selectedTags: string[];
-	setSelectedTags: (tags: string[]) => void;
-	reloadTasks: () => void;
-	allStatuses: TaskStatus[];
-	selectedStatuses: TaskStatus[];
-	setSelectedStatuses: (statuses: TaskStatus[]) => void;
+  allTags: string[];
+  selectedTags: string[];
+  setSelectedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars
+  reloadTasks: () => void;
+  allStatuses: TaskStatus[];
+  selectedStatuses: TaskStatus[];
+  setSelectedStatuses: (statuses: TaskStatus[]) => void; // eslint-disable-line no-unused-vars
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
-	const {
-		allTags,
-		selectedTags,
-		setSelectedTags,
-		reloadTasks,
-		allStatuses,
-		selectedStatuses,
-		setSelectedStatuses,
-	} = props;
+  const {
+    allTags,
+    selectedTags,
+    setSelectedTags,
+    reloadTasks,
+    allStatuses,
+    selectedStatuses,
+    setSelectedStatuses,
+  } = props;
 
-	return (
-		<>
-			<div className="tasks-map-gui-overlay-tag-select">
-				<MultiSelect
-					options={allTags}
-					selected={selectedTags}
-					setSelected={setSelectedTags}
-					placeholder="Filter by tags..."
-				/>
-			</div>
-			<div className="tasks-map-gui-overlay-status-select">
-				<MultiSelect
-					options={allStatuses}
-					selected={selectedStatuses}
-					setSelected={setSelectedStatuses}
-					placeholder="Filter by status..."
-				/>
-			</div>
-			<div className="tasks-map-gui-overlay-bottom">
-				<button
-					onClick={reloadTasks}
-					className="tasks-map-gui-overlay-reload-button"
-				>
-					Reload tasks
-				</button>
-			</div>
-		</>
-	);
+  return (
+    <>
+      <div className="tasks-map-gui-overlay-tag-select">
+        <MultiSelect
+          options={allTags}
+          selected={selectedTags}
+          setSelected={setSelectedTags}
+          placeholder="Filter by tags..."
+        />
+      </div>
+      <div className="tasks-map-gui-overlay-status-select">
+        <MultiSelect
+          options={allStatuses}
+          selected={selectedStatuses}
+          setSelected={setSelectedStatuses}
+          placeholder="Filter by status..."
+        />
+      </div>
+      <div className="tasks-map-gui-overlay-bottom">
+        <button
+          onClick={reloadTasks}
+          className="tasks-map-gui-overlay-reload-button"
+        >
+          Reload tasks
+        </button>
+      </div>
+    </>
+  );
 }
