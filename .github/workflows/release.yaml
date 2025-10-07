@@ -51,7 +51,7 @@ jobs:
               if: steps.check-labels.outputs.bump_type != 'noimpact'
               uses: actions/setup-python@v6
               with:
-                  python-version: "3.13"
+                  python-version: "3.14"
 
             - name: Dry run version bump
               if: steps.check-labels.outputs.bump_type != 'noimpact'
@@ -109,7 +109,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
-                  python-version: "3.13"
+                  python-version: "3.14"
 
             - name: Update version
               id: version
