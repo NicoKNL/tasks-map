@@ -214,3 +214,46 @@ export function createEdgesFromTasks(tasks: Task[]): TaskEdge[] {
   });
   return edges;
 }
+
+/**
+ * Check if the Dataview plugin is installed and enabled
+ * @param app Obsidian App instance
+ * @returns object with isInstalled, isEnabled, and getMessage() function
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkDataviewPlugin(app: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plugins = (app as any).plugins;
+
+  // Check if plugin is installed (available in plugins list)
+  const installedPlugins = plugins?.manifests || {};
+  const isInstalled = "dataview" in installedPlugins;
+
+  // Check if plugin is enabled (in enabledPlugins set)
+  const isEnabled = plugins?.enabledPlugins?.has("dataview") || false;
+
+  // Check if plugin is actually loaded (has API available)
+  const dataviewPlugin = plugins?.plugins?.["dataview"];
+  const isLoaded = !!dataviewPlugin;
+
+  const getMessage = () => {
+    if (!isInstalled) {
+      return "Dataview plugin is not installed. Please install the Dataview plugin from Community Plugins to use Tasks Map.";
+    }
+    if (!isEnabled) {
+      return "Dataview plugin is installed but not enabled. Please enable the Dataview plugin in Settings > Community Plugins to use Tasks Map.";
+    }
+    if (!isLoaded) {
+      return "Dataview plugin is enabled but not loaded properly. Please restart Obsidian or reload the Dataview plugin.";
+    }
+    return null;
+  };
+
+  return {
+    isInstalled,
+    isEnabled,
+    isLoaded,
+    isReady: isInstalled && isEnabled && isLoaded,
+    getMessage,
+  };
+}
