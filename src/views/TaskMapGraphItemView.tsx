@@ -37,22 +37,21 @@ export default class TaskMapGraphItemView extends ItemView {
       );
     } else {
       this.root.render(
-        <div
-          style={{
-            padding: "20px",
-            textAlign: "center",
-            color: "var(--text-muted)",
-            fontSize: "14px",
-          }}
-        >
-          <h3 style={{ color: "var(--text-normal)", marginBottom: "10px" }}>
-            Tasks Map requires the Dataview plugin to be installed and enabled.
-          </h3>
-          <p style={{ marginBottom: "15px" }}>{dataviewCheck.getMessage()}</p>
-          <p style={{ fontSize: "12px" }}>
-            Visit the Community Plugins section in Settings to install or enable
-            Dataview.
-          </p>
+        <div className="tasks-map-centered-message-container">
+          <div className="tasks-map-centered-message-content">
+            <div className="tasks-map-message-icon">⚠️</div>
+            <h3 className="tasks-map-message-title">
+              Tasks Map requires the Dataview plugin to be installed and
+              enabled.
+            </h3>
+            <p className="tasks-map-message-description">
+              {dataviewCheck.getMessage()}
+            </p>
+            <p className="tasks-map-message-description">
+              Visit the Community Plugins section in Settings to install or
+              enable Dataview.
+            </p>
+          </div>
         </div>
       );
     }
