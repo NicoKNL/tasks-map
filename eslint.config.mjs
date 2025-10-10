@@ -54,6 +54,14 @@ export default defineConfig([
             "react/jsx-uses-react": "error",
             "react/jsx-uses-vars": "error",
             "@typescript-eslint/no-explicit-any": "error",
+            "react/forbid-dom-props": ["error", {
+                "forbid": [
+                    {
+                        "propName": "style",
+                        "message": "Inline styles are not allowed. Use CSS classes in global.css instead."
+                    }
+                ]
+            }],
         },
     }
 ]);
