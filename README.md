@@ -1,8 +1,15 @@
-# Tasks Map – Obsidian Plugin
-
 <p align="center">
   <img src=".github/images/logo.png" alt="Tasks Map Logo" width="320" />
 </p>
+<p align="center">
+<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/NicoKNL/tasks-map/qualify.yaml?branch=main&label=%F0%9F%92%8E%20qualify">
+	<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/NicoKNL/tasks-map/release.yaml?event=pull_request_target&label=%F0%9F%93%A6%20release">
+	<img alt="GitHub Release" src="https://img.shields.io/github/v/release/NicoKNL/tasks-map">
+	<img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/NicoKNL/tasks-map/total">
+</p>
+
+---
+
 
 **Tasks Map** is a minimal Obsidian plugin that visualizes your `- [ ] tasks` as an interactive graph. Each task is represented as a node, with edges showing relationships based on special emoji/link syntax in your task text as implemented in the popular Tasks plugin.
 
@@ -25,11 +32,15 @@
 
 ### Examples
 
-![Tasks Map Example](.github/images/example.png)
-
 ![Tasks Map Example Tasks](.github/images/example-tasks.png)
 
+![Tasks Map Example](.github/images/example.png)
+
 ## Installation
+
+Install through the Obsidian plugin manager: https://obsidian.md/plugins?id=tasks-map
+
+### Local installation
 
 1. **Clone or Download:** Place the plugin folder in your vault's `.obsidian/plugins/tasks-map/` directory.
 2. **Install Dependencies:**
