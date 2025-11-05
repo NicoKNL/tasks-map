@@ -27,7 +27,7 @@ export default class TaskMapGraphItemView extends ItemView {
     const dataviewCheck = checkDataviewPlugin(this.app);
 
     // Get the plugin instance to access settings
-    const plugin = (this.app as any).plugins.plugins[
+    const plugin = (this.app as unknown as { plugins: { plugins: Record<string, TasksMapPlugin> } }).plugins.plugins[
       "tasks-map"
     ] as TasksMapPlugin;
     const settings = plugin?.settings;

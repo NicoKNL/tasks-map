@@ -1,6 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import TasksMapPlugin from "../main";
-import { TasksMapSettings } from "../types/settings";
 
 export class TasksMapSettingTab extends PluginSettingTab {
   plugin: TasksMapPlugin;

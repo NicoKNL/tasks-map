@@ -3,7 +3,7 @@ import { App, TFile, Vault } from "obsidian";
 import { Task, TaskStatus, TaskNode, TaskEdge } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
-import { Position } from "reactflow";
+import { Position, Node, Edge } from "reactflow";
 
 const statusSymbols = {
   todo: "[ ]",
@@ -43,10 +43,9 @@ export async function updateTaskStatusInVault(
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getLayoutedElements(
-  nodes: any[],
-  edges: any[],
+  nodes: Node[],
+  edges: Edge[],
   direction: "Horizontal" | "Vertical" = "Horizontal"
 ) {
   const dagreGraph = new dagre.graphlib.Graph();
