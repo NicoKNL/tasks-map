@@ -44,10 +44,15 @@ export async function updateTaskStatusInVault(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getLayoutedElements(nodes: any[], edges: any[]) {
+export function getLayoutedElements(
+  nodes: any[],
+  edges: any[],
+  direction: "Horizontal" | "Vertical" = "Horizontal"
+) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: "LR" }); // Left-to-Right
+  const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
+  dagreGraph.setGraph({ rankdir });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: NODEWIDTH, height: NODEHEIGHT });
