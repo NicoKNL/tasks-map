@@ -41,18 +41,6 @@ export class TasksMapSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
-      .setName("Show task statuses")
-      .setDesc("Display status indicators on task nodes")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showStatuses)
-          .onChange(async (value) => {
-            this.plugin.settings.showStatuses = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
     new Setting(containerEl).setHeading().setName("Layout");
 
     new Setting(containerEl)
@@ -67,20 +55,6 @@ export class TasksMapSettingTab extends PluginSettingTab {
             this.plugin.settings.layoutDirection = value as
               | "Horizontal"
               | "Vertical";
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Node spacing")
-      .setDesc("Distance between nodes in the layout")
-      .addSlider((slider) =>
-        slider
-          .setLimits(100, 300, 25)
-          .setValue(this.plugin.settings.nodeSpacing)
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            this.plugin.settings.nodeSpacing = value;
             await this.plugin.saveSettings();
           })
       );

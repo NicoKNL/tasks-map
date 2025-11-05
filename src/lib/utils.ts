@@ -194,7 +194,9 @@ export function getAllDataviewTasks(app: any): Task[] {
 
 export function createNodesFromTasks(
   tasks: Task[],
-  layoutDirection: "Horizontal" | "Vertical" = "Horizontal"
+  layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
+  showPriorities: boolean = true,
+  showTags: boolean = true
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -203,7 +205,12 @@ export function createNodesFromTasks(
   return tasks.map((task, idx) => ({
     id: task.id,
     position: { x: 0, y: idx * 80 },
-    data: { task, layoutDirection },
+    data: {
+      task,
+      layoutDirection,
+      showPriorities,
+      showTags,
+    },
     type: "task" as const,
     sourcePosition,
     targetPosition,

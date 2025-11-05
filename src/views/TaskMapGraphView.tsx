@@ -95,7 +95,12 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   };
 
   useEffect(() => {
-    let newNodes = createNodesFromTasks(tasks, settings.layoutDirection);
+    let newNodes = createNodesFromTasks(
+      tasks,
+      settings.layoutDirection,
+      settings.showPriorities,
+      settings.showTags
+    );
     let newEdges = createEdgesFromTasks(tasks, settings.layoutDirection);
 
     const filteredNodeIds = getFilteredNodeIds(

@@ -15,6 +15,9 @@ export interface Task {
 
 export interface TaskNodeData {
   task: Task;
+  layoutDirection?: "Horizontal" | "Vertical";
+  showPriorities?: boolean;
+  showTags?: boolean;
 }
 
 export interface TaskEdgeData {
