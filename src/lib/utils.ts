@@ -192,19 +192,29 @@ export function getAllDataviewTasks(app: any): Task[] {
   return tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export function createNodesFromTasks(tasks: Task[]): TaskNode[] {
+export function createNodesFromTasks(
+  tasks: Task[],
+  layoutDirection: "Horizontal" | "Vertical" = "Horizontal"
+): TaskNode[] {
+  const isVertical = layoutDirection === "Vertical";
+  const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+  const targetPosition = isVertical ? Position.Top : Position.Left;
+
   return tasks.map((task, idx) => ({
     id: task.id,
     position: { x: 0, y: idx * 80 },
-    data: { task },
+    data: { task, layoutDirection },
     type: "task" as const,
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
+    sourcePosition,
+    targetPosition,
     draggable: true,
   }));
 }
 
-export function createEdgesFromTasks(tasks: Task[]): TaskEdge[] {
+export function createEdgesFromTasks(
+  tasks: Task[],
+  layoutDirection: "Horizontal" | "Vertical" = "Horizontal"
+): TaskEdge[] {
   const edges: TaskEdge[] = [];
   tasks.forEach((task) => {
     task.incomingLinks.forEach((parentTaskId) => {
@@ -213,7 +223,10 @@ export function createEdgesFromTasks(tasks: Task[]): TaskEdge[] {
         source: parentTaskId,
         target: task.id,
         type: "hash" as const,
-        data: { hash: `${parentTaskId}-${task.id}` },
+        data: {
+          hash: `${parentTaskId}-${task.id}`,
+          layoutDirection,
+        },
       });
     });
   });

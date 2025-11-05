@@ -19,6 +19,7 @@ export interface TaskNodeData {
 
 export interface TaskEdgeData {
   hash: string;
+  layoutDirection?: "Horizontal" | "Vertical";
 }
 
 export type TaskNode = Node<TaskNodeData, "task">;

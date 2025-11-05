@@ -16,19 +16,25 @@ export const NODEHEIGHT = 120;
 
 interface TaskNodeData {
   task: Task;
+  layoutDirection?: "Horizontal" | "Vertical";
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
-  const { task } = data;
+  const { task, layoutDirection = "Horizontal" } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
+  // Set handle positions based on layout direction
+  const isVertical = layoutDirection === "Vertical";
+  const targetPosition = isVertical ? Position.Top : Position.Left;
+  const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+
   return (
     <TaskBackground status={status} expanded={expanded}>
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      <Handle type="target" position={targetPosition} />
+      <Handle type="source" position={sourcePosition} />
 
       <div className="tasks-map-task-node-header">
         <TaskStatusToggle

@@ -9,13 +9,19 @@ export default function HashEdge({
   targetY,
   markerEnd,
 }: EdgeProps) {
+  // Set positions based on layout direction
+  const layoutDirection = data?.layoutDirection || "Horizontal";
+  const isVertical = layoutDirection === "Vertical";
+  const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+  const targetPosition = isVertical ? Position.Top : Position.Left;
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     targetX,
     targetY,
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
+    sourcePosition,
+    targetPosition,
   });
 
   return (
