@@ -71,29 +71,32 @@ export class TaskFactory {
   }
 
   private parseIncomingLinks(text: string): string[] {
-    const allIds: string[] = [];
+    const csvIds = this.parseCsvStyleLinks(text);
+    const individualIds = this.parseIndividualStyleLinks(text);
 
-    // CSV style: ⛔ abc123,def456,ghi789
+    // Create set union to remove duplicates
+    const allIds = new Set([...csvIds, ...individualIds]);
+    return Array.from(allIds);
+  }
+
+  private parseCsvStyleLinks(text: string): string[] {
     const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/g;
     const csvMatches = Array.from(text.matchAll(csvRegex));
+    const ids: string[] = [];
 
     for (const match of csvMatches) {
-      const ids = match[1].split(",").map((id) => id.trim());
-      allIds.push(...ids);
+      const matchedIds = match[1].split(",").map((id) => id.trim());
+      ids.push(...matchedIds);
     }
 
-    // individual style: ⛔ abc123
+    return ids;
+  }
+
+  private parseIndividualStyleLinks(text: string): string[] {
     const individualRegex = /⛔\s*([a-zA-Z0-9]{6})(?![a-zA-Z0-9,])/g;
     const individualMatches = Array.from(text.matchAll(individualRegex));
 
-    for (const match of individualMatches) {
-      const id = match[1];
-      if (!allIds.includes(id)) {
-        allIds.push(id);
-      }
-    }
-
-    return allIds;
+    return individualMatches.map((match) => match[1]);
   }
 
   private makeSummary(text: string): string {
