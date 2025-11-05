@@ -71,11 +71,29 @@ export class TaskFactory {
   }
 
   private parseIncomingLinks(text: string): string[] {
-    const stopSignRegex = /⛔\s*([a-zA-Z0-9]{6})/g;
-    const incomingLinks = Array.from(text.matchAll(stopSignRegex)).map(
-      (m) => m[1]
-    );
-    return incomingLinks;
+    const allIds: string[] = [];
+
+    // CSV style: ⛔ abc123,def456,ghi789
+    const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/g;
+    const csvMatches = Array.from(text.matchAll(csvRegex));
+
+    for (const match of csvMatches) {
+      const ids = match[1].split(",").map((id) => id.trim());
+      allIds.push(...ids);
+    }
+
+    // individual style: ⛔ abc123
+    const individualRegex = /⛔\s*([a-zA-Z0-9]{6})(?![a-zA-Z0-9,])/g;
+    const individualMatches = Array.from(text.matchAll(individualRegex));
+
+    for (const match of individualMatches) {
+      const id = match[1];
+      if (!allIds.includes(id)) {
+        allIds.push(id);
+      }
+    }
+
+    return allIds;
   }
 
   private makeSummary(text: string): string {
