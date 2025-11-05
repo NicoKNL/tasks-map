@@ -77,28 +77,41 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     // Create preview container
     const previewContainer = containerEl.createDiv();
-    previewContainer.style.marginTop = "8px";
-    previewContainer.style.padding = "12px";
-    previewContainer.style.backgroundColor = "var(--background-secondary)";
-    previewContainer.style.borderRadius = "6px";
-    previewContainer.style.fontFamily = "var(--font-monospace)";
-    previewContainer.style.fontSize = "13px";
-    previewContainer.style.border =
-      "1px solid var(--background-modifier-border)";
+    previewContainer.addClass("tasks-map-preview-container");
 
     const updatePreview = (style: "individual" | "csv") => {
+      previewContainer.empty();
+
       if (style === "individual") {
-        previewContainer.innerHTML = `
-          <div style="margin-bottom: 6px; font-weight: 600; color: var(--text-normal);">Individual Style:</div>
-          <div style="color: var(--text-muted);">Each dependency with its own emoji identifier</div>
-          <div style="margin-top: 4px; color: var(--text-normal);">- [ ] My task 🆔 abc123 🆔 def456 🆔 ghi789</div>
-        `;
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "Individual Style:";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Each dependency with its own emoji identifier";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent = "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789";
       } else {
-        previewContainer.innerHTML = `
-          <div style="margin-bottom: 6px; font-weight: 600; color: var(--text-normal);">CSV Style (Tasks plugin default):</div>
-          <div style="color: var(--text-muted);">Multiple dependencies comma-separated</div>
-          <div style="margin-top: 4px; color: var(--text-normal);">- [ ] My task 🆔 abc123,def456,ghi789</div>
-        `;
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "CSV Style (Tasks plugin default):";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Multiple dependencies comma-separated";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent = "- [ ] My task ⛔ abc123,def456,ghi789";
       }
     };
 

@@ -49,6 +49,32 @@ If your plugin does not need CSS, delete this file.
   background: var(--background-modifier-hover-active);
 }
 
+/* Settings Preview Styles */
+.tasks-map-preview-container {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.tasks-map-preview-title {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.tasks-map-preview-desc {
+  color: var(--text-muted);
+}
+
+.tasks-map-preview-example {
+  margin-top: 4px;
+  color: var(--text-normal);
+}
+
 /* Delete Edge Button Styles */
 .tasks-map-delete-edge-button-container {
   position: fixed;
