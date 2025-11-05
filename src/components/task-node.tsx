@@ -16,19 +16,31 @@ export const NODEHEIGHT = 120;
 
 interface TaskNodeData {
   task: Task;
+  layoutDirection?: "Horizontal" | "Vertical";
+  showPriorities?: boolean;
+  showTags?: boolean;
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
-  const { task } = data;
+  const {
+    task,
+    layoutDirection = "Horizontal",
+    showPriorities = true,
+    showTags = true,
+  } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
+  const isVertical = layoutDirection === "Vertical";
+  const targetPosition = isVertical ? Position.Top : Position.Left;
+  const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+
   return (
     <TaskBackground status={status} expanded={expanded}>
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      <Handle type="target" position={targetPosition} />
+      <Handle type="source" position={sourcePosition} />
 
       <div className="tasks-map-task-node-header">
         <TaskStatusToggle
@@ -36,14 +48,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
           task={task}
           onStatusChange={setStatus}
         />
-        <TaskPriority priority={task.priority} />
+        {showPriorities && <TaskPriority priority={task.priority} />}
         <span ref={summaryRef} />
       </div>
 
       <div className="tasks-map-task-node-content">
-        {task.tags.map((tag) => (
-          <Tag key={tag} tag={tag} />
-        ))}
+        {showTags && task.tags.map((tag) => <Tag key={tag} tag={tag} />)}
         <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 

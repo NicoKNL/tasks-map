@@ -4,6 +4,7 @@ import { ReactFlowProvider } from "reactflow";
 import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
 import { checkDataviewPlugin } from "../lib/utils";
+import TasksMapPlugin from "../main";
 
 export const VIEW_TYPE = "tasks-map-graph-view";
 
@@ -25,13 +26,21 @@ export default class TaskMapGraphItemView extends ItemView {
   async onOpen() {
     const dataviewCheck = checkDataviewPlugin(this.app);
 
+    // Get the plugin instance to access settings
+    const plugin = (
+      this.app as unknown as {
+        plugins: { plugins: Record<string, TasksMapPlugin> };
+      }
+    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
+    const settings = plugin?.settings;
+
     this.root = createRoot(this.containerEl.children[1]);
 
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
           <ReactFlowProvider>
-            <TaskMapGraphView />
+            <TaskMapGraphView settings={settings} />
           </ReactFlowProvider>
         </AppContext.Provider>
       );

@@ -3,7 +3,7 @@ import { App, TFile, Vault } from "obsidian";
 import { Task, TaskStatus, TaskNode, TaskEdge } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
-import { Position } from "reactflow";
+import { Position, Node, Edge } from "reactflow";
 
 const statusSymbols = {
   todo: "[ ]",
@@ -43,11 +43,15 @@ export async function updateTaskStatusInVault(
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getLayoutedElements(nodes: any[], edges: any[]) {
+export function getLayoutedElements(
+  nodes: Node[],
+  edges: Edge[],
+  direction: "Horizontal" | "Vertical" = "Horizontal"
+) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: "LR" }); // Left-to-Right
+  const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
+  dagreGraph.setGraph({ rankdir });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: NODEWIDTH, height: NODEHEIGHT });
@@ -187,19 +191,36 @@ export function getAllDataviewTasks(app: any): Task[] {
   return tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export function createNodesFromTasks(tasks: Task[]): TaskNode[] {
+export function createNodesFromTasks(
+  tasks: Task[],
+  layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
+  showPriorities: boolean = true,
+  showTags: boolean = true
+): TaskNode[] {
+  const isVertical = layoutDirection === "Vertical";
+  const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+  const targetPosition = isVertical ? Position.Top : Position.Left;
+
   return tasks.map((task, idx) => ({
     id: task.id,
     position: { x: 0, y: idx * 80 },
-    data: { task },
+    data: {
+      task,
+      layoutDirection,
+      showPriorities,
+      showTags,
+    },
     type: "task" as const,
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
+    sourcePosition,
+    targetPosition,
     draggable: true,
   }));
 }
 
-export function createEdgesFromTasks(tasks: Task[]): TaskEdge[] {
+export function createEdgesFromTasks(
+  tasks: Task[],
+  layoutDirection: "Horizontal" | "Vertical" = "Horizontal"
+): TaskEdge[] {
   const edges: TaskEdge[] = [];
   tasks.forEach((task) => {
     task.incomingLinks.forEach((parentTaskId) => {
@@ -208,7 +229,10 @@ export function createEdgesFromTasks(tasks: Task[]): TaskEdge[] {
         source: parentTaskId,
         target: task.id,
         type: "hash" as const,
-        data: { hash: `${parentTaskId}-${task.id}` },
+        data: {
+          hash: `${parentTaskId}-${task.id}`,
+          layoutDirection,
+        },
       });
     });
   });

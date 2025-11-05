@@ -23,10 +23,15 @@ import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
 
 import { TaskStatus } from "src/types/task";
+import { TasksMapSettings } from "src/types/settings";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
-export default function TaskMapGraphView() {
+interface TaskMapGraphViewProps {
+  settings: TasksMapSettings;
+}
+
+export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   const app = useApp();
   const vault = app.vault;
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -90,8 +95,13 @@ export default function TaskMapGraphView() {
   };
 
   useEffect(() => {
-    let newNodes = createNodesFromTasks(tasks);
-    let newEdges = createEdgesFromTasks(tasks);
+    let newNodes = createNodesFromTasks(
+      tasks,
+      settings.layoutDirection,
+      settings.showPriorities,
+      settings.showTags
+    );
+    let newEdges = createEdgesFromTasks(tasks, settings.layoutDirection);
 
     const filteredNodeIds = getFilteredNodeIds(
       tasks,
@@ -104,7 +114,11 @@ export default function TaskMapGraphView() {
         filteredNodeIds.includes(e.source) && filteredNodeIds.includes(e.target)
     );
 
-    const layoutedNodes = getLayoutedElements(newNodes, newEdges);
+    const layoutedNodes = getLayoutedElements(
+      newNodes,
+      newEdges,
+      settings.layoutDirection
+    );
     setNodes(layoutedNodes);
     setEdges(newEdges);
 
