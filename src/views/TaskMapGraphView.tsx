@@ -18,6 +18,7 @@ import {
 import { Task } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
+import { NO_TAGS_VALUE } from "src/components/tag-select";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
@@ -77,9 +78,25 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   ) => {
     let filtered = tasks;
     if (selectedTags.length > 0) {
-      filtered = filtered.filter((task) =>
-        selectedTags.some((tag) => task.tags.includes(tag))
-      );
+      filtered = filtered.filter((task) => {
+        // Check if "No tags" is selected
+        const noTagsSelected = selectedTags.includes(NO_TAGS_VALUE);
+        // Check if regular tags are selected
+        const regularTagsSelected = selectedTags.filter(
+          (tag) => tag !== NO_TAGS_VALUE
+        );
+
+        // If "No tags" is selected and task has no tags
+        const matchesNoTags = noTagsSelected && task.tags.length === 0;
+
+        // If regular tags are selected and task has matching tags
+        const matchesRegularTags =
+          regularTagsSelected.length > 0 &&
+          regularTagsSelected.some((tag) => task.tags.includes(tag));
+
+        // Return true if either condition is met
+        return matchesNoTags || matchesRegularTags;
+      });
     }
     if (selectedStatuses.length > 0) {
       filtered = filtered.filter((task) =>
