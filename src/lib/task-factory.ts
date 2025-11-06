@@ -102,8 +102,11 @@ export class TaskFactory {
   private makeSummary(text: string): string {
     return text
       .replace(/(?:^|\s)#\S+/g, "")
-      .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "")
-      .replace(/([\p{Extended_Pictographic}]+)/gu, "")
+      .replace(/🆔\s*[a-zA-Z0-9]{6}/g, "") // Remove task IDs: 🆔 abc123
+      .replace(/⛔\s*[a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*/g, "") // Remove CSV links: ⛔ abc123,def456
+      .replace(/⛔\s*[a-zA-Z0-9]{6}/g, "") // Remove individual links: ⛔ abc123
+      .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "") // Remove other emojis
+      .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis
       .trim();
   }
 }
