@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import TasksMapPlugin from "../main";
+import { getTagColor } from "../lib/utils";
 
 export class TasksMapSettingTab extends PluginSettingTab {
   plugin: TasksMapPlugin;
@@ -7,6 +8,42 @@ export class TasksMapSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: TasksMapPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+  }
+
+  // Helper function to create tag preview pills
+  private createTagPreview(
+    container: HTMLElement,
+    tags: string[],
+    mode: "random" | "static",
+    seed = 42,
+    staticColor = "#3B82F6"
+  ): void {
+    container.empty();
+
+    const previewDiv = container.createDiv({
+      cls: "tag-preview-container",
+    });
+    previewDiv.style.display = "flex";
+    previewDiv.style.gap = "8px";
+    previewDiv.style.marginTop = "10px";
+    previewDiv.style.flexWrap = "wrap";
+
+    tags.forEach((tag) => {
+      const tagElement = previewDiv.createSpan({
+        cls: "tag-preview-pill",
+        text: tag,
+      });
+
+      const backgroundColor = getTagColor(tag, mode, seed, staticColor);
+      tagElement.style.backgroundColor = backgroundColor;
+      tagElement.style.color = "white";
+      tagElement.style.padding = "4px 8px";
+      tagElement.style.borderRadius = "12px";
+      tagElement.style.fontSize = "12px";
+      tagElement.style.fontWeight = "500";
+      tagElement.style.border = "none";
+      tagElement.style.display = "inline-block";
+    });
   }
 
   display(): void {
@@ -163,8 +200,32 @@ export class TasksMapSettingTab extends PluginSettingTab {
               const seedValue = parseInt(value) || 42;
               this.plugin.settings.tagColorSeed = seedValue;
               await this.plugin.saveSettings();
+              // Update preview when seed changes
+              const previewContainer = containerEl.querySelector(
+                ".tag-preview-container"
+              )?.parentElement;
+              if (previewContainer) {
+                this.createTagPreview(
+                  previewContainer,
+                  ["priority", "bug", "feature", "documentation"],
+                  "random",
+                  seedValue
+                );
+              }
             })
         );
+
+      // Add preview container for random mode
+      const previewSetting = new Setting(containerEl)
+        .setName("Preview")
+        .setDesc("Example tags with random colors");
+
+      this.createTagPreview(
+        previewSetting.settingEl,
+        ["priority", "bug", "feature", "documentation"],
+        "random",
+        this.plugin.settings.tagColorSeed
+      );
     }
 
     if (this.plugin.settings.tagColorMode === "static") {
@@ -177,8 +238,34 @@ export class TasksMapSettingTab extends PluginSettingTab {
             .onChange(async (value) => {
               this.plugin.settings.tagStaticColor = value;
               await this.plugin.saveSettings();
+              // Update preview when color changes
+              const previewContainer = containerEl.querySelector(
+                ".tag-preview-container"
+              )?.parentElement;
+              if (previewContainer) {
+                this.createTagPreview(
+                  previewContainer,
+                  ["priority", "bug", "feature", "documentation"],
+                  "static",
+                  42,
+                  value
+                );
+              }
             })
         );
+
+      // Add preview container for static mode
+      const previewSetting = new Setting(containerEl)
+        .setName("Preview")
+        .setDesc("Example tags with static color");
+
+      this.createTagPreview(
+        previewSetting.settingEl,
+        ["priority", "bug", "feature", "documentation"],
+        "static",
+        42,
+        this.plugin.settings.tagStaticColor
+      );
     }
   }
 }
