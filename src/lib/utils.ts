@@ -129,7 +129,7 @@ export async function addSignToTaskInFile(
 
     if (type === "id") {
       // If any 🆔 <6-hex> is already present, do not add another
-      const idPresent = /🆔\s*[a-fA-F0-9]{6}/.test(lines[taskLineIdx]);
+      const idPresent = /🆔\s*[a-zA-Z0-9]{6}/.test(lines[taskLineIdx]);
       if (idPresent) return fileContent;
 
       // Always add ID individually
@@ -170,7 +170,7 @@ export async function addSignToTaskInFile(
             // Remove all individual stop signs
             let updatedLine = lines[taskLineIdx];
             individualMatches.forEach((match) => {
-              updatedLine = updatedLine.replace(match[0], "");
+              updatedLine = updatedLine.replaceAll(match[0], "");
             });
 
             // Add single CSV-style stop sign

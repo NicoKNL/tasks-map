@@ -93,7 +93,7 @@ export class TaskFactory {
   }
 
   private parseIndividualStyleLinks(text: string): string[] {
-    const individualRegex = /⛔\s*([a-zA-Z0-9]{6})(?![a-zA-Z0-9,])/g;
+    const individualRegex = /⛔\s*([a-zA-Z0-9]{6})(?!,[a-zA-Z0-9]{6})/g;
     const individualMatches = Array.from(text.matchAll(individualRegex));
 
     return individualMatches.map((match) => match[1]);
