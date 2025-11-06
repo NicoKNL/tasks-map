@@ -81,6 +81,38 @@ export async function removeTagFromTaskInVault(
   });
 }
 
+export async function addTagToTaskInVault(
+  task: Task,
+  tagToAdd: string,
+  app: App
+): Promise<void> {
+  if (!task.link || !task.text) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    let taskLineIdx = lines.findIndex((line: string) =>
+      line.includes(`🆔 ${task.id}`)
+    );
+    if (taskLineIdx === -1) {
+      // Fallback: try to find by matching the task text (legacy format)
+      taskLineIdx = lines.findIndex((line: string) => line.includes(task.text));
+      if (taskLineIdx === -1) return fileContent;
+    }
+
+    // Add the tag to the end of the line
+    const currentLine = lines[taskLineIdx];
+    // Ensure the tag starts with # if it doesn't already
+    const formattedTag = tagToAdd.startsWith("#") ? tagToAdd : `#${tagToAdd}`;
+    lines[taskLineIdx] = currentLine.trim() + ` ${formattedTag}`;
+
+    return lines.join("\n");
+  });
+}
+
 export function getLayoutedElements(
   nodes: Node[],
   edges: Edge[],

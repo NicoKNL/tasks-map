@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
+import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
 import { Task } from "src/types/task";
 import { TaskDetails } from "./task-details";
@@ -10,7 +11,7 @@ import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
 import { useSummaryRenderer } from "../hooks/use-summary-renderer";
-import { removeTagFromTaskInVault } from "../lib/utils";
+import { removeTagFromTaskInVault, addTagToTaskInVault } from "../lib/utils";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -40,6 +41,8 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
   const [tags, setTags] = useState(task.tags || []);
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [newTagInput, setNewTagInput] = useState("");
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
@@ -49,10 +52,35 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
   const handleTagRemove = async (tagToRemove: string) => {
     // Immediately update the visual state
-    setTags(prevTags => prevTags.filter(tag => tag !== tagToRemove));
-    
+    setTags((prevTags) => prevTags.filter((tag) => tag !== tagToRemove));
+
     // Update the file in the background
     await removeTagFromTaskInVault(task, tagToRemove, app);
+  };
+
+  const handleAddTag = async () => {
+    if (newTagInput.trim()) {
+      const cleanTag = newTagInput.trim().replace(/^#+/, ""); // Remove any leading #
+
+      // Immediately update the visual state
+      setTags((prevTags) => [...prevTags, cleanTag]);
+
+      // Update the file in the background
+      await addTagToTaskInVault(task, cleanTag, app);
+
+      // Reset input state
+      setNewTagInput("");
+      setIsAddingTag(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAddTag();
+    } else if (e.key === "Escape") {
+      setNewTagInput("");
+      setIsAddingTag(false);
+    }
   };
 
   return (
@@ -75,8 +103,19 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
       </div>
 
       <div className="tasks-map-task-node-content">
-        {showTags && tags && tags.length > 0 && (
-          <div className="task-tags">
+        {showTags && (
+          <div
+            className="task-tags-container"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              minHeight: "24px",
+            }}
+            onMouseEnter={() => {
+              /* will be handled by CSS hover */
+            }}
+          >
             {tags.map((tag) => (
               <Tag
                 key={tag}
@@ -87,6 +126,49 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
                 onRemove={handleTagRemove}
               />
             ))}
+
+            {/* Add tag button/input */}
+            {isAddingTag ? (
+              <input
+                type="text"
+                value={newTagInput}
+                onChange={(e) => setNewTagInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                onBlur={handleAddTag}
+                placeholder="Enter tag name"
+                autoFocus
+                style={{
+                  backgroundColor: "var(--background-primary)",
+                  border: "1px solid var(--background-modifier-border)",
+                  borderRadius: "12px",
+                  padding: "4px 8px",
+                  fontSize: "12px",
+                  outline: "none",
+                  minWidth: "80px",
+                }}
+              />
+            ) : (
+              <span
+                className="add-tag-button"
+                onClick={() => setIsAddingTag(true)}
+                style={{
+                  backgroundColor: "rgba(0, 0, 0, 0.2)",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "2px",
+                  opacity: 0,
+                  transition: "opacity 0.2s ease",
+                }}
+              >
+                <Plus size={12} />
+                Add tag
+              </span>
+            )}
           </div>
         )}
         <LinkButton link={task.link} app={app} taskStatus={status} />

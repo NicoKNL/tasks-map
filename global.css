@@ -351,3 +351,17 @@ If your plugin does not need CSS, delete this file.
 .tasks-map-message-link:hover {
   text-decoration: underline;
 }
+
+/* Add Tag Button Hover Styles */
+.task-tags-container:hover .add-tag-button {
+  opacity: 1 !important;
+}
+
+.add-tag-button {
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.add-tag-button:hover {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  color: white !important;
+}
