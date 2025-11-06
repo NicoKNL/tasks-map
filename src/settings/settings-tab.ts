@@ -117,5 +117,19 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     // Initialize preview
     updatePreview(this.plugin.settings.linkingStyle);
+
+    new Setting(containerEl).setHeading().setName("Advanced Options");
+
+    new Setting(containerEl)
+      .setName("Debug visualization")
+      .setDesc("Show additional debug information in the graph view")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.debugVisualization)
+          .onChange(async (value) => {
+            this.plugin.settings.debugVisualization = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }

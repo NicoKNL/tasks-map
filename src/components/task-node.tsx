@@ -19,6 +19,7 @@ interface TaskNodeData {
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTags?: boolean;
+  debugVisualization?: boolean;
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
@@ -27,6 +28,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     layoutDirection = "Horizontal",
     showPriorities = true,
     showTags = true,
+    debugVisualization = false,
   } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
@@ -38,7 +40,11 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
 
   return (
-    <TaskBackground status={status} expanded={expanded}>
+    <TaskBackground
+      status={status}
+      expanded={expanded}
+      debugVisualization={debugVisualization}
+    >
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
 
@@ -57,15 +63,19 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
         <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 
-      <ExpandButton
-        expanded={expanded}
-        onClick={(e) => {
-          e.stopPropagation();
-          setExpanded((v) => !v);
-        }}
-      />
+      {debugVisualization && (
+        <ExpandButton
+          expanded={expanded}
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+        />
+      )}
 
-      {expanded && <TaskDetails task={task} status={status} />}
+      {debugVisualization && expanded && (
+        <TaskDetails task={task} status={status} />
+      )}
     </TaskBackground>
   );
 }

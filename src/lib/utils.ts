@@ -288,7 +288,8 @@ export function createNodesFromTasks(
   tasks: Task[],
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
   showPriorities: boolean = true,
-  showTags: boolean = true
+  showTags: boolean = true,
+  debugVisualization: boolean = false
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -302,6 +303,7 @@ export function createNodesFromTasks(
       layoutDirection,
       showPriorities,
       showTags,
+      debugVisualization,
     },
     type: "task" as const,
     sourcePosition,

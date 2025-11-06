@@ -4,6 +4,8 @@ export interface TasksMapSettings {
 
   layoutDirection: "Horizontal" | "Vertical";
   linkingStyle: "individual" | "csv";
+
+  debugVisualization: boolean;
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -12,4 +14,6 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
 
   layoutDirection: "Horizontal",
   linkingStyle: "csv",
+
+  debugVisualization: false,
 };

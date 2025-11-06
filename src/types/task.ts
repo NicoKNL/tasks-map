@@ -18,6 +18,7 @@ export interface TaskNodeData {
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTags?: boolean;
+  debugVisualization?: boolean;
 }
 
 export interface TaskEdgeData {

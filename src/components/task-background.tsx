@@ -4,12 +4,14 @@ import { TaskStatus } from "src/types/task";
 interface TaskBackgroundProps {
   status: TaskStatus;
   expanded?: boolean;
+  debugVisualization?: boolean;
   children: React.ReactNode;
 }
 
 export function TaskBackground({
   status,
   expanded,
+  debugVisualization,
   children,
 }: TaskBackgroundProps) {
   const getStatusClass = () => {
@@ -25,9 +27,14 @@ export function TaskBackground({
     }
   };
 
-  const className = `tasks-map-task-background ${getStatusClass()}${
-    expanded ? " tasks-map-task-background--expanded" : ""
-  }`;
+  const className = [
+    "tasks-map-task-background",
+    getStatusClass(),
+    expanded && "tasks-map-task-background--expanded",
+    debugVisualization && "tasks-map-task-background--debug",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return <div className={className}>{children}</div>;
 }
