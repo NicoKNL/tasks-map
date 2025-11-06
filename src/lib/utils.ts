@@ -314,7 +314,8 @@ export function createNodesFromTasks(
 
 export function createEdgesFromTasks(
   tasks: Task[],
-  layoutDirection: "Horizontal" | "Vertical" = "Horizontal"
+  layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
+  debugVisualization: boolean = false
 ): TaskEdge[] {
   const edges: TaskEdge[] = [];
   tasks.forEach((task) => {
@@ -327,6 +328,7 @@ export function createEdgesFromTasks(
         data: {
           hash: `${parentTaskId}-${task.id}`,
           layoutDirection,
+          debugVisualization,
         },
       });
     });
