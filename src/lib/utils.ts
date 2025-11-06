@@ -90,14 +90,15 @@ export function getLayoutedElements(
 export async function addLinkSignsBetweenTasks(
   vault: Vault,
   fromTask: Task,
-  toTask: Task
+  toTask: Task,
+  linkingStyle: "individual" | "csv" = "individual"
 ): Promise<string | undefined> {
   if (!fromTask.link || !toTask.link) return undefined;
 
   const id = fromTask.id;
 
-  await addSignToTaskInFile(vault, fromTask, "id", id);
-  await addSignToTaskInFile(vault, toTask, "stop", id);
+  await addSignToTaskInFile(vault, fromTask, "id", id, linkingStyle);
+  await addSignToTaskInFile(vault, toTask, "stop", id, linkingStyle);
 
   return id + "-" + toTask.id;
 }
@@ -114,7 +115,8 @@ export async function addSignToTaskInFile(
   vault: Vault,
   task: Task,
   type: "stop" | "id",
-  hash: string
+  hash: string,
+  linkingStyle: "individual" | "csv" = "individual"
 ): Promise<void> {
   if (!task.link || !task.text) return;
   const file = vault.getAbstractFileByPath(task.link);
@@ -124,14 +126,68 @@ export async function addSignToTaskInFile(
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
     if (taskLineIdx === -1) return fileContent;
-    const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
+
     if (type === "id") {
       // If any 🆔 <6-hex> is already present, do not add another
       const idPresent = /🆔\s*[a-fA-F0-9]{6}/.test(lines[taskLineIdx]);
       if (idPresent) return fileContent;
+
+      // Always add ID individually
+      const sign = `🆔 ${hash}`;
+      if (lines[taskLineIdx].includes(sign)) return fileContent;
+      lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+    } else if (type === "stop") {
+      // Handle stop signs based on linking style
+      if (linkingStyle === "csv") {
+        // Check if there's already a CSV-style stop sign
+        const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/;
+        const csvMatch = lines[taskLineIdx].match(csvRegex);
+
+        if (csvMatch) {
+          // Append to existing CSV list if hash not already present
+          const existingIds = csvMatch[1].split(",").map((id) => id.trim());
+          if (!existingIds.includes(hash)) {
+            const newCsvList = [...existingIds, hash].join(",");
+            lines[taskLineIdx] = lines[taskLineIdx].replace(
+              csvRegex,
+              `⛔ ${newCsvList}`
+            );
+          }
+        } else {
+          // Check for individual style stop signs and convert to CSV
+          const individualRegex = /⛔\s*([a-zA-Z0-9]{6})/g;
+          const individualMatches = Array.from(
+            lines[taskLineIdx].matchAll(individualRegex)
+          );
+
+          if (individualMatches.length > 0) {
+            // Convert existing individual signs to CSV format
+            const existingIds = individualMatches.map((match) => match[1]);
+            if (!existingIds.includes(hash)) {
+              existingIds.push(hash);
+            }
+
+            // Remove all individual stop signs
+            let updatedLine = lines[taskLineIdx];
+            individualMatches.forEach((match) => {
+              updatedLine = updatedLine.replace(match[0], "");
+            });
+
+            // Add single CSV-style stop sign
+            updatedLine = updatedLine.trim() + ` ⛔ ${existingIds.join(",")}`;
+            lines[taskLineIdx] = updatedLine;
+          } else {
+            // No existing stop signs, add new CSV-style (single item)
+            lines[taskLineIdx] = lines[taskLineIdx] + ` ⛔ ${hash}`;
+          }
+        }
+      } else {
+        // Individual style - add individual stop sign
+        const sign = `⛔ ${hash}`;
+        if (lines[taskLineIdx].includes(sign)) return fileContent;
+        lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      }
     }
-    if (lines[taskLineIdx].includes(sign)) return fileContent;
-    lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
 
     return lines.join("\n");
   });
@@ -161,11 +217,48 @@ export async function removeSignFromTaskInFile(
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
     if (taskLineIdx === -1) return fileContent;
-    const sign = type === "stop" ? `⛔ ${hash}` : `🆔 ${hash}`;
-    if (!lines[taskLineIdx].includes(sign)) return fileContent;
-    lines[taskLineIdx] = lines[taskLineIdx]
-      .replace(sign, "")
-      .replace(/\s+$/, "");
+
+    if (type === "id") {
+      // Remove ID sign (always individual)
+      const sign = `🆔 ${hash}`;
+      if (!lines[taskLineIdx].includes(sign)) return fileContent;
+      lines[taskLineIdx] = lines[taskLineIdx]
+        .replace(sign, "")
+        .replace(/\s+$/, "");
+    } else if (type === "stop") {
+      // Handle stop sign removal for both formats
+      // First try CSV format
+      const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/;
+      const csvMatch = lines[taskLineIdx].match(csvRegex);
+
+      if (csvMatch) {
+        const existingIds = csvMatch[1].split(",").map((id) => id.trim());
+        const filteredIds = existingIds.filter((id) => id !== hash);
+
+        if (filteredIds.length === 0) {
+          // Remove entire CSV block if no IDs left
+          lines[taskLineIdx] = lines[taskLineIdx]
+            .replace(csvMatch[0], "")
+            .replace(/\s+$/, "");
+        } else if (filteredIds.length !== existingIds.length) {
+          // Update CSV with remaining IDs
+          const newCsvList = filteredIds.join(",");
+          lines[taskLineIdx] = lines[taskLineIdx].replace(
+            csvRegex,
+            `⛔ ${newCsvList}`
+          );
+        }
+      } else {
+        // Try individual format
+        const sign = `⛔ ${hash}`;
+        if (lines[taskLineIdx].includes(sign)) {
+          lines[taskLineIdx] = lines[taskLineIdx]
+            .replace(sign, "")
+            .replace(/\s+$/, "");
+        }
+      }
+    }
+
     return lines.join("\n");
   });
 }

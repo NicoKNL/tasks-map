@@ -60,7 +60,7 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setHeading().setName("Simple Task Relations");
 
-    const linkingSetting = new Setting(containerEl)
+    new Setting(containerEl)
       .setName("Linking style")
       .setDesc("How task dependencies are specified in simple tasks")
       .addDropdown((dropdown) =>

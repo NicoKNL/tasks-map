@@ -175,7 +175,8 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       const hash = await addLinkSignsBetweenTasks(
         vault,
         sourceTask,
-        targetTask
+        targetTask,
+        settings.linkingStyle
       );
       if (hash) {
         setEdges((eds) =>
