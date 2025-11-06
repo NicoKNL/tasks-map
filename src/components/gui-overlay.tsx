@@ -1,4 +1,5 @@
 import MultiSelect from "./multi-select";
+import TagSelect from "./tag-select";
 import { TaskStatus } from "src/types/task";
 
 interface GuiOverlayProps {
@@ -25,11 +26,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   return (
     <>
       <div className="tasks-map-gui-overlay-tag-select">
-        <MultiSelect
-          options={allTags}
-          selected={selectedTags}
-          setSelected={setSelectedTags}
-          placeholder="Filter by tags..."
+        <TagSelect
+          allTags={allTags}
+          selectedTags={selectedTags}
+          setSelectedTags={setSelectedTags}
         />
       </div>
       <div className="tasks-map-gui-overlay-status-select">

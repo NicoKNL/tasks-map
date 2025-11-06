@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
+import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
 import { Task } from "src/types/task";
 import { TaskDetails } from "./task-details";
@@ -10,6 +11,7 @@ import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
 import { useSummaryRenderer } from "../hooks/use-summary-renderer";
+import { removeTagFromTaskInVault, addTagToTaskInVault } from "../lib/utils";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -20,6 +22,9 @@ interface TaskNodeData {
   showPriorities?: boolean;
   showTags?: boolean;
   debugVisualization?: boolean;
+  tagColorMode?: "random" | "static";
+  tagColorSeed?: number;
+  tagStaticColor?: string;
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
@@ -29,15 +34,62 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     showPriorities = true,
     showTags = true,
     debugVisualization = false,
+    tagColorMode = "random",
+    tagColorSeed = 42,
+    tagStaticColor = "#3b82f6",
   } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
+  const [tags, setTags] = useState(task.tags || []);
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [newTagInput, setNewTagInput] = useState("");
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+
+  const handleTagRemove = async (tagToRemove: string) => {
+    // Immediately update the visual state
+    setTags((prevTags) => prevTags.filter((tag) => tag !== tagToRemove));
+
+    try {
+      await removeTagFromTaskInVault(task, tagToRemove, app);
+    } catch {
+      // Revert the visual change if the vault operation failed
+      setTags((prevTags) => [...prevTags, tagToRemove]);
+    }
+  };
+
+  const handleAddTag = async () => {
+    if (newTagInput.trim()) {
+      const cleanTag = newTagInput.trim().replace(/^#+/, ""); // Remove any leading #
+
+      // Immediately update the visual state
+      setTags((prevTags) => [...prevTags, cleanTag]);
+
+      try {
+        await addTagToTaskInVault(task, cleanTag, app);
+      } catch {
+        // Revert the visual change if the vault operation failed
+        setTags((prevTags) => prevTags.filter((tag) => tag !== cleanTag));
+      }
+
+      // Reset input state
+      setNewTagInput("");
+      setIsAddingTag(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAddTag();
+    } else if (e.key === "Escape") {
+      setNewTagInput("");
+      setIsAddingTag(false);
+    }
+  };
 
   return (
     <TaskBackground
@@ -55,12 +107,47 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
           onStatusChange={setStatus}
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
-        <span ref={summaryRef} />
+        <span ref={summaryRef} className="tasks-map-task-node-summary" />
+        <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 
       <div className="tasks-map-task-node-content">
-        {showTags && task.tags.map((tag) => <Tag key={tag} tag={tag} />)}
-        <LinkButton link={task.link} app={app} taskStatus={status} />
+        {showTags && (
+          <div className="task-tags-container">
+            {tags.map((tag) => (
+              <Tag
+                key={tag}
+                tag={tag}
+                tagColorMode={tagColorMode}
+                tagColorSeed={tagColorSeed}
+                tagStaticColor={tagStaticColor}
+                onRemove={handleTagRemove}
+              />
+            ))}
+
+            {/* Add tag button/input */}
+            {isAddingTag ? (
+              <input
+                type="text"
+                value={newTagInput}
+                onChange={(e) => setNewTagInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                onBlur={handleAddTag}
+                placeholder="Enter tag name"
+                autoFocus
+                className="tasks-map-tag-input"
+              />
+            ) : (
+              <span
+                className="tasks-map-add-tag-button"
+                onClick={() => setIsAddingTag(true)}
+              >
+                <Plus size={10} />
+                Add tag
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {debugVisualization && (

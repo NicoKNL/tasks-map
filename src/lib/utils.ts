@@ -43,6 +43,116 @@ export async function updateTaskStatusInVault(
   });
 }
 
+export async function removeTagFromTaskInVault(
+  task: Task,
+  tagToRemove: string,
+  app: App
+): Promise<void> {
+  if (!task.link || !task.text) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+
+    let taskLineIdx = lines.findIndex((line: string) =>
+      line.includes(`🆔 ${task.id}`)
+    );
+
+    if (taskLineIdx === -1) {
+      // Fallback: try to find by matching core task text (without tags/IDs)
+      const coreTaskText = task.text
+        .replace(/🆔\s+\S+/g, "") // Remove ID
+        .replace(/#\S+/g, "") // Remove tags
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+      taskLineIdx = lines.findIndex((line: string) => {
+        const coreLineText = line
+          .replace(/🆔\s+\S+/g, "")
+          .replace(/#\S+/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        return (
+          coreLineText.includes(coreTaskText) ||
+          coreTaskText.includes(coreLineText)
+        );
+      });
+
+      if (taskLineIdx === -1) return fileContent;
+    }
+
+    // Remove the tag from the line
+    const currentLine = lines[taskLineIdx];
+
+    // Match tags in format #tag or #tag/subtag, with optional leading/trailing whitespace
+    const tagPattern = new RegExp(
+      `\\s*#${tagToRemove.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/\\S*)?(?=\\s|$)`,
+      "g"
+    );
+
+    const newLine = currentLine
+      .replace(tagPattern, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    lines[taskLineIdx] = newLine;
+
+    return lines.join("\n");
+  });
+}
+
+export async function addTagToTaskInVault(
+  task: Task,
+  tagToAdd: string,
+  app: App
+): Promise<void> {
+  if (!task.link || !task.text) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    let taskLineIdx = lines.findIndex((line: string) =>
+      line.includes(`🆔 ${task.id}`)
+    );
+    if (taskLineIdx === -1) {
+      // Fallback: try to find by matching core task text (without tags/IDs)
+      const coreTaskText = task.text
+        .replace(/🆔\s+\S+/g, "") // Remove ID
+        .replace(/#\S+/g, "") // Remove tags
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+      taskLineIdx = lines.findIndex((line: string) => {
+        const coreLineText = line
+          .replace(/🆔\s+\S+/g, "")
+          .replace(/#\S+/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        return (
+          coreLineText.includes(coreTaskText) ||
+          coreTaskText.includes(coreLineText)
+        );
+      });
+
+      if (taskLineIdx === -1) return fileContent;
+    }
+
+    // Add the tag to the end of the line
+    const currentLine = lines[taskLineIdx];
+    // Ensure the tag starts with # if it doesn't already
+    const formattedTag = tagToAdd.startsWith("#") ? tagToAdd : `#${tagToAdd}`;
+    lines[taskLineIdx] = currentLine.trim() + ` ${formattedTag}`;
+
+    return lines.join("\n");
+  });
+}
+
 export function getLayoutedElements(
   nodes: Node[],
   edges: Edge[],
@@ -289,7 +399,10 @@ export function createNodesFromTasks(
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
   showPriorities: boolean = true,
   showTags: boolean = true,
-  debugVisualization: boolean = false
+  debugVisualization: boolean = false,
+  tagColorMode: "random" | "static" = "random",
+  tagColorSeed: number = 42,
+  tagStaticColor: string = "#3b82f6"
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -304,6 +417,9 @@ export function createNodesFromTasks(
       showPriorities,
       showTags,
       debugVisualization,
+      tagColorMode,
+      tagColorSeed,
+      tagStaticColor,
     },
     type: "task" as const,
     sourcePosition,
@@ -377,4 +493,31 @@ export function checkDataviewPlugin(app: any) {
     isReady: isInstalled && isEnabled && isLoaded,
     getMessage,
   };
+}
+
+/**
+ * Generate tag colors based on mode (random or static)
+ */
+export function getTagColor(
+  tag: string,
+  mode: "random" | "static" = "random",
+  seed = 42,
+  staticColor = "#3B82F6"
+): string {
+  if (mode === "static") {
+    return staticColor;
+  }
+
+  // Use seed for consistent random colors
+  let hash = seed;
+  for (let i = 0; i < tag.length; i++) {
+    hash = (hash * 31 + tag.charCodeAt(i)) % 2147483647;
+  }
+
+  // Convert hash to HSL color with good contrast
+  const hue = hash % 360;
+  const saturation = 65; // Good saturation for readability
+  const lightness = 45; // Dark enough for white text
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }

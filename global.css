@@ -105,15 +105,13 @@ If your plugin does not need CSS, delete this file.
   align-items: center;
   justify-content: center;
   padding: 4px;
-  position: absolute;
-  top: 8px;
-  right: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
   width: 28px;
   height: 28px;
-  z-index: 4;
+  align-self: flex-start;
+  margin-left: auto;
 }
 
 .tasks-map-link-button--success {
@@ -157,12 +155,68 @@ If your plugin does not need CSS, delete this file.
 
 /* Tag Styles */
 .tasks-map-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 4px;
+  margin-bottom: 2px;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: none;
+  white-space: nowrap;
+  background-color: #3b82f6; /* fallback color */
+}
+
+.tasks-map-tag.removable {
+  cursor: pointer;
+}
+
+.tasks-map-tag-remove-icon {
+  color: white;
+}
+
+.tasks-map-tag-input {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  padding: 4px 8px;
   font-size: 12px;
-  margin-right: 6px;
-  color: var(--text-muted);
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
+  outline: none;
+  min-width: 80px;
+}
+
+.tasks-map-add-tag-button {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-tags-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.task-tags-container:hover .tasks-map-add-tag-button {
+  opacity: 1;
+}
+
+.tasks-map-task-node-summary {
+  flex: 1;
 }
 
 /* GUI Overlay Styles */
@@ -257,14 +311,14 @@ If your plugin does not need CSS, delete this file.
   padding: 12px;
   width: 250px;
   min-height: 120px;
-  max-height: 120px;
+  max-height: fit-content;
   box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black-rgb),0.07);
   font-weight: 500;
   display: flex;
   flex-direction: column;
   gap: 4px;
   position: relative;
-  transition: max-height 0.2s, min-height 0.2s, width 0.2s;
+  transition: width 0.2s;
 }
 
 .tasks-map-task-background--expanded {
@@ -346,4 +400,18 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-message-link:hover {
   text-decoration: underline;
+}
+
+/* Add Tag Button Hover Styles */
+.task-tags-container:hover .tasks-map-add-tag-button {
+  opacity: 1 !important;
+}
+
+.tasks-map-add-tag-button {
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.tasks-map-add-tag-button:hover {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  color: white !important;
 }

@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import TasksMapPlugin from "../main";
+import { getTagColor } from "../lib/utils";
 
 export class TasksMapSettingTab extends PluginSettingTab {
   plugin: TasksMapPlugin;
@@ -7,6 +8,41 @@ export class TasksMapSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: TasksMapPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+  }
+
+  private createTagPreview(
+    container: HTMLElement,
+    tags: string[],
+    mode: "random" | "static",
+    seed = 42,
+    staticColor = "#3B82F6"
+  ): void {
+    container.empty();
+
+    const previewDiv = container.createDiv({
+      cls: "tag-preview-container",
+    });
+    previewDiv.style.display = "flex";
+    previewDiv.style.gap = "8px";
+    previewDiv.style.marginTop = "10px";
+    previewDiv.style.flexWrap = "wrap";
+
+    tags.forEach((tag) => {
+      const tagElement = previewDiv.createSpan({
+        cls: "tag-preview-pill",
+        text: tag,
+      });
+
+      const backgroundColor = getTagColor(tag, mode, seed, staticColor);
+      tagElement.style.backgroundColor = backgroundColor;
+      tagElement.style.color = "white";
+      tagElement.style.padding = "4px 8px";
+      tagElement.style.borderRadius = "12px";
+      tagElement.style.fontSize = "12px";
+      tagElement.style.fontWeight = "500";
+      tagElement.style.border = "none";
+      tagElement.style.display = "inline-block";
+    });
   }
 
   display(): void {
@@ -57,6 +93,105 @@ export class TasksMapSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl).setHeading().setName("Tag Appearance");
+
+    new Setting(containerEl)
+      .setName("Tag color mode")
+      .setDesc("Choose how tag colors are generated")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("random", "Random colors (seeded)")
+          .addOption("static", "Static color for all tags")
+          .setValue(this.plugin.settings.tagColorMode)
+          .onChange(async (value) => {
+            this.plugin.settings.tagColorMode = value as "random" | "static";
+            await this.plugin.saveSettings();
+            this.display(); // Refresh to show/hide conditional settings
+          })
+      );
+
+    if (this.plugin.settings.tagColorMode === "random") {
+      new Setting(containerEl)
+        .setName("Color seed")
+        .setDesc(
+          "Seed value for random color generation (same seed = same colors)"
+        )
+        .addText((text) =>
+          text
+            .setPlaceholder("42")
+            .setValue(this.plugin.settings.tagColorSeed.toString())
+            .onChange(async (value) => {
+              const seedValue = parseInt(value) || 42;
+              this.plugin.settings.tagColorSeed = seedValue;
+              await this.plugin.saveSettings();
+              // Update preview when seed changes
+              const previewContainer = containerEl.querySelector(
+                ".tag-preview-container"
+              )?.parentElement;
+              if (previewContainer) {
+                this.createTagPreview(
+                  previewContainer,
+                  ["priority", "bug", "feature", "documentation"],
+                  "random",
+                  seedValue
+                );
+              }
+            })
+        );
+
+      // Add preview container for random mode
+      const previewSetting = new Setting(containerEl)
+        .setName("Preview")
+        .setDesc("Example tags with random colors");
+
+      this.createTagPreview(
+        previewSetting.settingEl,
+        ["priority", "bug", "feature", "documentation"],
+        "random",
+        this.plugin.settings.tagColorSeed
+      );
+    }
+
+    if (this.plugin.settings.tagColorMode === "static") {
+      new Setting(containerEl)
+        .setName("Static tag color")
+        .setDesc("Color to use for all tags")
+        .addColorPicker((colorPicker) =>
+          colorPicker
+            .setValue(this.plugin.settings.tagStaticColor)
+            .onChange(async (value) => {
+              this.plugin.settings.tagStaticColor = value;
+              await this.plugin.saveSettings();
+              // Update preview when color changes
+              const previewContainer = containerEl.querySelector(
+                ".tag-preview-container"
+              )?.parentElement;
+              if (previewContainer) {
+                this.createTagPreview(
+                  previewContainer,
+                  ["priority", "bug", "feature", "documentation"],
+                  "static",
+                  42,
+                  value
+                );
+              }
+            })
+        );
+
+      // Add preview container for static mode
+      const previewSetting = new Setting(containerEl)
+        .setName("Preview")
+        .setDesc("Example tags with static color");
+
+      this.createTagPreview(
+        previewSetting.settingEl,
+        ["priority", "bug", "feature", "documentation"],
+        "static",
+        42,
+        this.plugin.settings.tagStaticColor
+      );
+    }
 
     new Setting(containerEl).setHeading().setName("Simple Task Relations");
 
