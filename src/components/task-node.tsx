@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
@@ -56,7 +56,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
     try {
       await removeTagFromTaskInVault(task, tagToRemove, app);
-    } catch (error) {
+    } catch {
       // Revert the visual change if the vault operation failed
       setTags((prevTags) => [...prevTags, tagToRemove]);
     }
@@ -71,7 +71,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
       try {
         await addTagToTaskInVault(task, cleanTag, app);
-      } catch (error) {
+      } catch {
         // Revert the visual change if the vault operation failed
         setTags((prevTags) => prevTags.filter((tag) => tag !== cleanTag));
       }
@@ -107,26 +107,13 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
           onStatusChange={setStatus}
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
-        <span ref={summaryRef} style={{ flex: 1 }} />
+        <span ref={summaryRef} className="tasks-map-task-node-summary" />
         <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 
       <div className="tasks-map-task-node-content">
         {showTags && (
-          <div
-            className="task-tags-container"
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "4px",
-              minHeight: "24px",
-              flexWrap: "wrap",
-              marginBottom: "8px",
-            }}
-            onMouseEnter={() => {
-              /* will be handled by CSS hover */
-            }}
-          >
+          <div className="task-tags-container">
             {tags.map((tag) => (
               <Tag
                 key={tag}
@@ -148,33 +135,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
                 onBlur={handleAddTag}
                 placeholder="Enter tag name"
                 autoFocus
-                style={{
-                  backgroundColor: "var(--background-primary)",
-                  border: "1px solid var(--background-modifier-border)",
-                  borderRadius: "12px",
-                  padding: "4px 8px",
-                  fontSize: "12px",
-                  outline: "none",
-                  minWidth: "80px",
-                }}
+                className="tasks-map-tag-input"
               />
             ) : (
               <span
-                className="add-tag-button"
+                className="tasks-map-add-tag-button"
                 onClick={() => setIsAddingTag(true)}
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.2)",
-                  color: "white",
-                  padding: "3px 8px",
-                  borderRadius: "12px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "2px",
-                  opacity: 0,
-                  transition: "opacity 0.2s ease",
-                }}
               >
                 <Plus size={10} />
                 Add tag
