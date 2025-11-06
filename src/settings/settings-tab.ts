@@ -57,5 +57,65 @@ export class TasksMapSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl).setHeading().setName("Simple Task Relations");
+
+    new Setting(containerEl)
+      .setName("Linking style")
+      .setDesc("How task dependencies are specified in simple tasks")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("csv", "CSV (Tasks plugin default)")
+          .addOption("individual", "Individual")
+          .setValue(this.plugin.settings.linkingStyle)
+          .onChange(async (value) => {
+            this.plugin.settings.linkingStyle = value as "individual" | "csv";
+            await this.plugin.saveSettings();
+            updatePreview(value as "individual" | "csv");
+          })
+      );
+
+    // Create preview container
+    const previewContainer = containerEl.createDiv();
+    previewContainer.addClass("tasks-map-preview-container");
+
+    const updatePreview = (style: "individual" | "csv") => {
+      previewContainer.empty();
+
+      if (style === "individual") {
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "Individual Style:";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Each dependency with its own emoji identifier";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent = "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789";
+      } else {
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "CSV Style (Tasks plugin default):";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Multiple dependencies comma-separated";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent = "- [ ] My task ⛔ abc123,def456,ghi789";
+      }
+    };
+
+    // Initialize preview
+    updatePreview(this.plugin.settings.linkingStyle);
   }
 }

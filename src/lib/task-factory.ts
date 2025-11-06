@@ -71,18 +71,42 @@ export class TaskFactory {
   }
 
   private parseIncomingLinks(text: string): string[] {
-    const stopSignRegex = /⛔\s*([a-zA-Z0-9]{6})/g;
-    const incomingLinks = Array.from(text.matchAll(stopSignRegex)).map(
-      (m) => m[1]
-    );
-    return incomingLinks;
+    const csvIds = this.parseCsvStyleLinks(text);
+    const individualIds = this.parseIndividualStyleLinks(text);
+
+    // Create set union to remove duplicates
+    const allIds = new Set([...csvIds, ...individualIds]);
+    return Array.from(allIds);
+  }
+
+  private parseCsvStyleLinks(text: string): string[] {
+    const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/g;
+    const csvMatches = Array.from(text.matchAll(csvRegex));
+    const ids: string[] = [];
+
+    for (const match of csvMatches) {
+      const matchedIds = match[1].split(",").map((id) => id.trim());
+      ids.push(...matchedIds);
+    }
+
+    return ids;
+  }
+
+  private parseIndividualStyleLinks(text: string): string[] {
+    const individualRegex = /⛔\s*([a-zA-Z0-9]{6})(?!,[a-zA-Z0-9]{6})/g;
+    const individualMatches = Array.from(text.matchAll(individualRegex));
+
+    return individualMatches.map((match) => match[1]);
   }
 
   private makeSummary(text: string): string {
     return text
       .replace(/(?:^|\s)#\S+/g, "")
-      .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "")
-      .replace(/([\p{Extended_Pictographic}]+)/gu, "")
+      .replace(/🆔\s*[a-zA-Z0-9]{6}/g, "") // Remove task IDs: 🆔 abc123
+      .replace(/⛔\s*[a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*/g, "") // Remove CSV links: ⛔ abc123,def456
+      .replace(/⛔\s*[a-zA-Z0-9]{6}/g, "") // Remove individual links: ⛔ abc123
+      .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "") // Remove other emojis
+      .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis
       .trim();
   }
 }
