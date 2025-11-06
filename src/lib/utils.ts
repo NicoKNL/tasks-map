@@ -170,7 +170,7 @@ export async function addSignToTaskInFile(
             // Remove all individual stop signs
             let updatedLine = lines[taskLineIdx];
             individualMatches.forEach((match) => {
-              updatedLine = updatedLine.replaceAll(match[0], "");
+              updatedLine = updatedLine.replace(match[0], "");
             });
 
             // Add single CSV-style stop sign
