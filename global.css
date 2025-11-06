@@ -29,24 +29,25 @@ If your plugin does not need CSS, delete this file.
 /* Expand Button Styles */
 .tasks-map-expand-button {
   position: absolute;
-  bottom: -16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  height: 24px;
+  border-radius: 4px;
   background: var(--background-modifier-hover);
   border: 1px solid var(--background-modifier-border);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 4px rgba(var(--tasks-map-color-black-rgb), 0.08);
-  z-index: 2;
+  z-index: 3;
   cursor: pointer;
+  color: var(--text-muted);
 }
 
 .tasks-map-expand-button:hover {
   background: var(--background-modifier-hover-active);
+  color: var(--text-normal);
 }
 
 /* Settings Preview Styles */
@@ -105,13 +106,14 @@ If your plugin does not need CSS, delete this file.
   justify-content: center;
   padding: 4px;
   position: absolute;
-  bottom: 8px;
+  top: 8px;
   right: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
   width: 28px;
   height: 28px;
+  z-index: 4;
 }
 
 .tasks-map-link-button--success {
@@ -267,6 +269,10 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-task-background--expanded {
   max-height: none;
+}
+
+.tasks-map-task-background--debug {
+  padding-bottom: 40px; /* Extra space for expand button (24px height + 16px margin) */
 }
 
 .tasks-map-task-background--todo {

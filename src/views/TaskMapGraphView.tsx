@@ -99,9 +99,14 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       tasks,
       settings.layoutDirection,
       settings.showPriorities,
-      settings.showTags
+      settings.showTags,
+      settings.debugVisualization
     );
-    let newEdges = createEdgesFromTasks(tasks, settings.layoutDirection);
+    let newEdges = createEdgesFromTasks(
+      tasks,
+      settings.layoutDirection,
+      settings.debugVisualization
+    );
 
     const filteredNodeIds = getFilteredNodeIds(
       tasks,

@@ -40,16 +40,18 @@ export default function HashEdge({
         d={edgePath}
         markerEnd={markerEnd}
       />
-      <text
-        x={labelX}
-        y={labelY - 8}
-        textAnchor="middle"
-        fontSize={12}
-        fill="#888"
-        className="tasks-map-hash-edge-text"
-      >
-        {data?.hash}
-      </text>
+      {data?.debugVisualization && (
+        <text
+          x={labelX}
+          y={labelY - 8}
+          textAnchor="middle"
+          fontSize={12}
+          fill="#888"
+          className="tasks-map-hash-edge-text"
+        >
+          {data?.hash}
+        </text>
+      )}
     </g>
   );
 }

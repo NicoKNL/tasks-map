@@ -1,5 +1,6 @@
 import React from "react";
 import { App } from "obsidian";
+import { ArrowUpRight } from "lucide-react";
 
 interface LinkButtonProps {
   taskStatus?: "todo" | "done" | "canceled" | "in_progress";
@@ -29,15 +30,7 @@ export const LinkButton = ({
       className={`tasks-map-link-button tasks-map-link-button--${status}`}
       onClick={handleClick}
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path
-          d="M5 3H13V11M13 3L3 13"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <ArrowUpRight size={16} />
     </button>
   );
 };

@@ -18,11 +18,13 @@ export interface TaskNodeData {
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTags?: boolean;
+  debugVisualization?: boolean;
 }
 
 export interface TaskEdgeData {
   hash: string;
   layoutDirection?: "Horizontal" | "Vertical";
+  debugVisualization?: boolean;
 }
 
 export type TaskNode = Node<TaskNodeData, "task">;
