@@ -10,6 +10,7 @@ import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
 import { useSummaryRenderer } from "../hooks/use-summary-renderer";
+import { removeTagFromTaskInVault } from "../lib/utils";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -38,12 +39,21 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
   } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
+  const [tags, setTags] = useState(task.tags || []);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+
+  const handleTagRemove = async (tagToRemove: string) => {
+    // Immediately update the visual state
+    setTags(prevTags => prevTags.filter(tag => tag !== tagToRemove));
+    
+    // Update the file in the background
+    await removeTagFromTaskInVault(task, tagToRemove, app);
+  };
 
   return (
     <TaskBackground
@@ -65,15 +75,16 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
       </div>
 
       <div className="tasks-map-task-node-content">
-        {showTags && task.tags && task.tags.length > 0 && (
+        {showTags && tags && tags.length > 0 && (
           <div className="task-tags">
-            {task.tags.map((tag) => (
+            {tags.map((tag) => (
               <Tag
                 key={tag}
                 tag={tag}
                 tagColorMode={tagColorMode}
                 tagColorSeed={tagColorSeed}
                 tagStaticColor={tagStaticColor}
+                onRemove={handleTagRemove}
               />
             ))}
           </div>

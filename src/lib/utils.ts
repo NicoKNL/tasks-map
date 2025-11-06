@@ -43,6 +43,44 @@ export async function updateTaskStatusInVault(
   });
 }
 
+export async function removeTagFromTaskInVault(
+  task: Task,
+  tagToRemove: string,
+  app: App
+): Promise<void> {
+  if (!task.link || !task.text) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    let taskLineIdx = lines.findIndex((line: string) =>
+      line.includes(`🆔 ${task.id}`)
+    );
+    if (taskLineIdx === -1) {
+      // Fallback: try to find by matching the task text (legacy format)
+      taskLineIdx = lines.findIndex((line: string) => line.includes(task.text));
+      if (taskLineIdx === -1) return fileContent;
+    }
+
+    // Remove the tag from the line
+    const currentLine = lines[taskLineIdx];
+    // Match tags in format #tag or #tag/subtag
+    const tagPattern = new RegExp(
+      `#${tagToRemove.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/\\S*)?(?=\\s|$)`,
+      "g"
+    );
+    lines[taskLineIdx] = currentLine
+      .replace(tagPattern, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return lines.join("\n");
+  });
+}
+
 export function getLayoutedElements(
   nodes: Node[],
   edges: Edge[],
