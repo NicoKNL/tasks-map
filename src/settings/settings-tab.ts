@@ -10,7 +10,6 @@ export class TasksMapSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  // Helper function to create tag preview pills
   private createTagPreview(
     container: HTMLElement,
     tags: string[],
@@ -91,80 +90,6 @@ export class TasksMapSettingTab extends PluginSettingTab {
             this.plugin.settings.layoutDirection = value as
               | "Horizontal"
               | "Vertical";
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl).setHeading().setName("Simple Task Relations");
-
-    new Setting(containerEl)
-      .setName("Linking style")
-      .setDesc("How task dependencies are specified in simple tasks")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("csv", "CSV (Tasks plugin default)")
-          .addOption("individual", "Individual")
-          .setValue(this.plugin.settings.linkingStyle)
-          .onChange(async (value) => {
-            this.plugin.settings.linkingStyle = value as "individual" | "csv";
-            await this.plugin.saveSettings();
-            updatePreview(value as "individual" | "csv");
-          })
-      );
-
-    // Create preview container
-    const previewContainer = containerEl.createDiv();
-    previewContainer.addClass("tasks-map-preview-container");
-
-    const updatePreview = (style: "individual" | "csv") => {
-      previewContainer.empty();
-
-      if (style === "individual") {
-        const title = previewContainer.createDiv({
-          cls: "tasks-map-preview-title",
-        });
-        title.textContent = "Individual Style:";
-
-        const desc = previewContainer.createDiv({
-          cls: "tasks-map-preview-desc",
-        });
-        desc.textContent = "Each dependency with its own emoji identifier";
-
-        const example = previewContainer.createDiv({
-          cls: "tasks-map-preview-example",
-        });
-        example.textContent = "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789";
-      } else {
-        const title = previewContainer.createDiv({
-          cls: "tasks-map-preview-title",
-        });
-        title.textContent = "CSV Style (Tasks plugin default):";
-
-        const desc = previewContainer.createDiv({
-          cls: "tasks-map-preview-desc",
-        });
-        desc.textContent = "Multiple dependencies comma-separated";
-
-        const example = previewContainer.createDiv({
-          cls: "tasks-map-preview-example",
-        });
-        example.textContent = "- [ ] My task ⛔ abc123,def456,ghi789";
-      }
-    };
-
-    // Initialize preview
-    updatePreview(this.plugin.settings.linkingStyle);
-
-    new Setting(containerEl).setHeading().setName("Advanced Options");
-
-    new Setting(containerEl)
-      .setName("Debug visualization")
-      .setDesc("Show additional debug information in the graph view")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.debugVisualization)
-          .onChange(async (value) => {
-            this.plugin.settings.debugVisualization = value;
             await this.plugin.saveSettings();
           })
       );
@@ -267,5 +192,79 @@ export class TasksMapSettingTab extends PluginSettingTab {
         this.plugin.settings.tagStaticColor
       );
     }
+
+    new Setting(containerEl).setHeading().setName("Simple Task Relations");
+
+    new Setting(containerEl)
+      .setName("Linking style")
+      .setDesc("How task dependencies are specified in simple tasks")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("csv", "CSV (Tasks plugin default)")
+          .addOption("individual", "Individual")
+          .setValue(this.plugin.settings.linkingStyle)
+          .onChange(async (value) => {
+            this.plugin.settings.linkingStyle = value as "individual" | "csv";
+            await this.plugin.saveSettings();
+            updatePreview(value as "individual" | "csv");
+          })
+      );
+
+    // Create preview container
+    const previewContainer = containerEl.createDiv();
+    previewContainer.addClass("tasks-map-preview-container");
+
+    const updatePreview = (style: "individual" | "csv") => {
+      previewContainer.empty();
+
+      if (style === "individual") {
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "Individual Style:";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Each dependency with its own emoji identifier";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent = "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789";
+      } else {
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "CSV Style (Tasks plugin default):";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Multiple dependencies comma-separated";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent = "- [ ] My task ⛔ abc123,def456,ghi789";
+      }
+    };
+
+    // Initialize preview
+    updatePreview(this.plugin.settings.linkingStyle);
+
+    new Setting(containerEl).setHeading().setName("Advanced Options");
+
+    new Setting(containerEl)
+      .setName("Debug visualization")
+      .setDesc("Show additional debug information in the graph view")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.debugVisualization)
+          .onChange(async (value) => {
+            this.plugin.settings.debugVisualization = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }
