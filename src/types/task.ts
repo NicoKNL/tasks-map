@@ -19,6 +19,9 @@ export interface TaskNodeData {
   showPriorities?: boolean;
   showTags?: boolean;
   debugVisualization?: boolean;
+  tagColorMode?: "random" | "static";
+  tagColorSeed?: number;
+  tagStaticColor?: string;
 }
 
 export interface TaskEdgeData {

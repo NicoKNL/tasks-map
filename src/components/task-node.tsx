@@ -20,6 +20,9 @@ interface TaskNodeData {
   showPriorities?: boolean;
   showTags?: boolean;
   debugVisualization?: boolean;
+  tagColorMode?: "random" | "static";
+  tagColorSeed?: number;
+  tagStaticColor?: string;
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
@@ -29,6 +32,9 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     showPriorities = true,
     showTags = true,
     debugVisualization = false,
+    tagColorMode = "random",
+    tagColorSeed = 42,
+    tagStaticColor = "#3b82f6",
   } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
@@ -59,7 +65,19 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
       </div>
 
       <div className="tasks-map-task-node-content">
-        {showTags && task.tags.map((tag) => <Tag key={tag} tag={tag} />)}
+        {showTags && task.tags && task.tags.length > 0 && (
+          <div className="task-tags">
+            {task.tags.map((tag) => (
+              <Tag
+                key={tag}
+                tag={tag}
+                tagColorMode={tagColorMode}
+                tagColorSeed={tagColorSeed}
+                tagStaticColor={tagStaticColor}
+              />
+            ))}
+          </div>
+        )}
         <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 

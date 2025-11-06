@@ -6,6 +6,11 @@ export interface TasksMapSettings {
   linkingStyle: "individual" | "csv";
 
   debugVisualization: boolean;
+
+  // Tag color settings
+  tagColorMode: "random" | "static";
+  tagColorSeed: number;
+  tagStaticColor: string;
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -16,4 +21,9 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
   linkingStyle: "csv",
 
   debugVisualization: false,
+
+  // Tag color defaults
+  tagColorMode: "random",
+  tagColorSeed: 42,
+  tagStaticColor: "#3b82f6",
 };

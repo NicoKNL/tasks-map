@@ -131,5 +131,54 @@ export class TasksMapSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl).setHeading().setName("Tag Appearance");
+
+    new Setting(containerEl)
+      .setName("Tag color mode")
+      .setDesc("Choose how tag colors are generated")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("random", "Random colors (seeded)")
+          .addOption("static", "Static color for all tags")
+          .setValue(this.plugin.settings.tagColorMode)
+          .onChange(async (value) => {
+            this.plugin.settings.tagColorMode = value as "random" | "static";
+            await this.plugin.saveSettings();
+            this.display(); // Refresh to show/hide conditional settings
+          })
+      );
+
+    if (this.plugin.settings.tagColorMode === "random") {
+      new Setting(containerEl)
+        .setName("Color seed")
+        .setDesc(
+          "Seed value for random color generation (same seed = same colors)"
+        )
+        .addText((text) =>
+          text
+            .setPlaceholder("42")
+            .setValue(this.plugin.settings.tagColorSeed.toString())
+            .onChange(async (value) => {
+              const seedValue = parseInt(value) || 42;
+              this.plugin.settings.tagColorSeed = seedValue;
+              await this.plugin.saveSettings();
+            })
+        );
+    }
+
+    if (this.plugin.settings.tagColorMode === "static") {
+      new Setting(containerEl)
+        .setName("Static tag color")
+        .setDesc("Color to use for all tags")
+        .addColorPicker((colorPicker) =>
+          colorPicker
+            .setValue(this.plugin.settings.tagStaticColor)
+            .onChange(async (value) => {
+              this.plugin.settings.tagStaticColor = value;
+              await this.plugin.saveSettings();
+            })
+        );
+    }
   }
 }
