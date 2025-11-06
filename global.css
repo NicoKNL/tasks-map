@@ -158,11 +158,15 @@ If your plugin does not need CSS, delete this file.
 /* Tag Styles */
 .tasks-map-tag {
   display: inline-block;
-  font-size: 12px;
-  margin-right: 6px;
-  color: var(--text-muted);
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 4px;
+  margin-bottom: 2px;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: none;
+  white-space: nowrap;
 }
 
 /* GUI Overlay Styles */
