@@ -54,8 +54,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     // Immediately update the visual state
     setTags((prevTags) => prevTags.filter((tag) => tag !== tagToRemove));
 
-    // Update the file in the background
-    await removeTagFromTaskInVault(task, tagToRemove, app);
+    try {
+      await removeTagFromTaskInVault(task, tagToRemove, app);
+    } catch (error) {
+      // Revert the visual change if the vault operation failed
+      setTags((prevTags) => [...prevTags, tagToRemove]);
+    }
   };
 
   const handleAddTag = async () => {
@@ -65,8 +69,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
       // Immediately update the visual state
       setTags((prevTags) => [...prevTags, cleanTag]);
 
-      // Update the file in the background
-      await addTagToTaskInVault(task, cleanTag, app);
+      try {
+        await addTagToTaskInVault(task, cleanTag, app);
+      } catch (error) {
+        // Revert the visual change if the vault operation failed
+        setTags((prevTags) => prevTags.filter((tag) => tag !== cleanTag));
+      }
 
       // Reset input state
       setNewTagInput("");
@@ -99,7 +107,8 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
           onStatusChange={setStatus}
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
-        <span ref={summaryRef} />
+        <span ref={summaryRef} style={{ flex: 1 }} />
+        <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 
       <div className="tasks-map-task-node-content">
@@ -108,9 +117,11 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
             className="task-tags-container"
             style={{
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-start",
               gap: "4px",
               minHeight: "24px",
+              flexWrap: "wrap",
+              marginBottom: "8px",
             }}
             onMouseEnter={() => {
               /* will be handled by CSS hover */
@@ -154,9 +165,9 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
                 style={{
                   backgroundColor: "rgba(0, 0, 0, 0.2)",
                   color: "white",
-                  padding: "4px 8px",
+                  padding: "3px 8px",
                   borderRadius: "12px",
-                  fontSize: "12px",
+                  fontSize: "11px",
                   cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
@@ -165,13 +176,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
                   transition: "opacity 0.2s ease",
                 }}
               >
-                <Plus size={12} />
+                <Plus size={10} />
                 Add tag
               </span>
             )}
           </div>
         )}
-        <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 
       {debugVisualization && (

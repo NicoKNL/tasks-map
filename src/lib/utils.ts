@@ -56,26 +56,49 @@ export async function removeTagFromTaskInVault(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
+
     let taskLineIdx = lines.findIndex((line: string) =>
       line.includes(`🆔 ${task.id}`)
     );
+
     if (taskLineIdx === -1) {
-      // Fallback: try to find by matching the task text (legacy format)
-      taskLineIdx = lines.findIndex((line: string) => line.includes(task.text));
+      // Fallback: try to find by matching core task text (without tags/IDs)
+      const coreTaskText = task.text
+        .replace(/🆔\s+\S+/g, "") // Remove ID
+        .replace(/#\S+/g, "") // Remove tags
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+      taskLineIdx = lines.findIndex((line: string) => {
+        const coreLineText = line
+          .replace(/🆔\s+\S+/g, "")
+          .replace(/#\S+/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        return (
+          coreLineText.includes(coreTaskText) ||
+          coreTaskText.includes(coreLineText)
+        );
+      });
+
       if (taskLineIdx === -1) return fileContent;
     }
 
     // Remove the tag from the line
     const currentLine = lines[taskLineIdx];
-    // Match tags in format #tag or #tag/subtag
+
+    // Match tags in format #tag or #tag/subtag, with optional leading/trailing whitespace
     const tagPattern = new RegExp(
-      `#${tagToRemove.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/\\S*)?(?=\\s|$)`,
+      `\\s*#${tagToRemove.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/\\S*)?(?=\\s|$)`,
       "g"
     );
-    lines[taskLineIdx] = currentLine
+
+    const newLine = currentLine
       .replace(tagPattern, "")
       .replace(/\s+/g, " ")
       .trim();
+
+    lines[taskLineIdx] = newLine;
 
     return lines.join("\n");
   });
@@ -98,8 +121,25 @@ export async function addTagToTaskInVault(
       line.includes(`🆔 ${task.id}`)
     );
     if (taskLineIdx === -1) {
-      // Fallback: try to find by matching the task text (legacy format)
-      taskLineIdx = lines.findIndex((line: string) => line.includes(task.text));
+      // Fallback: try to find by matching core task text (without tags/IDs)
+      const coreTaskText = task.text
+        .replace(/🆔\s+\S+/g, "") // Remove ID
+        .replace(/#\S+/g, "") // Remove tags
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim();
+
+      taskLineIdx = lines.findIndex((line: string) => {
+        const coreLineText = line
+          .replace(/🆔\s+\S+/g, "")
+          .replace(/#\S+/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        return (
+          coreLineText.includes(coreTaskText) ||
+          coreTaskText.includes(coreLineText)
+        );
+      });
+
       if (taskLineIdx === -1) return fileContent;
     }
 

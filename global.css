@@ -105,15 +105,13 @@ If your plugin does not need CSS, delete this file.
   align-items: center;
   justify-content: center;
   padding: 4px;
-  position: absolute;
-  top: 8px;
-  right: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
   width: 28px;
   height: 28px;
-  z-index: 4;
+  align-self: flex-start;
+  margin-left: auto;
 }
 
 .tasks-map-link-button--success {
@@ -261,14 +259,14 @@ If your plugin does not need CSS, delete this file.
   padding: 12px;
   width: 250px;
   min-height: 120px;
-  max-height: 120px;
+  max-height: fit-content;
   box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black-rgb),0.07);
   font-weight: 500;
   display: flex;
   flex-direction: column;
   gap: 4px;
   position: relative;
-  transition: max-height 0.2s, min-height 0.2s, width 0.2s;
+  transition: width 0.2s;
 }
 
 .tasks-map-task-background--expanded {
