@@ -27,7 +27,7 @@ export class TaskFactory {
 
   private parseIdFromText(text: string): string {
     // Try emoji format first: 🆔 abc123
-    const idEmojiRegex = /🆔\s*([a-z0-9]{6})/;
+    const idEmojiRegex = /🆔\s*([a-zA-Z0-9]{6})/i;
     const idMatch = text.match(idEmojiRegex);
 
     if (idMatch) {
@@ -35,7 +35,7 @@ export class TaskFactory {
     }
 
     // Try Dataview format: [[id:: abc123]]
-    const idDataviewRegex = /\[\[id::\s*([a-z0-9]{6})\]\]/;
+    const idDataviewRegex = /\[\[id::\s*([a-zA-Z0-9]{6})\]\]/i;
     const dataviewMatch = text.match(idDataviewRegex);
 
     if (dataviewMatch) {
@@ -126,8 +126,8 @@ export class TaskFactory {
   private makeSummary(text: string): string {
     return text
       .replace(/(?:^|\s)#\S+/g, "")
-      .replace(/🆔\s*[a-zA-Z0-9]{6}/g, "") // Remove task IDs: 🆔 abc123
-      .replace(/\[\[id::\s*[a-zA-Z0-9]{6}\]\]/g, "") // Remove Dataview IDs: [[id:: abc123]]
+      .replace(/🆔\s*[a-zA-Z0-9]{6}/gi, "") // Remove task IDs: 🆔 abc123
+      .replace(/\[\[id::\s*[a-zA-Z0-9]{6}\]\]/gi, "") // Remove Dataview IDs: [[id:: abc123]]
       .replace(/⛔\s*[a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*/g, "") // Remove CSV links: ⛔ abc123,def456
       .replace(/⛔\s*[a-zA-Z0-9]{6}/g, "") // Remove individual links: ⛔ abc123
       .replace(/\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/g, "") // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
