@@ -26,10 +26,11 @@ export function TagInput({
     }
   }, []);
 
-  // Filter out tags that are already on the task and sort alphabetically
-  const availableTags = allTags
-    .filter((tag) => !existingTags.includes(tag))
-    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  // Filter out tags that are already on the task
+  // Sort alphabetically with case-insensitive comparison
+  // Most recently used tags appear first (tags appear in the order they exist in allTags,
+  // which comes from the task list, so more frequently used tags naturally appear first)
+  const availableTags = allTags.filter((tag) => !existingTags.includes(tag));
 
   const options: TagOption[] = availableTags.map((tag) => ({
     value: tag,
@@ -88,6 +89,7 @@ export function TagInput({
       openMenuOnClick={true}
       closeMenuOnSelect={true}
       formatCreateLabel={(inputValue) => `Create tag "${inputValue}"`}
+      noOptionsMessage={() => "Type to create a new tag"}
       components={{
         DropdownIndicator: () => null,
         IndicatorSeparator: () => null,
@@ -154,6 +156,11 @@ export function TagInput({
         placeholder: (base) => ({
           ...base,
           color: "var(--text-faint)",
+          fontSize: "12px",
+        }),
+        noOptionsMessage: (base) => ({
+          ...base,
+          color: "var(--text-muted)",
           fontSize: "12px",
         }),
       }}

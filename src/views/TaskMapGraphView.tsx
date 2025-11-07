@@ -66,9 +66,18 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   }, [vault]);
 
   const allTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    tasks.forEach((task) => task.tags.forEach((tag) => tagSet.add(tag)));
-    return Array.from(tagSet).sort();
+    const tagFrequency = new Map<string, number>();
+    tasks.forEach((task) =>
+      task.tags.forEach((tag) => {
+        tagFrequency.set(tag, (tagFrequency.get(tag) || 0) + 1);
+      })
+    );
+    // Sort by frequency (descending), then alphabetically
+    return Array.from(tagFrequency.keys()).sort((a, b) => {
+      const freqDiff = (tagFrequency.get(b) || 0) - (tagFrequency.get(a) || 0);
+      if (freqDiff !== 0) return freqDiff;
+      return a.localeCompare(b, undefined, { sensitivity: "base" });
+    });
   }, [tasks]);
 
   const getFilteredNodeIds = (
