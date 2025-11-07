@@ -26,6 +26,11 @@ export function TagInput({
     }
   }, []);
 
+  // Helper function to clean tag input (remove leading # and trim whitespace)
+  const cleanTagInput = (input: string): string => {
+    return input.trim().replace(/^#+/, "");
+  };
+
   // Filter out tags that are already on the task
   // Tags in allTags are sorted by frequency (most used first) from TaskMapGraphView
   const availableTags = allTags.filter((tag) => !existingTags.includes(tag));
@@ -37,7 +42,7 @@ export function TagInput({
 
   const handleChange = (newValue: TagOption | null) => {
     if (newValue) {
-      const cleanTag = newValue.value.trim().replace(/^#+/, "");
+      const cleanTag = cleanTagInput(newValue.value);
       if (cleanTag) {
         onAddTag(cleanTag);
       }
@@ -48,10 +53,10 @@ export function TagInput({
     if (event.key === "Escape") {
       event.preventDefault();
       onCancel();
-    } else if (event.key === "Enter" && inputValue.trim()) {
-      event.preventDefault();
-      const cleanTag = inputValue.trim().replace(/^#+/, "");
+    } else if (event.key === "Enter") {
+      const cleanTag = cleanTagInput(inputValue);
       if (cleanTag) {
+        event.preventDefault();
         onAddTag(cleanTag);
       }
     }
@@ -59,12 +64,10 @@ export function TagInput({
 
   const handleBlur = () => {
     // If there's input value, add it as a tag
-    if (inputValue.trim()) {
-      const cleanTag = inputValue.trim().replace(/^#+/, "");
-      if (cleanTag) {
-        onAddTag(cleanTag);
-        return;
-      }
+    const cleanTag = cleanTagInput(inputValue);
+    if (cleanTag) {
+      onAddTag(cleanTag);
+      return;
     }
     onCancel();
   };
