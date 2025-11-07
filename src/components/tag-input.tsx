@@ -27,9 +27,7 @@ export function TagInput({
   }, []);
 
   // Filter out tags that are already on the task
-  // Sort alphabetically with case-insensitive comparison
-  // Most recently used tags appear first (tags appear in the order they exist in allTags,
-  // which comes from the task list, so more frequently used tags naturally appear first)
+  // Tags in allTags are sorted by frequency (most used first) from TaskMapGraphView
   const availableTags = allTags.filter((tag) => !existingTags.includes(tag));
 
   const options: TagOption[] = availableTags.map((tag) => ({
