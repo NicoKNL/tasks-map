@@ -120,7 +120,8 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       settings.debugVisualization,
       settings.tagColorMode,
       settings.tagColorSeed,
-      settings.tagStaticColor
+      settings.tagStaticColor,
+      allTags
     );
     let newEdges = createEdgesFromTasks(
       tasks,
