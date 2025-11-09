@@ -219,14 +219,25 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
             {
               ...params,
               type: "hash",
-              data: { hash },
+              data: {
+                hash,
+                layoutDirection: settings.layoutDirection,
+                debugVisualization: settings.debugVisualization,
+              },
             },
             eds
           )
         );
       }
     },
-    [vault, tasks, setEdges]
+    [
+      vault,
+      tasks,
+      setEdges,
+      settings.layoutDirection,
+      settings.debugVisualization,
+      settings.linkingStyle,
+    ]
   );
 
   return (

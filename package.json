@@ -1,6 +1,6 @@
 {
     "name": "tasks-map",
-    "version": "0.7.0",
+    "version": "0.7.3",
     "description": "A graph view of your tasks.",
     "main": "main.js",
     "engines": {
@@ -28,7 +28,7 @@
         "@typescript-eslint/eslint-plugin": "8.46.3",
         "@typescript-eslint/parser": "8.46.3",
         "builtin-modules": "5.0.0",
-        "esbuild": "0.25.12",
+        "esbuild": "0.26.0",
         "eslint": "^9.37.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-react": "^7.37.5",
@@ -41,7 +41,7 @@
     },
     "dependencies": {
         "@dagrejs/dagre": "^1.1.5",
-        "lucide-react": "^0.552.0",
+        "lucide-react": "^0.553.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "react-select": "^5.10.2",
