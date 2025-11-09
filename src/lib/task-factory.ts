@@ -21,6 +21,12 @@ export class TaskFactory {
     };
   }
 
+  public isEmptyTask(task: Task): boolean {
+    // A task is considered empty if its summary (which strips tags, IDs, emojis, etc.)
+    // is empty or whitespace-only
+    return task.summary.trim().length === 0;
+  }
+
   private cleanText(text: string): string {
     return text.split("\n")[0].trim();
   }

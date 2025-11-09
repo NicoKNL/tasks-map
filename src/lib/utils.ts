@@ -482,7 +482,10 @@ export function getAllDataviewTasks(app: any): Task[] {
     }
   }
   const factory = new TaskFactory();
-  return tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const parsedTasks = tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
+  return parsedTasks.filter((task) => !factory.isEmptyTask(task));
 }
 
 export function createNodesFromTasks(
@@ -493,7 +496,8 @@ export function createNodesFromTasks(
   debugVisualization: boolean = false,
   tagColorMode: "random" | "static" = "random",
   tagColorSeed: number = 42,
-  tagStaticColor: string = "#3b82f6"
+  tagStaticColor: string = "#3b82f6",
+  allTags: string[] = []
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -511,6 +515,7 @@ export function createNodesFromTasks(
       tagColorMode,
       tagColorSeed,
       tagStaticColor,
+      allTags,
     },
     type: "task" as const,
     sourcePosition,
