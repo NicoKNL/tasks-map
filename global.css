@@ -183,20 +183,132 @@ If your plugin does not need CSS, delete this file.
   border: 1px solid var(--background-modifier-border);
   border-radius: 12px;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 11px;
   outline: none;
   min-width: 80px;
 }
 
-/* Remove grey border from react-select input text */
-.tasks-map-tag-select__input,
-.tasks-map-tag-select__input > div,
-.tasks-map-tag-select__input input,
-.tasks-map-tag-select__input input:focus {
+/* Tag Input (CreatableSelect) Styles */
+.tasks-map-tag-select__container {
+  min-width: 160px !important;
+  font-size: 11px;
+}
+
+.tasks-map-tag-select__control {
+  min-height: 20px !important;
+  height: 20px !important;
+  min-width: 160px !important;
+  background: var(--background-primary) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--interactive-accent) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 1px var(--interactive-accent) !important;
+}
+
+.tasks-map-tag-select__control:hover {
+  border-color: var(--interactive-accent) !important;
+}
+
+.tasks-map-tag-select__value-container {
+  padding: 3px 8px !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.tasks-map-tag-select__indicators {
+  display: none !important;
+}
+
+.tasks-map-tag-select__input {
+  margin: 0 !important;
+  padding: 0 !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  flex: 1 !important;
+}
+
+.tasks-map-tag-select__input > div {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.tasks-map-tag-select__input input,
+.tasks-map-tag-select__input input:focus {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--text-normal) !important;
+  font-size: 11px !important;
+  line-height: 11px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.tasks-map-tag-select__single-value {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--text-normal) !important;
+  font-size: 11px !important;
+  line-height: 11px !important;
+}
+
+.tasks-map-tag-select__placeholder {
+  color: var(--text-faint) !important;
+  font-size: 11px !important;
+  line-height: 11px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.tasks-map-tag-select__menu {
+  min-width: 160px !important;
+  z-index: 9999 !important;
+  background: var(--background-secondary) !important;
+  color: var(--text-normal) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  border-radius: 8px !important;
+  margin-top: 4px !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.tasks-map-tag-select__menu-list {
+  padding: 4px !important;
+  max-height: 200px !important;
+}
+
+.tasks-map-tag-select__option {
+  background: var(--background-secondary) !important;
+  color: var(--text-normal) !important;
+  cursor: pointer !important;
+  border-radius: 4px !important;
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+}
+
+.tasks-map-tag-select__option--is-focused {
+  background: var(--background-modifier-hover) !important;
+}
+
+.tasks-map-tag-select__option--is-selected {
+  background: var(--background-modifier-hover) !important;
+}
+
+.tasks-map-tag-select__option:active {
+  background: var(--background-modifier-active) !important;
+}
+
+.tasks-map-tag-select__menu-notice {
+  color: var(--text-muted) !important;
+  font-size: 11px !important;
 }
 
 .tasks-map-add-tag-button {
