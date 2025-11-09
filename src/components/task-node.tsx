@@ -10,6 +10,7 @@ import { Tag } from "./tag";
 import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
+import { TagInput } from "./tag-input";
 import { useSummaryRenderer } from "../hooks/use-summary-renderer";
 import { removeTagFromTaskInVault, addTagToTaskInVault } from "../lib/utils";
 
@@ -25,6 +26,7 @@ interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  allTags?: string[];
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
@@ -37,12 +39,12 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     tagColorMode = "random",
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
+    allTags = [],
   } = data;
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
   const [tags, setTags] = useState(task.tags || []);
   const [isAddingTag, setIsAddingTag] = useState(false);
-  const [newTagInput, setNewTagInput] = useState("");
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
@@ -62,33 +64,33 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     }
   };
 
-  const handleAddTag = async () => {
-    if (newTagInput.trim()) {
-      const cleanTag = newTagInput.trim().replace(/^#+/, ""); // Remove any leading #
+  const handleAddTag = async (tagToAdd: string) => {
+    if (!tagToAdd.trim()) return;
 
-      // Immediately update the visual state
-      setTags((prevTags) => [...prevTags, cleanTag]);
+    const cleanTag = tagToAdd.trim().replace(/^#+/, ""); // Remove any leading #
 
-      try {
-        await addTagToTaskInVault(task, cleanTag, app);
-      } catch {
-        // Revert the visual change if the vault operation failed
-        setTags((prevTags) => prevTags.filter((tag) => tag !== cleanTag));
-      }
-
-      // Reset input state
-      setNewTagInput("");
+    // Don't add duplicate tags
+    if (tags.includes(cleanTag)) {
       setIsAddingTag(false);
+      return;
     }
+
+    // Immediately update the visual state
+    setTags((prevTags) => [...prevTags, cleanTag]);
+
+    try {
+      await addTagToTaskInVault(task, cleanTag, app);
+    } catch {
+      // Revert the visual change if the vault operation failed
+      setTags((prevTags) => prevTags.filter((tag) => tag !== cleanTag));
+    }
+
+    // Reset input state
+    setIsAddingTag(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleAddTag();
-    } else if (e.key === "Escape") {
-      setNewTagInput("");
-      setIsAddingTag(false);
-    }
+  const handleCancelAddTag = () => {
+    setIsAddingTag(false);
   };
 
   return (
@@ -127,16 +129,14 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
             {/* Add tag button/input */}
             {isAddingTag ? (
-              <input
-                type="text"
-                value={newTagInput}
-                onChange={(e) => setNewTagInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                onBlur={handleAddTag}
-                placeholder="Enter tag name"
-                autoFocus
-                className="tasks-map-tag-input"
-              />
+              <div className="nodrag">
+                <TagInput
+                  allTags={allTags}
+                  existingTags={tags}
+                  onAddTag={handleAddTag}
+                  onCancel={handleCancelAddTag}
+                />
+              </div>
             ) : (
               <span
                 className="tasks-map-add-tag-button"
