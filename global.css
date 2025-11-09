@@ -191,7 +191,7 @@ If your plugin does not need CSS, delete this file.
 /* Tag Input (CreatableSelect) Styles */
 .tasks-map-tag-select__container {
   min-width: 160px !important;
-  font-size: 11px;
+  font-size: 11px !important;
 }
 
 .tasks-map-tag-select__control {
@@ -210,7 +210,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-tag-select__value-container {
-  padding: 3px 8px !important;
+  padding: 0 8px !important;
   height: 100% !important;
   box-sizing: border-box !important;
   display: flex !important;
@@ -229,6 +229,8 @@ If your plugin does not need CSS, delete this file.
   box-shadow: none !important;
   background: transparent !important;
   flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 .tasks-map-tag-select__input > div {
@@ -238,6 +240,10 @@ If your plugin does not need CSS, delete this file.
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 11px !important;
 }
 
 .tasks-map-tag-select__input input,
@@ -246,11 +252,16 @@ If your plugin does not need CSS, delete this file.
   padding: 0 !important;
   color: var(--text-normal) !important;
   font-size: 11px !important;
+  font-family: inherit !important;
   line-height: 11px !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  flex: 1 !important;
+  min-width: 4px !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 .tasks-map-tag-select__single-value {
@@ -258,15 +269,26 @@ If your plugin does not need CSS, delete this file.
   padding: 0 !important;
   color: var(--text-normal) !important;
   font-size: 11px !important;
+  font-family: inherit !important;
   line-height: 11px !important;
 }
 
 .tasks-map-tag-select__placeholder {
   color: var(--text-faint) !important;
   font-size: 11px !important;
+  font-family: inherit !important;
   line-height: 11px !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Ensure all nested elements inherit small font size */
+.tasks-map-tag-select__container *,
+.tasks-map-tag-select__control *,
+.tasks-map-tag-select__value-container *,
+.tasks-map-tag-select__input *,
+.tasks-map-tag-select__input input {
+  font-size: 11px !important;
 }
 
 .tasks-map-tag-select__menu {
