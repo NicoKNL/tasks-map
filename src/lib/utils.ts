@@ -391,7 +391,10 @@ export function getAllDataviewTasks(app: any): Task[] {
     }
   }
   const factory = new TaskFactory();
-  return tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const parsedTasks = tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
+  return parsedTasks.filter((task) => !factory.isEmptyTask(task));
 }
 
 export function createNodesFromTasks(
