@@ -53,13 +53,9 @@ export function TagInput({
     if (event.key === "Escape") {
       event.preventDefault();
       onCancel();
-    } else if (event.key === "Enter") {
-      const cleanTag = cleanTagInput(inputValue);
-      if (cleanTag) {
-        event.preventDefault();
-        onAddTag(cleanTag);
-      }
     }
+    // Don't handle Enter here - let react-select handle it
+    // This allows selecting from suggestions with Enter
   };
 
   const handleBlur = () => {
@@ -72,14 +68,23 @@ export function TagInput({
     onCancel();
   };
 
+  const handleCreateOption = (inputValue: string) => {
+    const cleanTag = cleanTagInput(inputValue);
+    if (cleanTag) {
+      onAddTag(cleanTag);
+    }
+  };
+
   return (
     <CreatableSelect
       ref={selectRef}
+      classNamePrefix="tasks-map-tag-select"
       options={options}
       value={null}
       inputValue={inputValue}
       onInputChange={(newValue) => setInputValue(newValue)}
       onChange={handleChange}
+      onCreateOption={handleCreateOption}
       onKeyDown={handleKeyDown}
       onBlur={handleBlur}
       placeholder="Type or select tag..."
@@ -99,17 +104,21 @@ export function TagInput({
         container: (base) => ({
           ...base,
           minWidth: "120px",
-          fontSize: "12px",
+          fontSize: "11px",
         }),
-        control: (base) => ({
+        control: (base, state) => ({
           ...base,
-          minHeight: "24px",
-          height: "24px",
+          minHeight: "20px",
+          height: "20px",
           background: "var(--background-primary)",
           color: "var(--text-normal)",
           borderColor: "var(--interactive-accent)",
           borderRadius: "12px",
-          boxShadow: "0 0 0 1px var(--interactive-accent)",
+          boxShadow: state.isFocused
+            ? "0 0 0 1px var(--interactive-accent)"
+            : "0 0 0 1px var(--interactive-accent)",
+          display: "flex",
+          alignItems: "center",
           "&:hover": {
             borderColor: "var(--interactive-accent)",
           },
@@ -117,13 +126,33 @@ export function TagInput({
         valueContainer: (base) => ({
           ...base,
           padding: "0 8px",
-          height: "22px",
+          height: "20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
         }),
         input: (base) => ({
+          ...base,
+          margin: "0 !important",
+          padding: "0 !important",
+          color: "var(--text-normal)",
+          fontSize: "11px",
+          lineHeight: "20px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          position: "absolute",
+          border: "none !important",
+          outline: "none !important",
+          boxShadow: "none !important",
+          background: "transparent !important",
+        }),
+        singleValue: (base) => ({
           ...base,
           margin: "0",
           padding: "0",
           color: "var(--text-normal)",
+          fontSize: "11px",
+          lineHeight: "20px",
         }),
         menu: (base) => ({
           ...base,
@@ -149,7 +178,7 @@ export function TagInput({
           cursor: "pointer",
           borderRadius: "4px",
           padding: "6px 8px",
-          fontSize: "12px",
+          fontSize: "11px",
           "&:active": {
             background: "var(--background-modifier-active)",
           },
@@ -157,7 +186,13 @@ export function TagInput({
         placeholder: (base) => ({
           ...base,
           color: "var(--text-faint)",
-          fontSize: "12px",
+          fontSize: "11px",
+          lineHeight: "20px",
+          margin: "0",
+          padding: "0",
+          top: "50%",
+          transform: "translateY(-50%)",
+          position: "absolute",
         }),
         noOptionsMessage: (base) => ({
           ...base,

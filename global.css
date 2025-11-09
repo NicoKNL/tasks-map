@@ -188,6 +188,17 @@ If your plugin does not need CSS, delete this file.
   min-width: 80px;
 }
 
+/* Remove grey border from react-select input text */
+.tasks-map-tag-select__input,
+.tasks-map-tag-select__input > div,
+.tasks-map-tag-select__input input,
+.tasks-map-tag-select__input input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
 .tasks-map-add-tag-button {
   background-color: rgba(0, 0, 0, 0.2);
   color: white;
