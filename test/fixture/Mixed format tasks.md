@@ -1,5 +1,3 @@
-# Mixed Format Tasks
-
 This file demonstrates that the plugin supports both emoji and Dataview formats for task IDs and dependencies.
 
 ## Emoji Format (Original)
@@ -12,9 +10,9 @@ This file demonstrates that the plugin supports both emoji and Dataview formats 
 ## Dataview Format (New)
 
 - [ ] Design architecture #dataview [[id:: jkl012]]
-- [ ] Implement feature #dataview [[dependsOn:: jkl012]]
-- [ ] Write tests #dataview [[dependsOn:: jkl012]]
-- [ ] Deploy to production #dataview [[dependsOn:: jkl012]]
+- [ ] Implement feature #dataview [[dependsOn:: jkl012]] 🆔 kyqzxr
+- [ ] Write tests #dataview [[dependsOn:: jkl012, kyqzxr]] 🆔 6mpkp2
+- [ ] Deploy to production #dataview [[dependsOn:: jkl012, 6mpkp2]]
 
 ## Mixed Format (Both Styles)
 
