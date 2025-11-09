@@ -202,11 +202,15 @@ export class TasksMapSettingTab extends PluginSettingTab {
         dropdown
           .addOption("csv", "CSV (Tasks plugin default)")
           .addOption("individual", "Individual")
+          .addOption("dataview", "Dataview")
           .setValue(this.plugin.settings.linkingStyle)
           .onChange(async (value) => {
-            this.plugin.settings.linkingStyle = value as "individual" | "csv";
+            this.plugin.settings.linkingStyle = value as
+              | "individual"
+              | "csv"
+              | "dataview";
             await this.plugin.saveSettings();
-            updatePreview(value as "individual" | "csv");
+            updatePreview(value as "individual" | "csv" | "dataview");
           })
       );
 
@@ -214,7 +218,7 @@ export class TasksMapSettingTab extends PluginSettingTab {
     const previewContainer = containerEl.createDiv();
     previewContainer.addClass("tasks-map-preview-container");
 
-    const updatePreview = (style: "individual" | "csv") => {
+    const updatePreview = (style: "individual" | "csv" | "dataview") => {
       previewContainer.empty();
 
       if (style === "individual") {
@@ -232,6 +236,22 @@ export class TasksMapSettingTab extends PluginSettingTab {
           cls: "tasks-map-preview-example",
         });
         example.textContent = "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789";
+      } else if (style === "dataview") {
+        const title = previewContainer.createDiv({
+          cls: "tasks-map-preview-title",
+        });
+        title.textContent = "Dataview Style:";
+
+        const desc = previewContainer.createDiv({
+          cls: "tasks-map-preview-desc",
+        });
+        desc.textContent = "Dependencies using Dataview inline field syntax";
+
+        const example = previewContainer.createDiv({
+          cls: "tasks-map-preview-example",
+        });
+        example.textContent =
+          "- [ ] My task [[dependsOn:: abc123,def456,ghi789]]";
       } else {
         const title = previewContainer.createDiv({
           cls: "tasks-map-preview-title",

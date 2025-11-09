@@ -12,6 +12,35 @@ const statusSymbols = {
   done: "[x]",
 };
 
+/**
+ * Find the index of a task line in an array of lines by its ID.
+ * Supports both emoji format (🆔 abc123) and Dataview format ([[id:: abc123]])
+ */
+function findTaskLineByIdOrText(
+  lines: string[],
+  taskId: string,
+  taskText: string
+): number {
+  // Try to find by emoji format ID
+  let taskLineIdx = lines.findIndex((line: string) =>
+    line.includes(`🆔 ${taskId}`)
+  );
+
+  if (taskLineIdx !== -1) return taskLineIdx;
+
+  // Try to find by Dataview format ID
+  taskLineIdx = lines.findIndex((line: string) =>
+    line.includes(`[[id:: ${taskId}]]`)
+  );
+
+  if (taskLineIdx !== -1) return taskLineIdx;
+
+  // Fallback: try to find by matching the task text (legacy format)
+  taskLineIdx = lines.findIndex((line: string) => line.includes(taskText));
+
+  return taskLineIdx;
+}
+
 export async function updateTaskStatusInVault(
   task: Task,
   newStatus: TaskStatus,
@@ -25,14 +54,9 @@ export async function updateTaskStatusInVault(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    let taskLineIdx = lines.findIndex((line: string) =>
-      line.includes(`🆔 ${task.id}`)
-    );
-    if (taskLineIdx === -1) {
-      // Fallback: try to find by matching the task text (legacy format)
-      taskLineIdx = lines.findIndex((line: string) => line.includes(task.text));
-      if (taskLineIdx === -1) return fileContent;
-    }
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) return fileContent;
 
     // TODO: Verify if the escape is really useless here (or change this parsing completely). It was added by the linter, but it seems necessary for correct regex.
     lines[taskLineIdx] = lines[taskLineIdx].replace(
@@ -57,14 +81,13 @@ export async function removeTagFromTaskInVault(
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
 
-    let taskLineIdx = lines.findIndex((line: string) =>
-      line.includes(`🆔 ${task.id}`)
-    );
+    let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
 
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(/🆔\s+\S+/g, "") // Remove ID
+        .replace(/🆔\s+\S+/g, "") // Remove emoji ID
+        .replace(/\[\[id::\s*\S+\]\]/g, "") // Remove Dataview ID
         .replace(/#\S+/g, "") // Remove tags
         .replace(/\s+/g, " ") // Normalize whitespace
         .trim();
@@ -72,6 +95,7 @@ export async function removeTagFromTaskInVault(
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
           .replace(/🆔\s+\S+/g, "")
+          .replace(/\[\[id::\s*\S+\]\]/g, "")
           .replace(/#\S+/g, "")
           .replace(/\s+/g, " ")
           .trim();
@@ -117,13 +141,13 @@ export async function addTagToTaskInVault(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    let taskLineIdx = lines.findIndex((line: string) =>
-      line.includes(`🆔 ${task.id}`)
-    );
+    let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(/🆔\s+\S+/g, "") // Remove ID
+        .replace(/🆔\s+\S+/g, "") // Remove emoji ID
+        .replace(/\[\[id::\s*\S+\]\]/g, "") // Remove Dataview ID
         .replace(/#\S+/g, "") // Remove tags
         .replace(/\s+/g, " ") // Normalize whitespace
         .trim();
@@ -131,6 +155,7 @@ export async function addTagToTaskInVault(
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
           .replace(/🆔\s+\S+/g, "")
+          .replace(/\[\[id::\s*\S+\]\]/g, "")
           .replace(/#\S+/g, "")
           .replace(/\s+/g, " ")
           .trim();
@@ -201,7 +226,7 @@ export async function addLinkSignsBetweenTasks(
   vault: Vault,
   fromTask: Task,
   toTask: Task,
-  linkingStyle: "individual" | "csv" = "individual"
+  linkingStyle: "individual" | "csv" | "dataview" = "individual"
 ): Promise<string | undefined> {
   if (!fromTask.link || !toTask.link) return undefined;
 
@@ -226,7 +251,7 @@ export async function addSignToTaskInFile(
   task: Task,
   type: "stop" | "id",
   hash: string,
-  linkingStyle: "individual" | "csv" = "individual"
+  linkingStyle: "individual" | "csv" | "dataview" = "individual"
 ): Promise<void> {
   if (!task.link || !task.text) return;
   const file = vault.getAbstractFileByPath(task.link);
@@ -238,64 +263,107 @@ export async function addSignToTaskInFile(
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
-      // If any 🆔 <6-hex> is already present, do not add another
-      const idPresent = /🆔\s*[a-zA-Z0-9]{6}/.test(lines[taskLineIdx]);
-      if (idPresent) return fileContent;
+      // Check if any ID format is already present
+      const emojiIdPresent = /🆔\s*[a-zA-Z0-9]{6}/.test(lines[taskLineIdx]);
+      const dataviewIdPresent = /\[\[id::\s*[a-zA-Z0-9]{6}\]\]/.test(
+        lines[taskLineIdx]
+      );
 
-      // Always add ID individually
-      const sign = `🆔 ${hash}`;
-      if (lines[taskLineIdx].includes(sign)) return fileContent;
-      lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      if (emojiIdPresent || dataviewIdPresent) return fileContent;
+
+      // Add ID in the configured format
+      if (linkingStyle === "dataview") {
+        const sign = `[[id:: ${hash}]]`;
+        if (lines[taskLineIdx].includes(sign)) return fileContent;
+        lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      } else {
+        // Default to emoji format for individual and csv styles
+        const sign = `🆔 ${hash}`;
+        if (lines[taskLineIdx].includes(sign)) return fileContent;
+        lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      }
     } else if (type === "stop") {
-      // Handle stop signs based on linking style
-      if (linkingStyle === "csv") {
-        // Check if there's already a CSV-style stop sign
-        const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/;
-        const csvMatch = lines[taskLineIdx].match(csvRegex);
+      // Detect if task is using Dataview format (or if it's the configured style)
+      const usesDataviewFormat =
+        linkingStyle === "dataview" ||
+        /\[\[id::\s*[a-zA-Z0-9]{6}\]\]/.test(lines[taskLineIdx]) ||
+        /\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/.test(
+          lines[taskLineIdx]
+        );
 
-        if (csvMatch) {
-          // Append to existing CSV list if hash not already present
-          const existingIds = csvMatch[1].split(",").map((id) => id.trim());
+      if (usesDataviewFormat) {
+        // Handle Dataview format dependencies
+        const dataviewRegex =
+          /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/;
+        const dataviewMatch = lines[taskLineIdx].match(dataviewRegex);
+
+        if (dataviewMatch) {
+          // Append to existing Dataview dependencies list if hash not already present
+          const existingIds = dataviewMatch[1]
+            .split(",")
+            .map((id) => id.trim());
           if (!existingIds.includes(hash)) {
-            const newCsvList = [...existingIds, hash].join(",");
+            const newList = [...existingIds, hash].join(", ");
             lines[taskLineIdx] = lines[taskLineIdx].replace(
-              csvRegex,
-              `⛔ ${newCsvList}`
+              dataviewRegex,
+              `[[dependsOn:: ${newList}]]`
             );
           }
         } else {
-          // Check for individual style stop signs and convert to CSV
-          const individualRegex = /⛔\s*([a-zA-Z0-9]{6})/g;
-          const individualMatches = Array.from(
-            lines[taskLineIdx].matchAll(individualRegex)
-          );
-
-          if (individualMatches.length > 0) {
-            // Convert existing individual signs to CSV format
-            const existingIds = individualMatches.map((match) => match[1]);
-            if (!existingIds.includes(hash)) {
-              existingIds.push(hash);
-            }
-
-            // Remove all individual stop signs
-            let updatedLine = lines[taskLineIdx];
-            individualMatches.forEach((match) => {
-              updatedLine = updatedLine.replace(match[0], "");
-            });
-
-            // Add single CSV-style stop sign
-            updatedLine = updatedLine.trim() + ` ⛔ ${existingIds.join(",")}`;
-            lines[taskLineIdx] = updatedLine;
-          } else {
-            // No existing stop signs, add new CSV-style (single item)
-            lines[taskLineIdx] = lines[taskLineIdx] + ` ⛔ ${hash}`;
-          }
+          // No existing Dataview dependencies, add new one
+          lines[taskLineIdx] = lines[taskLineIdx] + ` [[dependsOn:: ${hash}]]`;
         }
       } else {
-        // Individual style - add individual stop sign
-        const sign = `⛔ ${hash}`;
-        if (lines[taskLineIdx].includes(sign)) return fileContent;
-        lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+        // Handle emoji format stop signs based on linking style
+        if (linkingStyle === "csv") {
+          // Check if there's already a CSV-style stop sign
+          const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/;
+          const csvMatch = lines[taskLineIdx].match(csvRegex);
+
+          if (csvMatch) {
+            // Append to existing CSV list if hash not already present
+            const existingIds = csvMatch[1].split(",").map((id) => id.trim());
+            if (!existingIds.includes(hash)) {
+              const newCsvList = [...existingIds, hash].join(",");
+              lines[taskLineIdx] = lines[taskLineIdx].replace(
+                csvRegex,
+                `⛔ ${newCsvList}`
+              );
+            }
+          } else {
+            // Check for individual style stop signs and convert to CSV
+            const individualRegex = /⛔\s*([a-zA-Z0-9]{6})/g;
+            const individualMatches = Array.from(
+              lines[taskLineIdx].matchAll(individualRegex)
+            );
+
+            if (individualMatches.length > 0) {
+              // Convert existing individual signs to CSV format
+              const existingIds = individualMatches.map((match) => match[1]);
+              if (!existingIds.includes(hash)) {
+                existingIds.push(hash);
+              }
+
+              // Remove all individual stop signs
+              let updatedLine = lines[taskLineIdx];
+              individualMatches.forEach((match) => {
+                updatedLine = updatedLine.replace(match[0], "");
+              });
+
+              // Add single CSV-style stop sign
+              updatedLine = updatedLine.trim() + ` ⛔ ${existingIds.join(",")}`;
+              lines[taskLineIdx] = updatedLine;
+            } else {
+              // No existing stop signs, add new CSV-style (single item)
+              lines[taskLineIdx] = lines[taskLineIdx] + ` ⛔ ${hash}`;
+            }
+          }
+        } else {
+          // Individual style - add individual stop sign
+          const sign = `⛔ ${hash}`;
+          if (lines[taskLineIdx].includes(sign)) return fileContent;
+          lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+        }
       }
     }
 
@@ -329,42 +397,75 @@ export async function removeSignFromTaskInFile(
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
-      // Remove ID sign (always individual)
-      const sign = `🆔 ${hash}`;
-      if (!lines[taskLineIdx].includes(sign)) return fileContent;
-      lines[taskLineIdx] = lines[taskLineIdx]
-        .replace(sign, "")
-        .replace(/\s+$/, "");
-    } else if (type === "stop") {
-      // Handle stop sign removal for both formats
-      // First try CSV format
-      const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/;
-      const csvMatch = lines[taskLineIdx].match(csvRegex);
+      // Remove emoji ID sign
+      const emojiSign = `🆔 ${hash}`;
+      if (lines[taskLineIdx].includes(emojiSign)) {
+        lines[taskLineIdx] = lines[taskLineIdx]
+          .replace(emojiSign, "")
+          .replace(/\s+$/, "");
+        return lines.join("\n");
+      }
 
-      if (csvMatch) {
-        const existingIds = csvMatch[1].split(",").map((id) => id.trim());
+      // Remove Dataview ID sign
+      const dataviewSign = `[[id:: ${hash}]]`;
+      if (lines[taskLineIdx].includes(dataviewSign)) {
+        lines[taskLineIdx] = lines[taskLineIdx]
+          .replace(dataviewSign, "")
+          .replace(/\s+$/, "");
+      }
+    } else if (type === "stop") {
+      // First try Dataview format
+      const dataviewRegex =
+        /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/;
+      const dataviewMatch = lines[taskLineIdx].match(dataviewRegex);
+
+      if (dataviewMatch) {
+        const existingIds = dataviewMatch[1].split(",").map((id) => id.trim());
         const filteredIds = existingIds.filter((id) => id !== hash);
 
         if (filteredIds.length === 0) {
-          // Remove entire CSV block if no IDs left
+          // Remove entire Dataview block if no IDs left
           lines[taskLineIdx] = lines[taskLineIdx]
-            .replace(csvMatch[0], "")
+            .replace(dataviewMatch[0], "")
             .replace(/\s+$/, "");
         } else if (filteredIds.length !== existingIds.length) {
-          // Update CSV with remaining IDs
-          const newCsvList = filteredIds.join(",");
+          // Update Dataview with remaining IDs
+          const newList = filteredIds.join(", ");
           lines[taskLineIdx] = lines[taskLineIdx].replace(
-            csvRegex,
-            `⛔ ${newCsvList}`
+            dataviewRegex,
+            `[[dependsOn:: ${newList}]]`
           );
         }
       } else {
-        // Try individual format
-        const sign = `⛔ ${hash}`;
-        if (lines[taskLineIdx].includes(sign)) {
-          lines[taskLineIdx] = lines[taskLineIdx]
-            .replace(sign, "")
-            .replace(/\s+$/, "");
+        // Try emoji CSV format
+        const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/;
+        const csvMatch = lines[taskLineIdx].match(csvRegex);
+
+        if (csvMatch) {
+          const existingIds = csvMatch[1].split(",").map((id) => id.trim());
+          const filteredIds = existingIds.filter((id) => id !== hash);
+
+          if (filteredIds.length === 0) {
+            // Remove entire CSV block if no IDs left
+            lines[taskLineIdx] = lines[taskLineIdx]
+              .replace(csvMatch[0], "")
+              .replace(/\s+$/, "");
+          } else if (filteredIds.length !== existingIds.length) {
+            // Update CSV with remaining IDs
+            const newCsvList = filteredIds.join(",");
+            lines[taskLineIdx] = lines[taskLineIdx].replace(
+              csvRegex,
+              `⛔ ${newCsvList}`
+            );
+          }
+        } else {
+          // Try individual emoji format
+          const sign = `⛔ ${hash}`;
+          if (lines[taskLineIdx].includes(sign)) {
+            lines[taskLineIdx] = lines[taskLineIdx]
+              .replace(sign, "")
+              .replace(/\s+$/, "");
+          }
         }
       }
     }
