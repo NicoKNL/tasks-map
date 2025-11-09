@@ -9,10 +9,10 @@ This file demonstrates that the plugin supports both emoji and Dataview formats 
 
 ## Dataview Format (New)
 
-- [ ] Design architecture #dataview [[id:: jkl012]]
-- [ ] Implement feature #dataview [[dependsOn:: jkl012]] 🆔 kyqzxr
-- [ ] Write tests #dataview [[dependsOn:: jkl012, kyqzxr]] 🆔 6mpkp2
-- [ ] Deploy to production #dataview [[dependsOn:: jkl012, 6mpkp2]]
+- [ ] Design architecture #dataview  [[id:: 7f3yaw]]
+- [ ] Implement feature #dataview  [[dependsOn:: 7f3yaw]] [[id:: jmhi6u]]
+- [ ] Write tests #dataview  [[dependsOn:: jmhi6u]] [[id:: i2a0b2]]
+- [ ] Deploy to production #dataview  [[dependsOn:: jmhi6u, i2a0b2]]
 
 ## Mixed Format (Both Styles)
 

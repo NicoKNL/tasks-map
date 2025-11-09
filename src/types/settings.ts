@@ -3,7 +3,7 @@ export interface TasksMapSettings {
   showTags: boolean;
 
   layoutDirection: "Horizontal" | "Vertical";
-  linkingStyle: "individual" | "csv";
+  linkingStyle: "individual" | "csv" | "dataview";
 
   debugVisualization: boolean;
 

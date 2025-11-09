@@ -55,7 +55,7 @@ export async function updateTaskStatusInVault(
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-    
+
     if (taskLineIdx === -1) return fileContent;
 
     // TODO: Verify if the escape is really useless here (or change this parsing completely). It was added by the linter, but it seems necessary for correct regex.
@@ -142,7 +142,7 @@ export async function addTagToTaskInVault(
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-    
+
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
@@ -226,7 +226,7 @@ export async function addLinkSignsBetweenTasks(
   vault: Vault,
   fromTask: Task,
   toTask: Task,
-  linkingStyle: "individual" | "csv" = "individual"
+  linkingStyle: "individual" | "csv" | "dataview" = "individual"
 ): Promise<string | undefined> {
   if (!fromTask.link || !toTask.link) return undefined;
 
@@ -251,7 +251,7 @@ export async function addSignToTaskInFile(
   task: Task,
   type: "stop" | "id",
   hash: string,
-  linkingStyle: "individual" | "csv" = "individual"
+  linkingStyle: "individual" | "csv" | "dataview" = "individual"
 ): Promise<void> {
   if (!task.link || !task.text) return;
   const file = vault.getAbstractFileByPath(task.link);
@@ -271,13 +271,21 @@ export async function addSignToTaskInFile(
 
       if (emojiIdPresent || dataviewIdPresent) return fileContent;
 
-      // Always add ID in emoji format (default)
-      const sign = `🆔 ${hash}`;
-      if (lines[taskLineIdx].includes(sign)) return fileContent;
-      lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      // Add ID in the configured format
+      if (linkingStyle === "dataview") {
+        const sign = `[[id:: ${hash}]]`;
+        if (lines[taskLineIdx].includes(sign)) return fileContent;
+        lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      } else {
+        // Default to emoji format for individual and csv styles
+        const sign = `🆔 ${hash}`;
+        if (lines[taskLineIdx].includes(sign)) return fileContent;
+        lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
+      }
     } else if (type === "stop") {
-      // Detect if task is using Dataview format
+      // Detect if task is using Dataview format (or if it's the configured style)
       const usesDataviewFormat =
+        linkingStyle === "dataview" ||
         /\[\[id::\s*[a-zA-Z0-9]{6}\]\]/.test(lines[taskLineIdx]) ||
         /\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/.test(
           lines[taskLineIdx]
@@ -291,7 +299,9 @@ export async function addSignToTaskInFile(
 
         if (dataviewMatch) {
           // Append to existing Dataview dependencies list if hash not already present
-          const existingIds = dataviewMatch[1].split(",").map((id) => id.trim());
+          const existingIds = dataviewMatch[1]
+            .split(",")
+            .map((id) => id.trim());
           if (!existingIds.includes(hash)) {
             const newList = [...existingIds, hash].join(", ");
             lines[taskLineIdx] = lines[taskLineIdx].replace(
