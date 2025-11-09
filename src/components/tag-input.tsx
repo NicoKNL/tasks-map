@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
 
 interface TagInputProps {
@@ -16,8 +16,8 @@ export function TagInput({
   onAddTag,
   onCancel,
 }: TagInputProps) {
-  const [inputValue, setInputValue] = useState("");
   const selectRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const hasSelectedRef = useRef(false);
 
   useEffect(() => {
     // Focus the input when component mounts
@@ -41,6 +41,7 @@ export function TagInput({
   }));
 
   const handleChange = (newValue: TagOption | null) => {
+    hasSelectedRef.current = true;
     if (newValue) {
       const cleanTag = cleanTagInput(newValue.value);
       if (cleanTag) {
@@ -58,17 +59,14 @@ export function TagInput({
     // This allows selecting from suggestions with Enter
   };
 
-  const handleBlur = () => {
-    // If there's input value, add it as a tag
-    const cleanTag = cleanTagInput(inputValue);
-    if (cleanTag) {
-      onAddTag(cleanTag);
-      return;
+  const handleMenuClose = () => {
+    if (!hasSelectedRef.current) {
+      onCancel();
     }
-    onCancel();
   };
 
   const handleCreateOption = (inputValue: string) => {
+    hasSelectedRef.current = true;
     const cleanTag = cleanTagInput(inputValue);
     if (cleanTag) {
       onAddTag(cleanTag);
@@ -80,22 +78,14 @@ export function TagInput({
       ref={selectRef}
       classNamePrefix="tasks-map-tag-select"
       options={options}
-      value={null}
-      inputValue={inputValue}
-      onInputChange={(newValue) => setInputValue(newValue)}
       onChange={handleChange}
       onCreateOption={handleCreateOption}
       onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
+      onMenuClose={handleMenuClose}
       placeholder="Type or select tag..."
-      isClearable={false}
-      menuIsOpen={true}
       autoFocus={true}
       openMenuOnFocus={true}
-      openMenuOnClick={true}
-      closeMenuOnSelect={true}
       formatCreateLabel={(inputValue) => `Create tag "${inputValue}"`}
-      noOptionsMessage={() => "Type to create a new tag"}
       components={{
         DropdownIndicator: () => null,
         IndicatorSeparator: () => null,

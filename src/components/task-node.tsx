@@ -129,12 +129,14 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
             {/* Add tag button/input */}
             {isAddingTag ? (
-              <TagInput
-                allTags={allTags}
-                existingTags={tags}
-                onAddTag={handleAddTag}
-                onCancel={handleCancelAddTag}
-              />
+              <div className="nodrag">
+                <TagInput
+                  allTags={allTags}
+                  existingTags={tags}
+                  onAddTag={handleAddTag}
+                  onCancel={handleCancelAddTag}
+                />
+              </div>
             ) : (
               <span
                 className="tasks-map-add-tag-button"
