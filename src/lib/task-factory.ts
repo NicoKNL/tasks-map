@@ -117,7 +117,8 @@ export class TaskFactory {
 
   private parseDataviewStyleLinks(text: string): string[] {
     // Parse Dataview format: [[dependsOn:: abc123,def456]]
-    const dataviewRegex = /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/g;
+    const dataviewRegex =
+      /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/g;
     const dataviewMatches = Array.from(text.matchAll(dataviewRegex));
     const ids: string[] = [];
 
@@ -136,7 +137,10 @@ export class TaskFactory {
       .replace(/\[\[id::\s*[a-zA-Z0-9]{6}\]\]/gi, "") // Remove Dataview IDs: [[id:: abc123]]
       .replace(/⛔\s*[a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*/g, "") // Remove CSV links: ⛔ abc123,def456
       .replace(/⛔\s*[a-zA-Z0-9]{6}/g, "") // Remove individual links: ⛔ abc123
-      .replace(/\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/g, "") // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
+      .replace(
+        /\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/g,
+        ""
+      ) // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
       .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "") // Remove other emojis
       .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis
       .trim();
