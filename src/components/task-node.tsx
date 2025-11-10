@@ -46,6 +46,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
   const [status, setStatus] = useState(task.status);
   const [tags, setTags] = useState(task.tags || []);
   const [isAddingTag, setIsAddingTag] = useState(false);
+  const [tagError, setTagError] = useState(false);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
 
@@ -77,7 +78,21 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
   const handleAddTag = async (tagToAdd: string) => {
     if (!tagToAdd.trim()) return;
 
+    // Don't allow tags with spaces - check before any cleaning
+    if (tagToAdd.includes(" ")) {
+      setTagError(true);
+      // Reset after showing error briefly
+      setTimeout(() => {
+        setTagError(false);
+        setIsAddingTag(false);
+      }, 100);
+      return;
+    }
+
     const cleanTag = tagToAdd.trim().replace(/^#+/, ""); // Remove any leading #
+
+    // Clear any previous error
+    setTagError(false);
 
     // Don't add duplicate tags
     if (tags.includes(cleanTag)) {
@@ -110,6 +125,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
   const handleCancelAddTag = () => {
     setIsAddingTag(false);
+    setTagError(false);
   };
 
   return (
@@ -154,6 +170,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
                   existingTags={tags}
                   onAddTag={handleAddTag}
                   onCancel={handleCancelAddTag}
+                  hasError={tagError}
                 />
               </div>
             ) : (

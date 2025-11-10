@@ -6,6 +6,7 @@ interface TagInputProps {
   existingTags: string[]; // Tags already on this task
   onAddTag: (tag: string) => void; // eslint-disable-line no-unused-vars
   onCancel: () => void;
+  hasError?: boolean;
 }
 
 type TagOption = { value: string; label: string };
@@ -15,9 +16,12 @@ export function TagInput({
   existingTags,
   onAddTag,
   onCancel,
+  hasError = false,
 }: TagInputProps) {
   const selectRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const hasSelectedRef = useRef(false);
+  const [inputValue, setInputValue] = React.useState("");
+  const [hasSpaceError, setHasSpaceError] = React.useState(false);
 
   useEffect(() => {
     // Focus the input when component mounts
@@ -43,10 +47,7 @@ export function TagInput({
   const handleChange = (newValue: TagOption | null) => {
     hasSelectedRef.current = true;
     if (newValue) {
-      const cleanTag = cleanTagInput(newValue.value);
-      if (cleanTag) {
-        onAddTag(cleanTag);
-      }
+      onAddTag(newValue.value);
     }
   };
 
@@ -65,19 +66,25 @@ export function TagInput({
     }
   };
 
+  const handleInputChange = (newValue: string) => {
+    setInputValue(newValue);
+    // Check if input contains any spaces (whitespace)
+    setHasSpaceError(newValue.includes(" "));
+  };
+
   const handleCreateOption = (inputValue: string) => {
     hasSelectedRef.current = true;
-    const cleanTag = cleanTagInput(inputValue);
-    if (cleanTag) {
-      onAddTag(cleanTag);
-    }
+    onAddTag(inputValue);
   };
 
   return (
     <CreatableSelect
       ref={selectRef}
       classNamePrefix="tasks-map-tag-select"
+      className={hasError || hasSpaceError ? "tasks-map-tag-select-error" : ""}
       options={options}
+      inputValue={inputValue}
+      onInputChange={handleInputChange}
       onChange={handleChange}
       onCreateOption={handleCreateOption}
       onKeyDown={handleKeyDown}
