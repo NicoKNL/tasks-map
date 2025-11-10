@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
@@ -13,6 +13,7 @@ import { TaskPriority } from "./task-priority";
 import { TagInput } from "./tag-input";
 import { useSummaryRenderer } from "../hooks/use-summary-renderer";
 import { removeTagFromTaskInVault, addTagToTaskInVault } from "../lib/utils";
+import { TagsContext } from "../contexts/context";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -26,7 +27,6 @@ interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
-  allTags?: string[];
 }
 
 export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
@@ -39,8 +39,9 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     tagColorMode = "random",
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
-    allTags = [],
   } = data;
+
+  const { allTags, updateTaskTags } = useContext(TagsContext);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
   const [tags, setTags] = useState(task.tags || []);
@@ -54,13 +55,22 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
 
   const handleTagRemove = async (tagToRemove: string) => {
     // Immediately update the visual state
-    setTags((prevTags) => prevTags.filter((tag) => tag !== tagToRemove));
+    setTags((prevTags) => {
+      const updatedTags = prevTags.filter((tag) => tag !== tagToRemove);
+      // Update tasks array so allTags recomputes
+      updateTaskTags(task.id, updatedTags);
+      return updatedTags;
+    });
 
     try {
       await removeTagFromTaskInVault(task, tagToRemove, app);
     } catch {
       // Revert the visual change if the vault operation failed
-      setTags((prevTags) => [...prevTags, tagToRemove]);
+      setTags((prevTags) => {
+        const revertedTags = [...prevTags, tagToRemove];
+        updateTaskTags(task.id, revertedTags);
+        return revertedTags;
+      });
     }
   };
 
@@ -76,13 +86,22 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     }
 
     // Immediately update the visual state
-    setTags((prevTags) => [...prevTags, cleanTag]);
+    setTags((prevTags) => {
+      const updatedTags = [...prevTags, cleanTag];
+      // Update tasks array so allTags recomputes
+      updateTaskTags(task.id, updatedTags);
+      return updatedTags;
+    });
 
     try {
       await addTagToTaskInVault(task, cleanTag, app);
     } catch {
       // Revert the visual change if the vault operation failed
-      setTags((prevTags) => prevTags.filter((tag) => tag !== cleanTag));
+      setTags((prevTags) => {
+        const revertedTags = prevTags.filter((tag) => tag !== cleanTag);
+        updateTaskTags(task.id, revertedTags);
+        return revertedTags;
+      });
     }
 
     // Reset input state
