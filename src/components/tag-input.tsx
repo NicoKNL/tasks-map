@@ -30,11 +30,6 @@ export function TagInput({
     }
   }, []);
 
-  // Helper function to clean tag input (remove leading # and trim whitespace)
-  const cleanTagInput = (input: string): string => {
-    return input.trim().replace(/^#+/, "");
-  };
-
   // Filter out tags that are already on the task
   // Tags in allTags are sorted by frequency (most used first) from TaskMapGraphView
   const availableTags = allTags.filter((tag) => !existingTags.includes(tag));
