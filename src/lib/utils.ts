@@ -506,8 +506,7 @@ export function createNodesFromTasks(
   debugVisualization: boolean = false,
   tagColorMode: "random" | "static" = "random",
   tagColorSeed: number = 42,
-  tagStaticColor: string = "#3b82f6",
-  allTags: string[] = []
+  tagStaticColor: string = "#3b82f6"
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -525,7 +524,6 @@ export function createNodesFromTasks(
       tagColorMode,
       tagColorSeed,
       tagStaticColor,
-      allTags,
     },
     type: "task" as const,
     sourcePosition,

@@ -22,6 +22,7 @@ import { NO_TAGS_VALUE } from "src/components/tag-select";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
+import { TagsContext } from "src/contexts/context";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
@@ -65,20 +66,25 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
     vaultRef.current = vault;
   }, [vault]);
 
+  // Maintain a live registry of tags per task for efficient allTags computation
+  const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
+    Map<string, string[]>
+  >(new Map());
+
   const allTags = useMemo(() => {
     const tagFrequency = new Map<string, number>();
-    tasks.forEach((task) =>
-      task.tags.forEach((tag) => {
+    taskTagsRegistry.forEach((tags) => {
+      tags.forEach((tag) => {
         tagFrequency.set(tag, (tagFrequency.get(tag) || 0) + 1);
-      })
-    );
+      });
+    });
     // Sort by frequency (descending), then alphabetically
     return Array.from(tagFrequency.keys()).sort((a, b) => {
       const freqDiff = (tagFrequency.get(b) || 0) - (tagFrequency.get(a) || 0);
       if (freqDiff !== 0) return freqDiff;
       return a.localeCompare(b, undefined, { sensitivity: "base" });
     });
-  }, [tasks]);
+  }, [taskTagsRegistry]);
 
   const getFilteredNodeIds = (
     tasks: Task[],
@@ -118,7 +124,21 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   const reloadTasks = () => {
     const newTasks = getAllDataviewTasks(app);
     setTasks(newTasks);
+    // Rebuild the tag registry from the reloaded tasks
+    const newRegistry = new Map<string, string[]>();
+    newTasks.forEach((task) => {
+      newRegistry.set(task.id, task.tags);
+    });
+    setTaskTagsRegistry(newRegistry);
   };
+
+  const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
+    setTaskTagsRegistry((prevRegistry) => {
+      const newRegistry = new Map(prevRegistry);
+      newRegistry.set(taskId, newTags);
+      return newRegistry;
+    });
+  }, []);
 
   useEffect(() => {
     let newNodes = createNodesFromTasks(
@@ -129,8 +149,7 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       settings.debugVisualization,
       settings.tagColorMode,
       settings.tagColorSeed,
-      settings.tagStaticColor,
-      allTags
+      settings.tagStaticColor
     );
     let newEdges = createEdgesFromTasks(
       tasks,
@@ -156,6 +175,13 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
     );
     setNodes(layoutedNodes);
     setEdges(newEdges);
+
+    // Initialize tag registry when tasks change
+    const newRegistry = new Map<string, string[]>();
+    tasks.forEach((task) => {
+      newRegistry.set(task.id, task.tags);
+    });
+    setTaskTagsRegistry(newRegistry);
 
     setTimeout(() => {
       reactFlowInstance.fitView({ duration: 400 });
@@ -240,36 +266,46 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
     ]
   );
 
+  const tagsContextValue = useMemo(
+    () => ({
+      allTags,
+      updateTaskTags,
+    }),
+    [allTags, updateTaskTags]
+  );
+
   return (
-    <div className="tasks-map-graph-container">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        proOptions={{ hideAttribution: true }}
-        minZoom={0.1}
-        fitView
-        onConnect={onConnect}
-        onEdgeClick={onEdgeClick}
-        onNodeClick={onNodeClick}
-        onPaneClick={onPaneClick}
-      >
-        <GuiOverlay
-          allTags={allTags}
-          selectedTags={selectedTags}
-          setSelectedTags={setSelectedTags}
-          reloadTasks={reloadTasks}
-          allStatuses={ALL_STATUSES}
-          selectedStatuses={selectedStatuses}
-          setSelectedStatuses={setSelectedStatuses}
-        />
-        <TaskMinimap />
-        <Background />
-      </ReactFlow>
-      {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
-    </div>
+    <TagsContext.Provider value={tagsContextValue}>
+      <div className="tasks-map-graph-container">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          proOptions={{ hideAttribution: true }}
+          minZoom={0.1}
+          fitView
+          onConnect={onConnect}
+          onEdgeClick={onEdgeClick}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+        >
+          <GuiOverlay
+            allTags={allTags}
+            selectedTags={selectedTags}
+            setSelectedTags={setSelectedTags}
+            reloadTasks={reloadTasks}
+            allStatuses={ALL_STATUSES}
+            selectedStatuses={selectedStatuses}
+            setSelectedStatuses={setSelectedStatuses}
+          />
+          <TaskMinimap />
+          <Background />
+        </ReactFlow>
+        {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
+      </div>
+    </TagsContext.Provider>
   );
 }
