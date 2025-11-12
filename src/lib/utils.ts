@@ -476,6 +476,19 @@ export async function removeSignFromTaskInFile(
 
 // TODO: Improve typing for app parameter
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getAllTasks(app: any): Task[] {
+  // Central function to gather tasks from all available sources
+  const allTasks: Task[] = [];
+
+  // Source 1: Dataview plugin tasks
+  allTasks.push(...getAllDataviewTasks(app));
+
+  // Source 2: Note-based tasks (notes with #task in frontmatter)
+  allTasks.push(...getNoteTasks(app));
+
+  return allTasks;
+}
+
 export function getAllDataviewTasks(app: any): Task[] {
   // TODO: Tasks should use typing, either from dataview or the tasks plugin if available
   let tasks: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -496,6 +509,193 @@ export function getAllDataviewTasks(app: any): Task[] {
 
   // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
+}
+
+export function getNoteTasks(app: any): Task[] {
+  const tasks: Task[] = [];
+  const vault = app.vault;
+  const metadataCache = app.metadataCache;
+
+  // Get all markdown files in the vault
+  const files = vault.getMarkdownFiles();
+
+  for (const file of files) {
+    // Get the file's metadata (frontmatter)
+    const cache = metadataCache.getFileCache(file);
+
+    if (!cache?.frontmatter?.tags) {
+      continue;
+    }
+
+    // Check if the note has #task tag in frontmatter
+    const tags = cache.frontmatter.tags;
+    const hasTaskTag = Array.isArray(tags)
+      ? tags.some((tag: string) => tag === "task" || tag === "#task")
+      : tags === "task" || tags === "#task";
+
+    if (!hasTaskTag) {
+      continue;
+    }
+
+    // Parse the note as a task
+    const task = parseTaskNote(file, cache, app);
+    if (task) {
+      tasks.push(task);
+    }
+  }
+
+  return tasks;
+}
+
+function parseTaskNote(file: any, cache: any, app: any): Task | null {
+  const vault = app.vault;
+  const frontmatter = cache.frontmatter || {};
+  const factory = new TaskFactory();
+
+  // Extract task properties from frontmatter
+  const status = frontmatter.status || " "; // Default to todo
+  const title = file.basename; // Use note title as task text
+
+  // Create a RawTask-like object
+  const rawTask = {
+    status: status,
+    text: title,
+    link: { path: file.path },
+  };
+
+  try {
+    // Parse as a note-based task
+    const task = factory.parse(rawTask, "note");
+
+    // For note-based tasks, use the file path as the ID
+    task.id = file.path;
+
+    // Override with frontmatter data if available
+    if (frontmatter.tags) {
+      const tags = Array.isArray(frontmatter.tags)
+        ? frontmatter.tags.filter((t: string) => t !== "task" && t !== "#task")
+        : [];
+      task.tags = tags.map((t: string) => t.replace(/^#/, ""));
+    }
+
+    if (frontmatter.priority) {
+      task.priority = frontmatter.priority;
+    }
+
+    // Collect all incoming links from various sources
+    const allIncomingLinks: string[] = [];
+
+    // Parse blockedBy dependencies (TaskNotes format)
+    // For note-based tasks, these will be file paths
+    if (frontmatter.blockedBy) {
+      try {
+        const blockedByLinks = parseBlockedByLinks(frontmatter.blockedBy, app);
+        allIncomingLinks.push(...blockedByLinks);
+      } catch (error) {
+        console.error(`Failed to parse blockedBy for ${file.basename}:`, error);
+      }
+    }
+
+    // Also support simpler dependsOn format
+    if (frontmatter.dependsOn) {
+      try {
+        const deps = Array.isArray(frontmatter.dependsOn)
+          ? frontmatter.dependsOn
+          : [frontmatter.dependsOn];
+        allIncomingLinks.push(...deps);
+      } catch (error) {
+        console.error(`Failed to parse dependsOn for ${file.basename}:`, error);
+      }
+    }
+
+    // Remove duplicates and assign to task
+    task.incomingLinks = [...new Set(allIncomingLinks)];
+
+    return task;
+  } catch (error) {
+    console.error(`Failed to parse task note ${file.basename}:`, error);
+    return null;
+  }
+}
+
+function parseBlockedByLinks(blockedBy: any, app: any): string[] {
+  const links: string[] = [];
+  const vault = app.vault;
+
+  if (!blockedBy) {
+    return links;
+  }
+
+  if (!Array.isArray(blockedBy)) {
+    console.warn("blockedBy is not an array, skipping");
+    return links;
+  }
+
+  for (const item of blockedBy) {
+    try {
+      let linkTarget: string | null = null;
+
+      // Format 1: Complex object with uid and reltype
+      // { uid: "[[Example task 1]]", reltype: "FINISHTOSTART" }
+      if (typeof item === "object" && item !== null && "uid" in item) {
+        const uid = item.uid;
+        if (typeof uid === "string") {
+          linkTarget = uid;
+        } else {
+          console.warn("blockedBy item uid is not a string:", uid);
+          continue;
+        }
+      }
+      // Format 2: Simple wiki link string
+      // "[[Example task 1]]"
+      else if (typeof item === "string") {
+        linkTarget = item;
+      }
+
+      if (!linkTarget || typeof linkTarget !== "string") {
+        continue;
+      }
+
+      // Extract the page name from wiki link format [[Page Name]]
+      const wikiLinkMatch = linkTarget.match(/\[\[([^\]]+)\]\]/);
+      if (!wikiLinkMatch) {
+        continue;
+      }
+
+      const pageName = wikiLinkMatch[1];
+
+      if (!pageName || typeof pageName !== "string") {
+        console.warn("Invalid page name extracted from wiki link");
+        continue;
+      }
+
+      // Try to find the file by name and get its path
+      let file = null;
+      try {
+        file = vault.getAbstractFileByPath(pageName + ".md");
+        if (!file) {
+          const markdownFiles = vault.getMarkdownFiles();
+          file = markdownFiles.find((f: any) => f.basename === pageName);
+        }
+      } catch (error) {
+        console.error(`Error finding file for ${pageName}:`, error);
+        continue;
+      }
+
+      if (!file) {
+        console.warn(`Could not find file for wiki link: ${pageName}`);
+        continue;
+      }
+
+      // For note-based tasks, store the file path as the link reference
+      links.push(file.path);
+    } catch (error) {
+      console.error("Error parsing blockedBy item:", item, error);
+      continue;
+    }
+  }
+
+  return links;
 }
 
 export function createNodesFromTasks(
@@ -538,6 +738,10 @@ export function createEdgesFromTasks(
   debugVisualization: boolean = false
 ): TaskEdge[] {
   const edges: TaskEdge[] = [];
+
+  // Create edges based on task dependencies
+  // Works for both dataview tasks (ID-based) and note tasks (file path-based)
+  // because both use their respective identifiers consistently
   tasks.forEach((task) => {
     task.incomingLinks.forEach((parentTaskId) => {
       edges.push({
