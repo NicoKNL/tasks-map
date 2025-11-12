@@ -476,6 +476,20 @@ export async function removeSignFromTaskInFile(
 
 // TODO: Improve typing for app parameter
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getAllTasks(app: any): Task[] {
+  // Central function to gather tasks from all available sources
+  const allTasks: Task[] = [];
+
+  // Source 1: Dataview plugin tasks
+  allTasks.push(...getAllDataviewTasks(app));
+
+  // Future sources can be added here:
+  // allTasks.push(...getNoteTasks(app));
+  // allTasks.push(...getTasksPluginTasks(app));
+
+  return allTasks;
+}
+
 export function getAllDataviewTasks(app: any): Task[] {
   // TODO: Tasks should use typing, either from dataview or the tasks plugin if available
   let tasks: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -9,7 +9,7 @@ import ReactFlow, {
 import { useApp } from "src/hooks/hooks";
 import {
   addLinkSignsBetweenTasks,
-  getAllDataviewTasks,
+  getAllTasks,
   getLayoutedElements,
   removeLinkSignsBetweenTasks,
   createNodesFromTasks,
@@ -122,7 +122,7 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   };
 
   const reloadTasks = () => {
-    const newTasks = getAllDataviewTasks(app);
+    const newTasks = getAllTasks(app);
     setTasks(newTasks);
     // Rebuild the tag registry from the reloaded tasks
     const newRegistry = new Map<string, string[]>();

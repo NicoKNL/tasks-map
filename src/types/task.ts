@@ -2,6 +2,12 @@ import { Node, Edge } from "reactflow";
 
 export type TaskStatus = "todo" | "in_progress" | "canceled" | "done";
 
+export interface RawTask {
+  status: string;
+  text: string;
+  link: { path: string };
+}
+
 export interface Task {
   id: string;
   summary: string;
