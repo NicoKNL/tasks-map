@@ -4,6 +4,12 @@ import { Task, TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
+import {
+  EMOJI_ID_REMOVAL,
+  DATAVIEW_ID_REMOVAL,
+  TAG_REMOVAL,
+  WHITESPACE_NORMALIZE,
+} from "./task-regex";
 
 const statusSymbols = {
   todo: "[ ]",
@@ -11,12 +17,6 @@ const statusSymbols = {
   canceled: "[-]",
   done: "[x]",
 };
-
-// Regex patterns for cleaning task text (removing metadata)
-const EMOJI_ID_REGEX = /🆔\s+\S+/g;
-const DATAVIEW_ID_REGEX = /\[\[id::\s*\S+\]\]/g;
-const TAG_REGEX = /#\S+/g;
-const WHITESPACE_NORMALIZE_REGEX = /\s+/g;
 
 /**
  * Find the index of a task line in an array of lines by its ID.
@@ -92,18 +92,18 @@ export async function removeTagFromTaskInVault(
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(EMOJI_ID_REGEX, "") // Remove emoji ID
-        .replace(DATAVIEW_ID_REGEX, "") // Remove Dataview ID
-        .replace(TAG_REGEX, "") // Remove tags
-        .replace(WHITESPACE_NORMALIZE_REGEX, " ") // Normalize whitespace
+        .replace(EMOJI_ID_REMOVAL, "") // Remove emoji ID
+        .replace(DATAVIEW_ID_REMOVAL, "") // Remove Dataview ID
+        .replace(TAG_REMOVAL, "") // Remove tags
+        .replace(WHITESPACE_NORMALIZE, " ") // Normalize whitespace
         .trim();
 
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
-          .replace(EMOJI_ID_REGEX, "")
-          .replace(DATAVIEW_ID_REGEX, "")
-          .replace(TAG_REGEX, "")
-          .replace(WHITESPACE_NORMALIZE_REGEX, " ")
+          .replace(EMOJI_ID_REMOVAL, "")
+          .replace(DATAVIEW_ID_REMOVAL, "")
+          .replace(TAG_REMOVAL, "")
+          .replace(WHITESPACE_NORMALIZE, " ")
           .trim();
         return (
           coreLineText.includes(coreTaskText) ||
@@ -152,18 +152,18 @@ export async function addTagToTaskInVault(
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(EMOJI_ID_REGEX, "") // Remove emoji ID
-        .replace(DATAVIEW_ID_REGEX, "") // Remove Dataview ID
-        .replace(TAG_REGEX, "") // Remove tags
-        .replace(WHITESPACE_NORMALIZE_REGEX, " ") // Normalize whitespace
+        .replace(EMOJI_ID_REMOVAL, "") // Remove emoji ID
+        .replace(DATAVIEW_ID_REMOVAL, "") // Remove Dataview ID
+        .replace(TAG_REMOVAL, "") // Remove tags
+        .replace(WHITESPACE_NORMALIZE, " ") // Normalize whitespace
         .trim();
 
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
-          .replace(EMOJI_ID_REGEX, "")
-          .replace(DATAVIEW_ID_REGEX, "")
-          .replace(TAG_REGEX, "")
-          .replace(WHITESPACE_NORMALIZE_REGEX, " ")
+          .replace(EMOJI_ID_REMOVAL, "")
+          .replace(DATAVIEW_ID_REMOVAL, "")
+          .replace(TAG_REMOVAL, "")
+          .replace(WHITESPACE_NORMALIZE, " ")
           .trim();
         return (
           coreLineText.includes(coreTaskText) ||
