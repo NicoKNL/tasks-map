@@ -1,4 +1,6 @@
 [
   "tasks-map",
-  "dataview"
+  "dataview",
+  "tasknotes",
+  "obsidian-tasks-plugin"
 ]

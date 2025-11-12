@@ -483,9 +483,8 @@ export function getAllTasks(app: any): Task[] {
   // Source 1: Dataview plugin tasks
   allTasks.push(...getAllDataviewTasks(app));
 
-  // Future sources can be added here:
-  // allTasks.push(...getNoteTasks(app));
-  // allTasks.push(...getTasksPluginTasks(app));
+  // Source 2: Note-based tasks (notes with #task in frontmatter)
+  allTasks.push(...getNoteTasks(app));
 
   return allTasks;
 }
@@ -510,6 +509,89 @@ export function getAllDataviewTasks(app: any): Task[] {
 
   // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
+}
+
+export function getNoteTasks(app: any): Task[] {
+  const tasks: Task[] = [];
+  const vault = app.vault;
+  const metadataCache = app.metadataCache;
+
+  // Get all markdown files in the vault
+  const files = vault.getMarkdownFiles();
+
+  for (const file of files) {
+    // Get the file's metadata (frontmatter)
+    const cache = metadataCache.getFileCache(file);
+
+    if (!cache?.frontmatter?.tags) {
+      continue;
+    }
+
+    // Check if the note has #task tag in frontmatter
+    const tags = cache.frontmatter.tags;
+    const hasTaskTag = Array.isArray(tags)
+      ? tags.some((tag: string) => tag === "task" || tag === "#task")
+      : tags === "task" || tags === "#task";
+
+    if (!hasTaskTag) {
+      continue;
+    }
+
+    // Parse the note as a task
+    const task = parseTaskNote(file, cache, vault);
+    if (task) {
+      tasks.push(task);
+    }
+  }
+
+  return tasks;
+}
+
+function parseTaskNote(file: any, cache: any, vault: any): Task | null {
+  const frontmatter = cache.frontmatter || {};
+  const factory = new TaskFactory();
+
+  // Extract task properties from frontmatter
+  const status = frontmatter.status || " "; // Default to todo
+  const title = file.basename; // Use note title as task text
+
+  // Create a RawTask-like object
+  const rawTask = {
+    status: status,
+    text: title,
+    link: { path: file.path },
+  };
+
+  try {
+    const task = factory.parse(rawTask);
+
+    // Override with frontmatter data if available
+    if (frontmatter.tags) {
+      const tags = Array.isArray(frontmatter.tags)
+        ? frontmatter.tags.filter((t: string) => t !== "task" && t !== "#task")
+        : [];
+      task.tags = tags.map((t: string) => t.replace(/^#/, ""));
+    }
+
+    if (frontmatter.priority) {
+      task.priority = frontmatter.priority;
+    }
+
+    if (frontmatter.id) {
+      task.id = frontmatter.id;
+    }
+
+    if (frontmatter.dependsOn) {
+      const deps = Array.isArray(frontmatter.dependsOn)
+        ? frontmatter.dependsOn
+        : [frontmatter.dependsOn];
+      task.incomingLinks = deps;
+    }
+
+    return task;
+  } catch {
+    return null;
+  }
 }
 
 export function createNodesFromTasks(
