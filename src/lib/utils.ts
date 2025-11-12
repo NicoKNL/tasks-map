@@ -12,6 +12,12 @@ const statusSymbols = {
   done: "[x]",
 };
 
+// Regex patterns for cleaning task text (removing metadata)
+const EMOJI_ID_REGEX = /🆔\s+\S+/g;
+const DATAVIEW_ID_REGEX = /\[\[id::\s*\S+\]\]/g;
+const TAG_REGEX = /#\S+/g;
+const WHITESPACE_NORMALIZE_REGEX = /\s+/g;
+
 /**
  * Find the index of a task line in an array of lines by its ID.
  * Supports both emoji format (🆔 abc123) and Dataview format ([[id:: abc123]])
@@ -86,18 +92,18 @@ export async function removeTagFromTaskInVault(
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(/🆔\s+\S+/g, "") // Remove emoji ID
-        .replace(/\[\[id::\s*\S+\]\]/g, "") // Remove Dataview ID
-        .replace(/#\S+/g, "") // Remove tags
-        .replace(/\s+/g, " ") // Normalize whitespace
+        .replace(EMOJI_ID_REGEX, "") // Remove emoji ID
+        .replace(DATAVIEW_ID_REGEX, "") // Remove Dataview ID
+        .replace(TAG_REGEX, "") // Remove tags
+        .replace(WHITESPACE_NORMALIZE_REGEX, " ") // Normalize whitespace
         .trim();
 
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
-          .replace(/🆔\s+\S+/g, "")
-          .replace(/\[\[id::\s*\S+\]\]/g, "")
-          .replace(/#\S+/g, "")
-          .replace(/\s+/g, " ")
+          .replace(EMOJI_ID_REGEX, "")
+          .replace(DATAVIEW_ID_REGEX, "")
+          .replace(TAG_REGEX, "")
+          .replace(WHITESPACE_NORMALIZE_REGEX, " ")
           .trim();
         return (
           coreLineText.includes(coreTaskText) ||
@@ -146,18 +152,18 @@ export async function addTagToTaskInVault(
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(/🆔\s+\S+/g, "") // Remove emoji ID
-        .replace(/\[\[id::\s*\S+\]\]/g, "") // Remove Dataview ID
-        .replace(/#\S+/g, "") // Remove tags
-        .replace(/\s+/g, " ") // Normalize whitespace
+        .replace(EMOJI_ID_REGEX, "") // Remove emoji ID
+        .replace(DATAVIEW_ID_REGEX, "") // Remove Dataview ID
+        .replace(TAG_REGEX, "") // Remove tags
+        .replace(WHITESPACE_NORMALIZE_REGEX, " ") // Normalize whitespace
         .trim();
 
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
-          .replace(/🆔\s+\S+/g, "")
-          .replace(/\[\[id::\s*\S+\]\]/g, "")
-          .replace(/#\S+/g, "")
-          .replace(/\s+/g, " ")
+          .replace(EMOJI_ID_REGEX, "")
+          .replace(DATAVIEW_ID_REGEX, "")
+          .replace(TAG_REGEX, "")
+          .replace(WHITESPACE_NORMALIZE_REGEX, " ")
           .trim();
         return (
           coreLineText.includes(coreTaskText) ||
