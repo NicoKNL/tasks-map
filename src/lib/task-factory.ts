@@ -1,11 +1,7 @@
-import { Task, TaskStatus } from "src/types/task";
+import { Task, TaskStatus, RawTask } from "src/types/task";
 
 export class TaskFactory {
-  public parse(rawTask: {
-    status: string;
-    text: string;
-    link: { path: string };
-  }): Task {
+  public parse(rawTask: RawTask): Task {
     const status = rawTask.status;
     const text = rawTask.text;
 

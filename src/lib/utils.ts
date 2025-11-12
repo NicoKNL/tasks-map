@@ -1,6 +1,6 @@
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
-import { Task, TaskStatus, TaskNode, TaskEdge } from "src/types/task";
+import { Task, TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
@@ -477,8 +477,7 @@ export async function removeSignFromTaskInFile(
 // TODO: Improve typing for app parameter
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAllDataviewTasks(app: any): Task[] {
-  // TODO: Tasks should use typing, either from dataview or the tasks plugin if available
-  let tasks: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let tasks: RawTask[] = [];
 
   // plugins exists, just not on the Obsidian App API?:
   //     https://blacksmithgu.github.io/obsidian-dataview/api/intro/#plugin-access
@@ -492,7 +491,7 @@ export function getAllDataviewTasks(app: any): Task[] {
     }
   }
   const factory = new TaskFactory();
-  const parsedTasks = tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const parsedTasks = tasks.map((rawTask) => factory.parse(rawTask));
 
   // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
