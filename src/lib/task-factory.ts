@@ -1,12 +1,13 @@
 import { Task, TaskStatus, RawTask } from "src/types/task";
 
 export class TaskFactory {
-  public parse(rawTask: RawTask): Task {
+  public parse(rawTask: RawTask, type: "dataview" | "note" = "dataview"): Task {
     const status = rawTask.status;
     const text = rawTask.text;
 
     return {
       id: this.parseIdFromText(text),
+      type: type,
       summary: this.makeSummary(text),
       text: this.cleanText(text),
       tags: this.parseTags(text),

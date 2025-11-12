@@ -18,5 +18,5 @@ This file demonstrates that the plugin supports both emoji and Dataview formats 
 
 You can even mix both styles in the same vault (though not recommended in the same task):
 
-- [ ] Task with emoji ID #mixed 🆔 mno345
+- [ ] Task with emoji ID #mixed 🆔 mno345 ⛔ TaskNotes/Tasks/Example task 2.md
 - [ ] Task with dataview dependency #mixed [[dependsOn:: mno345]]
