@@ -1,9 +1,15 @@
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
-import { Task, TaskStatus, TaskNode, TaskEdge } from "src/types/task";
+import { Task, TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
+import {
+  EMOJI_ID_REMOVAL,
+  DATAVIEW_ID_REMOVAL,
+  TAG_REMOVAL,
+  WHITESPACE_NORMALIZE,
+} from "./task-regex";
 
 const statusSymbols = {
   todo: "[ ]",
@@ -86,18 +92,18 @@ export async function removeTagFromTaskInVault(
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(/🆔\s+\S+/g, "") // Remove emoji ID
-        .replace(/\[\[id::\s*\S+\]\]/g, "") // Remove Dataview ID
-        .replace(/#\S+/g, "") // Remove tags
-        .replace(/\s+/g, " ") // Normalize whitespace
+        .replace(EMOJI_ID_REMOVAL, "") // Remove emoji ID
+        .replace(DATAVIEW_ID_REMOVAL, "") // Remove Dataview ID
+        .replace(TAG_REMOVAL, "") // Remove tags
+        .replace(WHITESPACE_NORMALIZE, " ") // Normalize whitespace
         .trim();
 
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
-          .replace(/🆔\s+\S+/g, "")
-          .replace(/\[\[id::\s*\S+\]\]/g, "")
-          .replace(/#\S+/g, "")
-          .replace(/\s+/g, " ")
+          .replace(EMOJI_ID_REMOVAL, "")
+          .replace(DATAVIEW_ID_REMOVAL, "")
+          .replace(TAG_REMOVAL, "")
+          .replace(WHITESPACE_NORMALIZE, " ")
           .trim();
         return (
           coreLineText.includes(coreTaskText) ||
@@ -146,18 +152,18 @@ export async function addTagToTaskInVault(
     if (taskLineIdx === -1) {
       // Fallback: try to find by matching core task text (without tags/IDs)
       const coreTaskText = task.text
-        .replace(/🆔\s+\S+/g, "") // Remove emoji ID
-        .replace(/\[\[id::\s*\S+\]\]/g, "") // Remove Dataview ID
-        .replace(/#\S+/g, "") // Remove tags
-        .replace(/\s+/g, " ") // Normalize whitespace
+        .replace(EMOJI_ID_REMOVAL, "") // Remove emoji ID
+        .replace(DATAVIEW_ID_REMOVAL, "") // Remove Dataview ID
+        .replace(TAG_REMOVAL, "") // Remove tags
+        .replace(WHITESPACE_NORMALIZE, " ") // Normalize whitespace
         .trim();
 
       taskLineIdx = lines.findIndex((line: string) => {
         const coreLineText = line
-          .replace(/🆔\s+\S+/g, "")
-          .replace(/\[\[id::\s*\S+\]\]/g, "")
-          .replace(/#\S+/g, "")
-          .replace(/\s+/g, " ")
+          .replace(EMOJI_ID_REMOVAL, "")
+          .replace(DATAVIEW_ID_REMOVAL, "")
+          .replace(TAG_REMOVAL, "")
+          .replace(WHITESPACE_NORMALIZE, " ")
           .trim();
         return (
           coreLineText.includes(coreTaskText) ||
@@ -477,8 +483,7 @@ export async function removeSignFromTaskInFile(
 // TODO: Improve typing for app parameter
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAllDataviewTasks(app: any): Task[] {
-  // TODO: Tasks should use typing, either from dataview or the tasks plugin if available
-  let tasks: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let tasks: RawTask[] = [];
 
   // plugins exists, just not on the Obsidian App API?:
   //     https://blacksmithgu.github.io/obsidian-dataview/api/intro/#plugin-access
@@ -492,7 +497,7 @@ export function getAllDataviewTasks(app: any): Task[] {
     }
   }
   const factory = new TaskFactory();
-  const parsedTasks = tasks.map((rawTask: any) => factory.parse(rawTask)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const parsedTasks = tasks.map((rawTask) => factory.parse(rawTask));
 
   // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));

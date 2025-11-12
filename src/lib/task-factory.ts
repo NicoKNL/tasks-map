@@ -1,11 +1,18 @@
-import { Task, TaskStatus } from "src/types/task";
+import { Task, TaskStatus, RawTask } from "src/types/task";
+import {
+  EMOJI_ID_PATTERN,
+  DATAVIEW_ID_PATTERN,
+  EMOJI_ID_PATTERN_GLOBAL,
+  DATAVIEW_ID_PATTERN_GLOBAL,
+  TAG_PATTERN,
+  PRIORITY_PATTERN,
+  CSV_LINKS_PATTERN,
+  INDIVIDUAL_LINKS_PATTERN,
+  DATAVIEW_DEPENDS_PATTERN,
+} from "./task-regex";
 
 export class TaskFactory {
-  public parse(rawTask: {
-    status: string;
-    text: string;
-    link: { path: string };
-  }): Task {
+  public parse(rawTask: RawTask): Task {
     const status = rawTask.status;
     const text = rawTask.text;
 
@@ -33,16 +40,14 @@ export class TaskFactory {
 
   private parseIdFromText(text: string): string {
     // Try emoji format first: 🆔 abc123
-    const idEmojiRegex = /🆔\s*([a-zA-Z0-9]{6})/i;
-    const idMatch = text.match(idEmojiRegex);
+    const idMatch = text.match(EMOJI_ID_PATTERN);
 
     if (idMatch) {
       return idMatch[1];
     }
 
     // Try Dataview format: [[id:: abc123]]
-    const idDataviewRegex = /\[\[id::\s*([a-zA-Z0-9]{6})\]\]/i;
-    const dataviewMatch = text.match(idDataviewRegex);
+    const dataviewMatch = text.match(DATAVIEW_ID_PATTERN);
 
     if (dataviewMatch) {
       return dataviewMatch[1];
@@ -55,8 +60,7 @@ export class TaskFactory {
 
   private parsePriority(text: string): string {
     // Obsidian Tasks plugin priority emoji: 🔺 (highest), ⏫ (high), 🔼 (medium), 🔽 (low), ⏬ (lowest)
-    const priorityRegex = /([\u{1F53A}\u{23EB}\u{1F53C}\u{1F53D}\u{23EC}])/u;
-    const priorityMatch = text.match(priorityRegex);
+    const priorityMatch = text.match(PRIORITY_PATTERN);
 
     if (priorityMatch) {
       return priorityMatch[1];
@@ -67,8 +71,7 @@ export class TaskFactory {
 
   private parseTags(text: string): string[] {
     // Tag must be preceded by whitespace or line start, and is any non-whitespace after #
-    const tagRegex = /(?:^|\s)#(\S+)/g;
-    const tags = Array.from(text.matchAll(tagRegex)).map((m) => m[1]);
+    const tags = Array.from(text.matchAll(TAG_PATTERN)).map((m) => m[1]);
     return tags;
   }
 
@@ -96,8 +99,7 @@ export class TaskFactory {
   }
 
   private parseCsvStyleLinks(text: string): string[] {
-    const csvRegex = /⛔\s*([a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*)/g;
-    const csvMatches = Array.from(text.matchAll(csvRegex));
+    const csvMatches = Array.from(text.matchAll(CSV_LINKS_PATTERN));
     const ids: string[] = [];
 
     for (const match of csvMatches) {
@@ -109,17 +111,16 @@ export class TaskFactory {
   }
 
   private parseIndividualStyleLinks(text: string): string[] {
-    const individualRegex = /⛔\s*([a-zA-Z0-9]{6})(?!,[a-zA-Z0-9]{6})/g;
-    const individualMatches = Array.from(text.matchAll(individualRegex));
+    const individualMatches = Array.from(
+      text.matchAll(INDIVIDUAL_LINKS_PATTERN)
+    );
 
     return individualMatches.map((match) => match[1]);
   }
 
   private parseDataviewStyleLinks(text: string): string[] {
     // Parse Dataview format: [[dependsOn:: abc123,def456]]
-    const dataviewRegex =
-      /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/g;
-    const dataviewMatches = Array.from(text.matchAll(dataviewRegex));
+    const dataviewMatches = Array.from(text.matchAll(DATAVIEW_DEPENDS_PATTERN));
     const ids: string[] = [];
 
     for (const match of dataviewMatches) {
@@ -133,14 +134,11 @@ export class TaskFactory {
   private makeSummary(text: string): string {
     return text
       .replace(/(?:^|\s)#\S+/g, "")
-      .replace(/🆔\s*[a-zA-Z0-9]{6}/gi, "") // Remove task IDs: 🆔 abc123
-      .replace(/\[\[id::\s*[a-zA-Z0-9]{6}\]\]/gi, "") // Remove Dataview IDs: [[id:: abc123]]
-      .replace(/⛔\s*[a-zA-Z0-9]{6}(?:,[a-zA-Z0-9]{6})*/g, "") // Remove CSV links: ⛔ abc123,def456
-      .replace(/⛔\s*[a-zA-Z0-9]{6}/g, "") // Remove individual links: ⛔ abc123
-      .replace(
-        /\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/g,
-        ""
-      ) // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
+      .replace(EMOJI_ID_PATTERN_GLOBAL, "") // Remove task IDs: 🆔 abc123
+      .replace(DATAVIEW_ID_PATTERN_GLOBAL, "") // Remove Dataview IDs: [[id:: abc123]]
+      .replace(CSV_LINKS_PATTERN, "") // Remove CSV links: ⛔ abc123,def456
+      .replace(INDIVIDUAL_LINKS_PATTERN, "") // Remove individual links: ⛔ abc123
+      .replace(DATAVIEW_DEPENDS_PATTERN, "") // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
       .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "") // Remove other emojis
       .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis
       .trim();
