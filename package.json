@@ -19,7 +19,7 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
-        "@eslint/compat": "^1.4.0",
+        "@eslint/compat": "^2.0.0",
         "@eslint/eslintrc": "^3.3.1",
         "@eslint/js": "^9.37.0",
         "@types/node": "^24.0.0",
