@@ -134,6 +134,53 @@ export async function removeTagFromTaskInVault(
   });
 }
 
+export async function addStarToTaskInVault(
+  task: Task,
+  app: App
+): Promise<void> {
+  if (!task.link || !task.text) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) return fileContent;
+
+    // Check if star already exists
+    if (lines[taskLineIdx].includes("⭐")) return fileContent;
+
+    // Add star at the end of the line
+    lines[taskLineIdx] = lines[taskLineIdx] + " ⭐";
+    return lines.join("\n");
+  });
+}
+
+export async function removeStarFromTaskInVault(
+  task: Task,
+  app: App
+): Promise<void> {
+  if (!task.link || !task.text) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) return fileContent;
+
+    // Remove star emoji
+    lines[taskLineIdx] = lines[taskLineIdx].replace(/\s*⭐\s*/g, " ").trim();
+    return lines.join("\n");
+  });
+}
+
 export async function addTagToTaskInVault(
   task: Task,
   tagToAdd: string,

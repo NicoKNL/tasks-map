@@ -9,6 +9,8 @@ import {
   CSV_LINKS_PATTERN,
   INDIVIDUAL_LINKS_PATTERN,
   DATAVIEW_DEPENDS_PATTERN,
+  STAR_PATTERN,
+  STAR_PATTERN_GLOBAL,
 } from "./task-regex";
 
 export class TaskFactory {
@@ -25,6 +27,7 @@ export class TaskFactory {
       status: this.parseStatus(status),
       link: rawTask.link.path,
       incomingLinks: this.parseIncomingLinks(text),
+      starred: this.parseStarred(text),
     };
   }
 
@@ -67,6 +70,10 @@ export class TaskFactory {
     }
 
     return "";
+  }
+
+  private parseStarred(text: string): boolean {
+    return STAR_PATTERN.test(text);
   }
 
   private parseTags(text: string): string[] {
@@ -139,7 +146,8 @@ export class TaskFactory {
       .replace(CSV_LINKS_PATTERN, "") // Remove CSV links: ⛔ abc123,def456
       .replace(INDIVIDUAL_LINKS_PATTERN, "") // Remove individual links: ⛔ abc123
       .replace(DATAVIEW_DEPENDS_PATTERN, "") // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
-      .replace(/([\p{Extended_Pictographic}]+)(\s*[#a-zA-Z0-9_-]+)?/gu, "") // Remove other emojis
+      .replace(STAR_PATTERN_GLOBAL, "") // Remove star emoji: ⭐
+      .replace(/([\p{Extended_Pictographic}]+(\s*[#a-zA-Z0-9_-]+)?)/gu, "") // Remove other emojis
       .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis
       .trim();
   }
