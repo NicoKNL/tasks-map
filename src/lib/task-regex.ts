@@ -29,3 +29,7 @@ export const TAG_PATTERN = /(?:^|\s)#(\S+)/g;
 // Priority pattern - for Obsidian Tasks plugin priority emojis
 export const PRIORITY_PATTERN =
   /([\u{1F53A}\u{23EB}\u{1F53C}\u{1F53D}\u{23EC}])/u;
+
+// Star pattern - for detecting starred tasks
+export const STAR_PATTERN = /⭐/;
+export const STAR_PATTERN_GLOBAL = /⭐/g;

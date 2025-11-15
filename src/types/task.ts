@@ -17,6 +17,7 @@ export interface Task {
   priority: string;
   link: string;
   incomingLinks: string[];
+  starred: boolean;
 }
 
 export interface TaskNodeData {

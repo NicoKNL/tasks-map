@@ -138,6 +138,33 @@ If your plugin does not need CSS, delete this file.
   margin-bottom: 2px;
 }
 
+.tasks-map-star-button {
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  margin-left: auto;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.tasks-map-star-button:hover {
+  color: rgb(255, 215, 0);
+}
+
+.tasks-map-star-button svg[fill="currentColor"] {
+  color: rgb(255, 215, 0);
+}
+
 .tasks-map-task-node-content {
   position: relative;
   flex: 1;
@@ -506,6 +533,42 @@ If your plugin does not need CSS, delete this file.
   background: var(--tasks-map-task-canceled-red);
   border: 1px solid var(--tasks-map-color-red);
   color: var(--text-error);
+}
+
+.tasks-map-task-background--starred {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+              0 0 40px rgba(255, 215, 0, 0.4),
+              0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+  animation: tasks-map-pulse-gold 2s ease-in-out infinite;
+}
+
+.tasks-map-task-background--todo.tasks-map-task-background--starred {
+  border-color: rgba(255, 215, 0, 0.8);
+}
+
+.tasks-map-task-background--done.tasks-map-task-background--starred {
+  border-color: rgba(255, 215, 0, 0.8);
+}
+
+.tasks-map-task-background--in-progress.tasks-map-task-background--starred {
+  border-color: rgba(255, 215, 0, 0.8);
+}
+
+.tasks-map-task-background--canceled.tasks-map-task-background--starred {
+  border-color: rgba(255, 215, 0, 0.8);
+}
+
+@keyframes tasks-map-pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.4),
+                0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
+                0 0 60px rgba(255, 215, 0, 0.6),
+                0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+  }
 }
 
 /* Centered Message Container Styles */
