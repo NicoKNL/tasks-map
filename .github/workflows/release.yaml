@@ -149,5 +149,4 @@ jobs:
               run: |
                   gh release create "${{ steps.version.outputs.new_version }}" \
                     --title="${{ steps.version.outputs.new_version }}" \
-                    --draft \
                     main.js manifest.json styles.css
