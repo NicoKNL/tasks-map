@@ -1,152 +1,154 @@
 name: PR Validation and Release
 
 on:
-    pull_request:
-        types: [opened, synchronize, reopened, labeled, unlabeled]
-    pull_request_target:
-        types: [closed]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  pull_request_target:
+    types: [closed]
 
 permissions:
-    contents: write
-    pull-requests: read
+  contents: write
+  pull-requests: read
 
 jobs:
-    validate:
-        outputs:
-          should-release: ${{ steps.check-labels.outputs.bump_type != 'noimpact' }}
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v5
-              with:
-                  fetch-depth: 0
+  validate:
+    outputs:
+      should-release: ${{ steps.check-labels.outputs.bump_type != 'noimpact' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-            - name: Check semver labels
-              id: check-labels
-              run: |
-                  LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' || echo "")
+      - name: Check semver labels
+        id: check-labels
+        run: |
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' || echo "")
 
-                  # Count semver labels
-                  SEMVER_COUNT=$(echo "$LABELS" | grep -c "semver-" || true)
+          # Count semver labels
+          SEMVER_COUNT=$(echo "$LABELS" | grep -c "semver-" || true)
 
-                  if [ "$SEMVER_COUNT" -eq 0 ]; then
-                    echo "::error::PR must have exactly one semver label (semver-major, semver-minor, semver-patch, or semver-noimpact)"
-                    exit 1
-                  elif [ "$SEMVER_COUNT" -gt 1 ]; then
-                    echo "::error::PR must have exactly one semver label, found multiple"
-                    exit 1
-                  fi
+          if [ "$SEMVER_COUNT" -eq 0 ]; then
+            echo "::error::PR must have exactly one semver label (semver-major, semver-minor, semver-patch, or semver-noimpact)"
+            exit 1
+          elif [ "$SEMVER_COUNT" -gt 1 ]; then
+            echo "::error::PR must have exactly one semver label, found multiple"
+            exit 1
+          fi
 
-                  # Set the bump type based on the label
-                  if echo "$LABELS" | grep -q "semver-major"; then
-                    echo "bump_type=major" >> $GITHUB_OUTPUT
-                  elif echo "$LABELS" | grep -q "semver-minor"; then
-                    echo "bump_type=minor" >> $GITHUB_OUTPUT
-                  elif echo "$LABELS" | grep -q "semver-patch"; then
-                    echo "bump_type=patch" >> $GITHUB_OUTPUT
-                  else
-                    echo "bump_type=noimpact" >> $GITHUB_OUTPUT
-                  fi
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Set the bump type based on the label
+          if echo "$LABELS" | grep -q "semver-major"; then
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+          elif echo "$LABELS" | grep -q "semver-minor"; then
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+          elif echo "$LABELS" | grep -q "semver-patch"; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+          else
+            echo "bump_type=noimpact" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Set up Python
-              if: steps.check-labels.outputs.bump_type != 'noimpact'
-              uses: actions/setup-python@v6
-              with:
-                  python-version: "3.14"
+      - name: Set up Python
+        if: steps.check-labels.outputs.bump_type != 'noimpact'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
 
-            - name: Dry run version bump
-              if: steps.check-labels.outputs.bump_type != 'noimpact'
-              id: version-bump
-              run: |
-                  echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
-                  NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
-                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+      - name: Dry run version bump
+        if: steps.check-labels.outputs.bump_type != 'noimpact'
+        id: version-bump
+        run: |
+          echo "Would bump version (${{ steps.check-labels.outputs.bump_type }}):"
+          NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-                  echo -e "\nFiles that would be modified:"
-                  git status --porcelain
+          echo -e "\nFiles that would be modified:"
+          git status --porcelain
 
-            - name: Use Node.js
-              uses: actions/setup-node@v6
-              with:
-                  node-version: "24"
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
 
-            - name: Build test
-              run: |
-                  npm install
-                  npm run build
+      - name: Build test
+        run: |
+          npm install
+          npm run build
 
-    release:
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && needs.validate.outputs.should-release == 'true'
-        runs-on: ubuntu-latest
-        needs: validate
-        steps:
-            - uses: actions/checkout@v5
-              with:
-                  fetch-depth: 0
-                  # Ensure we're on the main branch after the PR is merged
-                  ref: ${{ github.event.pull_request.base.ref }}
+  release:
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && needs.validate.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          # Ensure we're on the main branch after the PR is merged
+          ref: ${{ github.event.pull_request.base.ref }}
 
-            - name: Get PR labels
-              id: check-labels
-              run: |
-                  LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name')
+      - name: Get PR labels
+        id: check-labels
+        run: |
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name')
 
-                  if echo "$LABELS" | grep -q "semver-major"; then
-                    echo "bump_type=major" >> $GITHUB_OUTPUT
-                  elif echo "$LABELS" | grep -q "semver-minor"; then
-                    echo "bump_type=minor" >> $GITHUB_OUTPUT
-                  elif echo "$LABELS" | grep -q "semver-patch"; then
-                    echo "bump_type=patch" >> $GITHUB_OUTPUT
-                    echo "should_release=true" >> $GITHUB_OUTPUT
-                  else
-                    echo "bump_type=noimpact" >> $GITHUB_OUTPUT
-                  fi
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if echo "$LABELS" | grep -q "semver-major"; then
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+          elif echo "$LABELS" | grep -q "semver-minor"; then
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+          elif echo "$LABELS" | grep -q "semver-patch"; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "bump_type=noimpact" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Set up Python
-              uses: actions/setup-python@v6
-              with:
-                  python-version: "3.14"
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
 
-            - name: Update version
-              id: version
-              run: |
-                  NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
-                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+      - name: Update version
+        id: version
+        run: |
+          NEW_VERSION="$(.github/scripts/bump_version.py ${{ steps.check-labels.outputs.bump_type }} | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-            - name: Use Node.js
-              uses: actions/setup-node@v6
-              with:
-                  node-version: "24"
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
 
-            - name: Build plugin
-              run: |
-                  npm install
-                  npm run build
+      - name: Build plugin
+        run: |
+          npm install
+          npm run build
 
-            - name: Configure Git
-              run: |
-                  git config user.name "GitHub Actions"
-                  git config user.email "actions@github.com"
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
 
-            - name: Create release commit and tag
-              run: |
-                  # Create a new commit that's not attached to any branch
-                  git add -A
-                  git commit -m "chore: release version ${{ steps.version.outputs.new_version }}"
-                  git push origin ${{ github.event.pull_request.base.ref }}
-                  # Tag the orphaned commit
-                  git tag ${{ steps.version.outputs.new_version }}
+      - name: Create release commit and tag
+        run: |
+          # Create a new commit that's not attached to any branch
+          git add -A
+          git commit -m "chore: release version ${{ steps.version.outputs.new_version }}"
+          git push origin ${{ github.event.pull_request.base.ref }}
+          # Tag the orphaned commit
+          git tag ${{ steps.version.outputs.new_version }}
 
-                  # Push only the tag, not the branch
-                  git push origin ${{ steps.version.outputs.new_version }}
+          # Push only the tag, not the branch
+          git push origin ${{ steps.version.outputs.new_version }}
 
-            - name: Create release
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  gh release create "${{ steps.version.outputs.new_version }}" \
-                    --title="${{ steps.version.outputs.new_version }}" \
-                    main.js manifest.json styles.css
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body -q '.body')
+          gh release create "${{ steps.version.outputs.new_version }}" \
+            --title="${{ steps.version.outputs.new_version }}" \
+            --notes "$PR_BODY" \
+            main.js manifest.json styles.css
