@@ -1,7 +1,7 @@
 // Mock React
 const React = {
   createElement: jest.fn(),
-  Fragment: 'Fragment',
+  Fragment: "Fragment",
   useState: jest.fn(),
   useEffect: jest.fn(),
   useCallback: jest.fn(),

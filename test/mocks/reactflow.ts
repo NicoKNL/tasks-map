@@ -22,8 +22,8 @@ export const ReactFlow = jest.fn();
 export const useNodesState = jest.fn();
 export const useEdgesState = jest.fn();
 export const MarkerType = {
-  Arrow: 'arrow',
-  ArrowClosed: 'arrowclosed',
+  Arrow: "arrow",
+  ArrowClosed: "arrowclosed",
 };
 
 export default ReactFlow;

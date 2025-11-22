@@ -67,15 +67,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v6
-        if: always()
-        with:
-          files: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
   build:
     name: Build Check
     runs-on: ubuntu-latest
