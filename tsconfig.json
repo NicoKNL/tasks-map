@@ -20,7 +20,9 @@
       "ES6",
       "ES7"
     ],
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": ["jest", "node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["test", "node_modules"]
 }
