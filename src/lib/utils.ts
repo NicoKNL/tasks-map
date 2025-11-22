@@ -78,6 +78,59 @@ export async function removeTagFromTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find and remove the tag from the tags array
+      // Tags are stored as "  - tagname" under "tags:"
+      let i = frontmatterStart + 1;
+      while (i < frontmatterEnd) {
+        const line = lines[i];
+        if (line === "tags:") {
+          // Found tags section, look for the tag in the following lines
+          i++;
+          while (i < frontmatterEnd && lines[i].match(/^\s{2}- /)) {
+            const tagLine = lines[i];
+            const tagMatch = tagLine.match(/^\s{2}- (.+)$/);
+            if (tagMatch && tagMatch[1] === tagToRemove) {
+              // Found the tag, remove it
+              lines.splice(i, 1);
+              frontmatterEnd--;
+              break;
+            }
+            i++;
+          }
+          break;
+        }
+        i++;
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline tags)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
 
@@ -139,6 +192,67 @@ export async function addTagToTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find the tags section and add the tag
+      // Tags are stored as "  - tagname" under "tags:"
+      let i = frontmatterStart + 1;
+      let tagsIndex = -1;
+
+      while (i < frontmatterEnd) {
+        const line = lines[i];
+        if (line === "tags:") {
+          tagsIndex = i;
+          // Check if tag already exists
+          let j = i + 1;
+          while (j < frontmatterEnd && lines[j].match(/^\s{2}- /)) {
+            const tagLine = lines[j];
+            const tagMatch = tagLine.match(/^\s{2}- (.+)$/);
+            if (tagMatch && tagMatch[1] === tagToAdd) {
+              // Tag already exists
+              return fileContent;
+            }
+            j++;
+          }
+          // Add the tag after the last tag in the list
+          lines.splice(j, 0, `  - ${tagToAdd}`);
+          break;
+        }
+        i++;
+      }
+
+      // If no tags section exists, create one
+      if (tagsIndex === -1) {
+        lines.splice(frontmatterEnd, 0, "tags:", `  - ${tagToAdd}`);
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline tags)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -259,11 +373,11 @@ async function addDependencyToNoteTask(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    
+
     // Find frontmatter boundaries
     let frontmatterStart = -1;
     let frontmatterEnd = -1;
-    
+
     if (lines[0] === "---") {
       frontmatterStart = 0;
       for (let i = 1; i < lines.length; i++) {
@@ -273,17 +387,17 @@ async function addDependencyToNoteTask(
         }
       }
     }
-    
+
     if (frontmatterStart === -1 || frontmatterEnd === -1) {
       console.warn("No frontmatter found in note-based task");
       return fileContent;
     }
-    
+
     // Parse the frontmatter to find blockedBy section
     const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
     let blockedByIndex = -1;
     let blockedByIndent = "";
-    
+
     for (let i = 0; i < frontmatterLines.length; i++) {
       if (frontmatterLines[i].match(/^blockedBy:\s*$/)) {
         blockedByIndex = i;
@@ -291,34 +405,37 @@ async function addDependencyToNoteTask(
         break;
       }
     }
-    
+
     // Create the new dependency entry
     const depEntry = `${blockedByIndent}- uid: "[[${fromTask.text}]]"\n${blockedByIndent}  reltype: FINISHTOSTART`;
-    
+
     if (blockedByIndex === -1) {
       // No blockedBy field exists, add it before the closing ---
       lines.splice(frontmatterEnd, 0, "blockedBy:", depEntry);
     } else {
       // blockedBy exists, find where to insert (after the last blockedBy item)
       let insertIndex = frontmatterStart + 1 + blockedByIndex + 1;
-      
+
       // Find the end of the blockedBy list
       while (insertIndex < frontmatterStart + 1 + frontmatterLines.length) {
         const line = lines[insertIndex];
         if (line.match(/^\s{2}- uid:/)) {
           insertIndex++;
           // Skip the reltype line
-          if (insertIndex < lines.length && lines[insertIndex].match(/^\s{4}reltype:/)) {
+          if (
+            insertIndex < lines.length &&
+            lines[insertIndex].match(/^\s{4}reltype:/)
+          ) {
             insertIndex++;
           }
         } else {
           break;
         }
       }
-      
+
       lines.splice(insertIndex, 0, depEntry);
     }
-    
+
     return lines.join("\n");
   });
 }
@@ -463,13 +580,13 @@ export async function removeLinkSignsBetweenTasks(
   hash: string
 ): Promise<void> {
   if (!toTask.link) return;
-  
+
   // Handle note-based tasks differently
   if (toTask.type === "note") {
     await removeDependencyFromNoteTask(vault, toTask, hash);
     return;
   }
-  
+
   await removeSignFromTaskInFile(vault, toTask, "stop", hash);
 }
 
@@ -485,15 +602,17 @@ async function removeDependencyFromNoteTask(
   const file = vault.getAbstractFileByPath(toTask.link);
   if (!(file instanceof TFile)) return;
 
-  console.log(`Removing dependency: fromTaskId=${fromTaskId}, toTask=${toTask.id}`);
+  console.log(
+    `Removing dependency: fromTaskId=${fromTaskId}, toTask=${toTask.id}`
+  );
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    
+
     // Find frontmatter boundaries
     let frontmatterStart = -1;
     let frontmatterEnd = -1;
-    
+
     if (lines[0] === "---") {
       frontmatterStart = 0;
       for (let i = 1; i < lines.length; i++) {
@@ -503,20 +622,22 @@ async function removeDependencyFromNoteTask(
         }
       }
     }
-    
-    console.log(`Frontmatter: start=${frontmatterStart}, end=${frontmatterEnd}`);
-    
+
+    console.log(
+      `Frontmatter: start=${frontmatterStart}, end=${frontmatterEnd}`
+    );
+
     if (frontmatterStart === -1 || frontmatterEnd === -1) {
       console.warn("No frontmatter found");
       return fileContent;
     }
-    
+
     // Find and remove the dependency entry
     // The fromTaskId is a file path like "TaskNotes/Tasks/Example task 1.md"
     // We need to extract the basename
     const basename = fromTaskId.replace(/\.md$/, "").split("/").pop();
     console.log(`Looking for basename: ${basename}`);
-    
+
     let i = frontmatterStart + 1;
     let found = false;
     while (i < frontmatterEnd) {
@@ -535,8 +656,8 @@ async function removeDependencyFromNoteTask(
         i++;
       }
     }
-    
-    console.log(`Removal ${found ? 'succeeded' : 'failed'}`);
+
+    console.log(`Removal ${found ? "succeeded" : "failed"}`);
     return lines.join("\n");
   });
 }
@@ -732,9 +853,7 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
 
     // Override with frontmatter data if available
     if (frontmatter.tags) {
-      const tags = Array.isArray(frontmatter.tags)
-        ? frontmatter.tags.filter((t: string) => t !== "task" && t !== "#task")
-        : [];
+      const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
       task.tags = tags.map((t: string) => t.replace(/^#/, ""));
     }
 
