@@ -946,8 +946,8 @@ export function getAllTasks(app: any): Task[] {
   return allTasks;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAllDataviewTasks(app: any): Task[] {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   let tasks: RawTask[] = [];
 
   // plugins exists, just not on the Obsidian App API?:
@@ -968,8 +968,8 @@ export function getAllDataviewTasks(app: any): Task[] {
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getNoteTasks(app: any): Task[] {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   const tasks: Task[] = [];
   const vault = app.vault;
   const metadataCache = app.metadataCache;
@@ -1029,8 +1029,8 @@ function normalizeNotePriority(priority: string): string {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseTaskNote(file: any, cache: any, app: any): Task | null {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   const frontmatter = cache.frontmatter || {};
   const factory = new TaskFactory();
 
@@ -1101,8 +1101,8 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseBlockedByLinks(blockedBy: any, app: any): string[] {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   const links: string[] = [];
   const vault = app.vault;
 
