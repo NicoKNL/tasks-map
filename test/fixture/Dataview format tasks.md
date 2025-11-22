@@ -1,4 +1,4 @@
 - [ ] Do this first #task [[id:: dcf64c]]
 - [ ] Do this after first and some other task #task [[dependsOn:: dcf64c, 0h17ye]]
 - [ ] Another independent task #task [[id:: 0h17ye]]
-- [ ] Final task depending on all #task [[dependsOn:: dcf64c, 0h17ye]]
+- [ ] Final task depending on all #task [[dependsOn:: dcf64c, 0h17ye]] ⭐

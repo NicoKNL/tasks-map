@@ -9,6 +9,12 @@ export interface RawTask {
   link: { path: string };
 }
 
+export interface RawTask {
+  status: string;
+  text: string;
+  link: { path: string };
+}
+
 export interface Task {
   id: string;
   type: TaskType; // How to identify this task for linking
@@ -19,6 +25,7 @@ export interface Task {
   priority: string;
   link: string;
   incomingLinks: string[]; // References to other tasks (format depends on type)
+  starred: boolean;
 }
 
 export interface TaskNodeData {

@@ -6,13 +6,19 @@ import { Task } from "src/types/task";
 import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
+import { StarButton } from "./star-button";
 import { Tag } from "./tag";
 import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
 import { TaskPriority } from "./task-priority";
 import { TagInput } from "./tag-input";
 import { useSummaryRenderer } from "../hooks/use-summary-renderer";
-import { removeTagFromTaskInVault, addTagToTaskInVault } from "../lib/utils";
+import {
+  removeTagFromTaskInVault,
+  addTagToTaskInVault,
+  addStarToTaskInVault,
+  removeStarFromTaskInVault,
+} from "../lib/utils";
 import { TagsContext } from "../contexts/context";
 
 export const NODEWIDTH = 250;
@@ -44,6 +50,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
   const { allTags, updateTaskTags } = useContext(TagsContext);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(task.status);
+  const [starred, setStarred] = useState(task.starred);
   const [tags, setTags] = useState(task.tags || []);
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagError, setTagError] = useState(false);
@@ -128,9 +135,27 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
     setTagError(false);
   };
 
+  const handleStarToggle = async () => {
+    const newStarred = !starred;
+    // Immediately update the visual state
+    setStarred(newStarred);
+
+    try {
+      if (newStarred) {
+        await addStarToTaskInVault(task, app);
+      } else {
+        await removeStarFromTaskInVault(task, app);
+      }
+    } catch {
+      // Revert the visual change if the vault operation failed
+      setStarred(!newStarred);
+    }
+  };
+
   return (
     <TaskBackground
       status={status}
+      starred={starred}
       expanded={expanded}
       debugVisualization={debugVisualization}
     >
@@ -145,6 +170,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
         <span ref={summaryRef} className="tasks-map-task-node-summary" />
+        <StarButton starred={starred} onClick={handleStarToggle} />
         <LinkButton link={task.link} app={app} taskStatus={status} />
       </div>
 
