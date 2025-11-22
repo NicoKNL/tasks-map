@@ -77,6 +77,11 @@ export class TaskFactory {
         return "in_progress";
       case "-":
         return "canceled";
+      // Note-based task status values
+      case "closed":
+        return "done";
+      case "open":
+        return "todo";
       default:
         return "todo";
     }

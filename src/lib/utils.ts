@@ -52,6 +52,55 @@ export async function updateTaskStatusInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Map TaskStatus to note-based status format
+      const noteStatus =
+        newStatus === "todo"
+          ? "open"
+          : newStatus === "done"
+            ? "closed"
+            : newStatus === "in_progress"
+              ? "open"
+              : newStatus === "canceled"
+                ? "canceled"
+                : "open";
+
+      // Find and update status line
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].startsWith("status:")) {
+          lines[i] = `status: ${noteStatus}`;
+          break;
+        }
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline status)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -828,6 +877,30 @@ export function getNoteTasks(app: any): Task[] {
   return tasks;
 }
 
+/**
+ * Normalize note-based task priority to emoji format
+ * TaskNotes uses: "High", "Normal", "Low", "None"
+ * We map to Obsidian Tasks emojis: 🔺 (highest), ⏫ (high), 🔼 (medium), 🔽 (low), ⏬ (lowest)
+ * Note: "Normal" and "None" both map to empty string (no emoji), matching simple task "normal" priority
+ */
+function normalizeNotePriority(priority: string): string {
+  if (!priority) return "";
+
+  const normalized = priority.toLowerCase();
+  switch (normalized) {
+    case "high":
+      return "⏫"; // high
+    case "normal":
+      return ""; // normal (no emoji)
+    case "low":
+      return "🔽"; // low
+    case "none":
+      return ""; // no priority
+    default:
+      return "";
+  }
+}
+
 function parseTaskNote(file: any, cache: any, app: any): Task | null {
   const vault = app.vault;
   const frontmatter = cache.frontmatter || {};
@@ -858,7 +931,7 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
     }
 
     if (frontmatter.priority) {
-      task.priority = frontmatter.priority;
+      task.priority = normalizeNotePriority(frontmatter.priority);
     }
 
     // Collect all incoming links from various sources
