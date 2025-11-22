@@ -587,12 +587,11 @@ async function addDependencyToNoteTask(
     // Parse the frontmatter to find blockedBy section
     const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
     let blockedByIndex = -1;
-    let blockedByIndent = "";
+    const blockedByIndent = "  "; // Standard YAML indent
 
     for (let i = 0; i < frontmatterLines.length; i++) {
       if (frontmatterLines[i].match(/^blockedBy:\s*$/)) {
         blockedByIndex = i;
-        blockedByIndent = "  "; // Standard YAML indent
         break;
       }
     }
