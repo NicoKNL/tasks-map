@@ -246,6 +246,59 @@ export async function addStarToTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Check if starred field already exists
+      let starredIndex = -1;
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].match(/^starred:\s*/)) {
+          starredIndex = i;
+          break;
+        }
+      }
+
+      if (starredIndex !== -1) {
+        // Update existing starred field
+        lines[starredIndex] = "starred: true";
+      } else {
+        // Add starred field after priority if it exists, otherwise before tags
+        let insertIndex = frontmatterEnd;
+        for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+          if (lines[i].match(/^priority:\s*/)) {
+            insertIndex = i + 1;
+            break;
+          }
+        }
+        lines.splice(insertIndex, 0, "starred: true");
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline star emoji)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -271,6 +324,43 @@ export async function removeStarFromTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find and update starred field
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].match(/^starred:\s*/)) {
+          lines[i] = "starred: false";
+          break;
+        }
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline star emoji)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -970,6 +1060,10 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
 
     if (frontmatter.priority) {
       task.priority = normalizeNotePriority(frontmatter.priority);
+    }
+
+    if (typeof frontmatter.starred === "boolean") {
+      task.starred = frontmatter.starred;
     }
 
     // Collect all incoming links from various sources
