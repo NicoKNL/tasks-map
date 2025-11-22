@@ -6,10 +6,11 @@ import ReactFlow, {
   addEdge,
   useReactFlow,
 } from "reactflow";
+import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
 import {
   addLinkSignsBetweenTasks,
-  getAllDataviewTasks,
+  getAllTasks,
   getLayoutedElements,
   removeLinkSignsBetweenTasks,
   createNodesFromTasks,
@@ -122,7 +123,7 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
   };
 
   const reloadTasks = () => {
-    const newTasks = getAllDataviewTasks(app);
+    const newTasks = getAllTasks(app);
     setTasks(newTasks);
     // Rebuild the tag registry from the reloaded tasks
     const newRegistry = new Map<string, string[]>();
@@ -232,6 +233,15 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       const targetTask = tasks.find((t) => t.id === params.target);
 
       if (!vault || !sourceTask || !targetTask) return;
+
+      // Check if tasks are of different types
+      if (sourceTask.type !== targetTask.type) {
+        new Notice(
+          "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type.",
+          5000
+        );
+        return;
+      }
 
       const hash = await addLinkSignsBetweenTasks(
         vault,

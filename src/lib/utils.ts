@@ -58,6 +58,55 @@ export async function updateTaskStatusInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Map TaskStatus to note-based status format
+      const noteStatus =
+        newStatus === "todo"
+          ? "open"
+          : newStatus === "done"
+            ? "done"
+            : newStatus === "in_progress"
+              ? "in-progress"
+              : newStatus === "canceled"
+                ? "canceled"
+                : "open";
+
+      // Find and update status line
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].startsWith("status:")) {
+          lines[i] = `status: ${noteStatus}`;
+          break;
+        }
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline status)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -84,6 +133,59 @@ export async function removeTagFromTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find and remove the tag from the tags array
+      // Tags are stored as "  - tagname" under "tags:"
+      let i = frontmatterStart + 1;
+      while (i < frontmatterEnd) {
+        const line = lines[i];
+        if (line === "tags:") {
+          // Found tags section, look for the tag in the following lines
+          i++;
+          while (i < frontmatterEnd && lines[i].match(/^\s{2}- /)) {
+            const tagLine = lines[i];
+            const tagMatch = tagLine.match(/^\s{2}- (.+)$/);
+            if (tagMatch && tagMatch[1] === tagToRemove) {
+              // Found the tag, remove it
+              lines.splice(i, 1);
+              frontmatterEnd--;
+              break;
+            }
+            i++;
+          }
+          break;
+        }
+        i++;
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline tags)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
 
@@ -144,6 +246,59 @@ export async function addStarToTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Check if starred field already exists
+      let starredIndex = -1;
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].match(/^starred:\s*/)) {
+          starredIndex = i;
+          break;
+        }
+      }
+
+      if (starredIndex !== -1) {
+        // Update existing starred field
+        lines[starredIndex] = "starred: true";
+      } else {
+        // Add starred field after priority if it exists, otherwise before tags
+        let insertIndex = frontmatterEnd;
+        for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+          if (lines[i].match(/^priority:\s*/)) {
+            insertIndex = i + 1;
+            break;
+          }
+        }
+        lines.splice(insertIndex, 0, "starred: true");
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline star emoji)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -169,6 +324,43 @@ export async function removeStarFromTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find and update starred field
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].match(/^starred:\s*/)) {
+          lines[i] = "starred: false";
+          break;
+        }
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline star emoji)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -192,6 +384,67 @@ export async function addTagToTaskInVault(
   const file = vault.getFileByPath(task.link);
   if (!file) return;
 
+  // Handle note-based tasks differently (they use frontmatter)
+  if (task.type === "note") {
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+
+      // Find frontmatter boundaries
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+
+      if (lines[0] === "---") {
+        frontmatterStart = 0;
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i] === "---") {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find the tags section and add the tag
+      // Tags are stored as "  - tagname" under "tags:"
+      let i = frontmatterStart + 1;
+      let tagsIndex = -1;
+
+      while (i < frontmatterEnd) {
+        const line = lines[i];
+        if (line === "tags:") {
+          tagsIndex = i;
+          // Check if tag already exists
+          let j = i + 1;
+          while (j < frontmatterEnd && lines[j].match(/^\s{2}- /)) {
+            const tagLine = lines[j];
+            const tagMatch = tagLine.match(/^\s{2}- (.+)$/);
+            if (tagMatch && tagMatch[1] === tagToAdd) {
+              // Tag already exists
+              return fileContent;
+            }
+            j++;
+          }
+          // Add the tag after the last tag in the list
+          lines.splice(j, 0, `  - ${tagToAdd}`);
+          break;
+        }
+        i++;
+      }
+
+      // If no tags section exists, create one
+      if (tagsIndex === -1) {
+        lines.splice(frontmatterEnd, 0, "tags:", `  - ${tagToAdd}`);
+      }
+
+      return lines.join("\n");
+    });
+    return;
+  }
+
+  // Handle dataview tasks (inline tags)
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
     let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
@@ -285,10 +538,97 @@ export async function addLinkSignsBetweenTasks(
 
   const id = fromTask.id;
 
+  // Handle note-based tasks differently (they use frontmatter, not inline metadata)
+  if (toTask.type === "note") {
+    await addDependencyToNoteTask(vault, toTask, fromTask);
+    return id + "-" + toTask.id;
+  }
+
+  // Handle dataview tasks (inline metadata)
   await addSignToTaskInFile(vault, fromTask, "id", id, linkingStyle);
   await addSignToTaskInFile(vault, toTask, "stop", id, linkingStyle);
 
   return id + "-" + toTask.id;
+}
+
+/**
+ * Add a dependency to a note-based task by updating its frontmatter
+ */
+async function addDependencyToNoteTask(
+  vault: Vault,
+  toTask: Task,
+  fromTask: Task
+): Promise<void> {
+  if (!toTask.link) return;
+  const file = vault.getAbstractFileByPath(toTask.link);
+  if (!(file instanceof TFile)) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+
+    // Find frontmatter boundaries
+    let frontmatterStart = -1;
+    let frontmatterEnd = -1;
+
+    if (lines[0] === "---") {
+      frontmatterStart = 0;
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i] === "---") {
+          frontmatterEnd = i;
+          break;
+        }
+      }
+    }
+
+    if (frontmatterStart === -1 || frontmatterEnd === -1) {
+      return fileContent;
+    }
+
+    // Parse the frontmatter to find blockedBy section
+    const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
+    let blockedByIndex = -1;
+    let blockedByIndent = "";
+
+    for (let i = 0; i < frontmatterLines.length; i++) {
+      if (frontmatterLines[i].match(/^blockedBy:\s*$/)) {
+        blockedByIndex = i;
+        blockedByIndent = "  "; // Standard YAML indent
+        break;
+      }
+    }
+
+    // Create the new dependency entry
+    const depEntry = `${blockedByIndent}- uid: "[[${fromTask.text}]]"\n${blockedByIndent}  reltype: FINISHTOSTART`;
+
+    if (blockedByIndex === -1) {
+      // No blockedBy field exists, add it before the closing ---
+      lines.splice(frontmatterEnd, 0, "blockedBy:", depEntry);
+    } else {
+      // blockedBy exists, find where to insert (after the last blockedBy item)
+      let insertIndex = frontmatterStart + 1 + blockedByIndex + 1;
+
+      // Find the end of the blockedBy list
+      while (insertIndex < frontmatterStart + 1 + frontmatterLines.length) {
+        const line = lines[insertIndex];
+        if (line.match(/^\s{2}- uid:/)) {
+          insertIndex++;
+          // Skip the reltype line
+          if (
+            insertIndex < lines.length &&
+            lines[insertIndex].match(/^\s{4}reltype:/)
+          ) {
+            insertIndex++;
+          }
+        } else {
+          break;
+        }
+      }
+
+      lines.splice(insertIndex, 0, depEntry);
+    }
+
+    return lines.join("\n");
+  });
 }
 
 /**
@@ -431,7 +771,71 @@ export async function removeLinkSignsBetweenTasks(
   hash: string
 ): Promise<void> {
   if (!toTask.link) return;
+
+  // Handle note-based tasks differently
+  if (toTask.type === "note") {
+    await removeDependencyFromNoteTask(vault, toTask, hash);
+    return;
+  }
+
   await removeSignFromTaskInFile(vault, toTask, "stop", hash);
+}
+
+/**
+ * Remove a dependency from a note-based task by updating its frontmatter
+ */
+async function removeDependencyFromNoteTask(
+  vault: Vault,
+  toTask: Task,
+  fromTaskId: string
+): Promise<void> {
+  if (!toTask.link) return;
+  const file = vault.getAbstractFileByPath(toTask.link);
+  if (!(file instanceof TFile)) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+
+    // Find frontmatter boundaries
+    let frontmatterStart = -1;
+    let frontmatterEnd = -1;
+
+    if (lines[0] === "---") {
+      frontmatterStart = 0;
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i] === "---") {
+          frontmatterEnd = i;
+          break;
+        }
+      }
+    }
+
+    if (frontmatterStart === -1 || frontmatterEnd === -1) {
+      return fileContent;
+    }
+
+    // Find and remove the dependency entry
+    // The fromTaskId is a file path like "TaskNotes/Tasks/Example task 1.md"
+    // We need to extract the basename
+    const basename = fromTaskId.replace(/\.md$/, "").split("/").pop();
+
+    let i = frontmatterStart + 1;
+    while (i < frontmatterEnd) {
+      const line = lines[i];
+      if (line.match(/^\s{2}- uid:/) && line.includes(`[[${basename}]]`)) {
+        // Found the entry, remove it and the next reltype line
+        lines.splice(i, 1);
+        if (i < lines.length && lines[i].match(/^\s{4}reltype:/)) {
+          lines.splice(i, 1);
+        }
+        frontmatterEnd -= 2; // Adjust end index after removal
+      } else {
+        i++;
+      }
+    }
+
+    return lines.join("\n");
+  });
 }
 
 export async function removeSignFromTaskInFile(
@@ -529,6 +933,20 @@ export async function removeSignFromTaskInFile(
 
 // TODO: Improve typing for app parameter
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getAllTasks(app: any): Task[] {
+  // Central function to gather tasks from all available sources
+  const allTasks: Task[] = [];
+
+  // Source 1: Dataview plugin tasks
+  allTasks.push(...getAllDataviewTasks(app));
+
+  // Source 2: Note-based tasks (notes with #task in frontmatter)
+  allTasks.push(...getNoteTasks(app));
+
+  return allTasks;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAllDataviewTasks(app: any): Task[] {
   let tasks: RawTask[] = [];
 
@@ -548,6 +966,214 @@ export function getAllDataviewTasks(app: any): Task[] {
 
   // Filter out empty tasks (tasks with no meaningful content after stripping metadata)
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getNoteTasks(app: any): Task[] {
+  const tasks: Task[] = [];
+  const vault = app.vault;
+  const metadataCache = app.metadataCache;
+
+  // Get all markdown files in the vault
+  const files = vault.getMarkdownFiles();
+
+  for (const file of files) {
+    // Get the file's metadata (frontmatter)
+    const cache = metadataCache.getFileCache(file);
+
+    if (!cache?.frontmatter?.tags) {
+      continue;
+    }
+
+    // Check if the note has #task tag in frontmatter
+    const tags = cache.frontmatter.tags;
+    const hasTaskTag = Array.isArray(tags)
+      ? tags.some((tag: string) => tag === "task" || tag === "#task")
+      : tags === "task" || tags === "#task";
+
+    if (!hasTaskTag) {
+      continue;
+    }
+
+    // Parse the note as a task
+    const task = parseTaskNote(file, cache, app);
+    if (task) {
+      tasks.push(task);
+    }
+  }
+
+  return tasks;
+}
+
+/**
+ * Normalize note-based task priority to emoji format
+ * TaskNotes uses: "High", "Normal", "Low", "None"
+ * We map to Obsidian Tasks emojis: 🔺 (highest), ⏫ (high), 🔼 (medium), 🔽 (low), ⏬ (lowest)
+ * Note: "Normal" and "None" both map to empty string (no emoji), matching simple task "normal" priority
+ */
+function normalizeNotePriority(priority: string): string {
+  if (!priority) return "";
+
+  const normalized = priority.toLowerCase();
+  switch (normalized) {
+    case "high":
+      return "⏫"; // high
+    case "normal":
+      return ""; // normal (no emoji)
+    case "low":
+      return "🔽"; // low
+    case "none":
+      return ""; // no priority
+    default:
+      return "";
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseTaskNote(file: any, cache: any, app: any): Task | null {
+  const frontmatter = cache.frontmatter || {};
+  const factory = new TaskFactory();
+
+  // Extract task properties from frontmatter
+  const status = frontmatter.status || " "; // Default to todo
+  const title = file.basename; // Use note title as task text
+
+  // Create a RawTask-like object
+  const rawTask = {
+    status: status,
+    text: title,
+    link: { path: file.path },
+  };
+
+  try {
+    // Parse as a note-based task
+    const task = factory.parse(rawTask, "note");
+
+    // For note-based tasks, use the file path as the ID
+    task.id = file.path;
+
+    // Override with frontmatter data if available
+    if (frontmatter.tags) {
+      const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
+      task.tags = tags.map((t: string) => t.replace(/^#/, ""));
+    }
+
+    if (frontmatter.priority) {
+      task.priority = normalizeNotePriority(frontmatter.priority);
+    }
+
+    if (typeof frontmatter.starred === "boolean") {
+      task.starred = frontmatter.starred;
+    }
+
+    // Collect all incoming links from various sources
+    const allIncomingLinks: string[] = [];
+
+    // Parse blockedBy dependencies (TaskNotes format)
+    // For note-based tasks, these will be file paths
+    if (frontmatter.blockedBy) {
+      try {
+        const blockedByLinks = parseBlockedByLinks(frontmatter.blockedBy, app);
+        allIncomingLinks.push(...blockedByLinks);
+      } catch {
+        // Failed to parse blockedBy
+      }
+    }
+
+    // Also support simpler dependsOn format
+    if (frontmatter.dependsOn) {
+      try {
+        const deps = Array.isArray(frontmatter.dependsOn)
+          ? frontmatter.dependsOn
+          : [frontmatter.dependsOn];
+        allIncomingLinks.push(...deps);
+      } catch {
+        // Failed to parse dependsOn
+      }
+    }
+
+    // Remove duplicates and assign to task
+    task.incomingLinks = [...new Set(allIncomingLinks)];
+
+    return task;
+  } catch {
+    return null;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseBlockedByLinks(blockedBy: any, app: any): string[] {
+  const links: string[] = [];
+  const vault = app.vault;
+
+  if (!blockedBy) {
+    return links;
+  }
+
+  if (!Array.isArray(blockedBy)) {
+    return links;
+  }
+
+  for (const item of blockedBy) {
+    try {
+      let linkTarget: string | null = null;
+
+      // Format 1: Complex object with uid and reltype
+      // { uid: "[[Example task 1]]", reltype: "FINISHTOSTART" }
+      if (typeof item === "object" && item !== null && "uid" in item) {
+        const uid = item.uid;
+        if (typeof uid === "string") {
+          linkTarget = uid;
+        } else {
+          continue;
+        }
+      }
+      // Format 2: Simple wiki link string
+      // "[[Example task 1]]"
+      else if (typeof item === "string") {
+        linkTarget = item;
+      }
+
+      if (!linkTarget || typeof linkTarget !== "string") {
+        continue;
+      }
+
+      // Extract the page name from wiki link format [[Page Name]]
+      const wikiLinkMatch = linkTarget.match(/\[\[([^\]]+)\]\]/);
+      if (!wikiLinkMatch) {
+        continue;
+      }
+
+      const pageName = wikiLinkMatch[1];
+
+      if (!pageName || typeof pageName !== "string") {
+        continue;
+      }
+
+      // Try to find the file by name and get its path
+      let file = null;
+      try {
+        file = vault.getAbstractFileByPath(pageName + ".md");
+        if (!file) {
+          const markdownFiles = vault.getMarkdownFiles();
+          file = markdownFiles.find((f: any) => f.basename === pageName); // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+      } catch {
+        continue;
+      }
+
+      if (!file) {
+        continue;
+      }
+
+      // For note-based tasks, store the file path as the link reference
+      links.push(file.path);
+    } catch {
+      continue;
+    }
+  }
+
+  return links;
 }
 
 export function createNodesFromTasks(
@@ -590,6 +1216,10 @@ export function createEdgesFromTasks(
   debugVisualization: boolean = false
 ): TaskEdge[] {
   const edges: TaskEdge[] = [];
+
+  // Create edges based on task dependencies
+  // Works for both dataview tasks (ID-based) and note tasks (file path-based)
+  // because both use their respective identifiers consistently
   tasks.forEach((task) => {
     task.incomingLinks.forEach((parentTaskId) => {
       edges.push({

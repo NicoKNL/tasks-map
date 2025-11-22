@@ -1,4 +1,5 @@
 import { Task, TaskStatus, RawTask } from "src/types/task";
+
 import {
   EMOJI_ID_PATTERN,
   DATAVIEW_ID_PATTERN,
@@ -14,12 +15,13 @@ import {
 } from "./task-regex";
 
 export class TaskFactory {
-  public parse(rawTask: RawTask): Task {
+  public parse(rawTask: RawTask, type: "dataview" | "note" = "dataview"): Task {
     const status = rawTask.status;
     const text = rawTask.text;
 
     return {
       id: this.parseIdFromText(text),
+      type: type,
       summary: this.makeSummary(text),
       text: this.cleanText(text),
       tags: this.parseTags(text),
@@ -90,6 +92,15 @@ export class TaskFactory {
         return "in_progress";
       case "-":
         return "canceled";
+      // Note-based task status values
+      case "done":
+        return "done";
+      case "in-progress":
+        return "in_progress";
+      case "open":
+        return "todo";
+      case "none":
+        return "todo";
       default:
         return "todo";
     }

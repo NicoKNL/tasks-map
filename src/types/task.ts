@@ -1,6 +1,7 @@
 import { Node, Edge } from "reactflow";
 
 export type TaskStatus = "todo" | "in_progress" | "canceled" | "done";
+export type TaskType = "dataview" | "note";
 
 export interface RawTask {
   status: string;
@@ -10,13 +11,14 @@ export interface RawTask {
 
 export interface Task {
   id: string;
+  type: TaskType; // How to identify this task for linking
   summary: string;
   text: string;
   tags: string[];
   status: TaskStatus; // [ ] todo, [/] in_progress, [-] canceled, [x] done
   priority: string;
   link: string;
-  incomingLinks: string[];
+  incomingLinks: string[]; // References to other tasks (format depends on type)
   starred: boolean;
 }
 
