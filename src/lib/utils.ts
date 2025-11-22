@@ -820,7 +820,6 @@ async function removeDependencyFromNoteTask(
     const basename = fromTaskId.replace(/\.md$/, "").split("/").pop();
 
     let i = frontmatterStart + 1;
-    let found = false;
     while (i < frontmatterEnd) {
       const line = lines[i];
       if (line.match(/^\s{2}- uid:/) && line.includes(`[[${basename}]]`)) {
@@ -830,7 +829,6 @@ async function removeDependencyFromNoteTask(
           lines.splice(i, 1);
         }
         frontmatterEnd -= 2; // Adjust end index after removal
-        found = true;
       } else {
         i++;
       }
@@ -949,6 +947,7 @@ export function getAllTasks(app: any): Task[] {
 }
 
 export function getAllDataviewTasks(app: any): Task[] {
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   let tasks: RawTask[] = [];
 
   // plugins exists, just not on the Obsidian App API?:
@@ -970,6 +969,7 @@ export function getAllDataviewTasks(app: any): Task[] {
 }
 
 export function getNoteTasks(app: any): Task[] {
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   const tasks: Task[] = [];
   const vault = app.vault;
   const metadataCache = app.metadataCache;
@@ -1030,7 +1030,7 @@ function normalizeNotePriority(priority: string): string {
 }
 
 function parseTaskNote(file: any, cache: any, app: any): Task | null {
-  const vault = app.vault;
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   const frontmatter = cache.frontmatter || {};
   const factory = new TaskFactory();
 
@@ -1075,7 +1075,7 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
       try {
         const blockedByLinks = parseBlockedByLinks(frontmatter.blockedBy, app);
         allIncomingLinks.push(...blockedByLinks);
-      } catch (error) {
+      } catch {
         // Failed to parse blockedBy
       }
     }
@@ -1087,7 +1087,7 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
           ? frontmatter.dependsOn
           : [frontmatter.dependsOn];
         allIncomingLinks.push(...deps);
-      } catch (error) {
+      } catch {
         // Failed to parse dependsOn
       }
     }
@@ -1096,12 +1096,13 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
     task.incomingLinks = [...new Set(allIncomingLinks)];
 
     return task;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
 
 function parseBlockedByLinks(blockedBy: any, app: any): string[] {
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   const links: string[] = [];
   const vault = app.vault;
 
@@ -1155,9 +1156,9 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
         file = vault.getAbstractFileByPath(pageName + ".md");
         if (!file) {
           const markdownFiles = vault.getMarkdownFiles();
-          file = markdownFiles.find((f: any) => f.basename === pageName);
+          file = markdownFiles.find((f: any) => f.basename === pageName); // eslint-disable-line @typescript-eslint/no-explicit-any
         }
-      } catch (error) {
+      } catch {
         continue;
       }
 
@@ -1167,7 +1168,7 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
 
       // For note-based tasks, store the file path as the link reference
       links.push(file.path);
-    } catch (error) {
+    } catch {
       continue;
     }
   }

@@ -9,12 +9,6 @@ export interface RawTask {
   link: { path: string };
 }
 
-export interface RawTask {
-  status: string;
-  text: string;
-  link: { path: string };
-}
-
 export interface Task {
   id: string;
   type: TaskType; // How to identify this task for linking
