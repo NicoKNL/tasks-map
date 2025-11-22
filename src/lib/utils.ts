@@ -80,9 +80,9 @@ export async function updateTaskStatusInVault(
         newStatus === "todo"
           ? "open"
           : newStatus === "done"
-            ? "closed"
+            ? "done"
             : newStatus === "in_progress"
-              ? "open"
+              ? "in-progress"
               : newStatus === "canceled"
                 ? "canceled"
                 : "open";
