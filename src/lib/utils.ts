@@ -438,7 +438,6 @@ async function addDependencyToNoteTask(
     }
 
     if (frontmatterStart === -1 || frontmatterEnd === -1) {
-      console.warn("No frontmatter found in note-based task");
       return fileContent;
     }
 
@@ -651,10 +650,6 @@ async function removeDependencyFromNoteTask(
   const file = vault.getAbstractFileByPath(toTask.link);
   if (!(file instanceof TFile)) return;
 
-  console.log(
-    `Removing dependency: fromTaskId=${fromTaskId}, toTask=${toTask.id}`
-  );
-
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
 
@@ -672,12 +667,7 @@ async function removeDependencyFromNoteTask(
       }
     }
 
-    console.log(
-      `Frontmatter: start=${frontmatterStart}, end=${frontmatterEnd}`
-    );
-
     if (frontmatterStart === -1 || frontmatterEnd === -1) {
-      console.warn("No frontmatter found");
       return fileContent;
     }
 
@@ -685,15 +675,12 @@ async function removeDependencyFromNoteTask(
     // The fromTaskId is a file path like "TaskNotes/Tasks/Example task 1.md"
     // We need to extract the basename
     const basename = fromTaskId.replace(/\.md$/, "").split("/").pop();
-    console.log(`Looking for basename: ${basename}`);
 
     let i = frontmatterStart + 1;
     let found = false;
     while (i < frontmatterEnd) {
       const line = lines[i];
-      console.log(`Checking line ${i}: "${line}"`);
       if (line.match(/^\s{2}- uid:/) && line.includes(`[[${basename}]]`)) {
-        console.log(`Found match at line ${i}, removing...`);
         // Found the entry, remove it and the next reltype line
         lines.splice(i, 1);
         if (i < lines.length && lines[i].match(/^\s{4}reltype:/)) {
@@ -706,7 +693,6 @@ async function removeDependencyFromNoteTask(
       }
     }
 
-    console.log(`Removal ${found ? "succeeded" : "failed"}`);
     return lines.join("\n");
   });
 }
@@ -944,7 +930,7 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
         const blockedByLinks = parseBlockedByLinks(frontmatter.blockedBy, app);
         allIncomingLinks.push(...blockedByLinks);
       } catch (error) {
-        console.error(`Failed to parse blockedBy for ${file.basename}:`, error);
+        // Failed to parse blockedBy
       }
     }
 
@@ -956,7 +942,7 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
           : [frontmatter.dependsOn];
         allIncomingLinks.push(...deps);
       } catch (error) {
-        console.error(`Failed to parse dependsOn for ${file.basename}:`, error);
+        // Failed to parse dependsOn
       }
     }
 
@@ -965,7 +951,6 @@ function parseTaskNote(file: any, cache: any, app: any): Task | null {
 
     return task;
   } catch (error) {
-    console.error(`Failed to parse task note ${file.basename}:`, error);
     return null;
   }
 }
@@ -979,7 +964,6 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
   }
 
   if (!Array.isArray(blockedBy)) {
-    console.warn("blockedBy is not an array, skipping");
     return links;
   }
 
@@ -994,7 +978,6 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
         if (typeof uid === "string") {
           linkTarget = uid;
         } else {
-          console.warn("blockedBy item uid is not a string:", uid);
           continue;
         }
       }
@@ -1017,7 +1000,6 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
       const pageName = wikiLinkMatch[1];
 
       if (!pageName || typeof pageName !== "string") {
-        console.warn("Invalid page name extracted from wiki link");
         continue;
       }
 
@@ -1030,19 +1012,16 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
           file = markdownFiles.find((f: any) => f.basename === pageName);
         }
       } catch (error) {
-        console.error(`Error finding file for ${pageName}:`, error);
         continue;
       }
 
       if (!file) {
-        console.warn(`Could not find file for wiki link: ${pageName}`);
         continue;
       }
 
       // For note-based tasks, store the file path as the link reference
       links.push(file.path);
     } catch (error) {
-      console.error("Error parsing blockedBy item:", item, error);
       continue;
     }
   }

@@ -10,4 +10,6 @@ tags:
 contexts: []
 projects: []
 blockedBy:
+  - uid: "[[Example task 1]]"
+    reltype: FINISHTOSTART
 ---
