@@ -232,10 +232,95 @@ export async function addLinkSignsBetweenTasks(
 
   const id = fromTask.id;
 
+  // Handle note-based tasks differently (they use frontmatter, not inline metadata)
+  if (toTask.type === "note") {
+    await addDependencyToNoteTask(vault, toTask, fromTask);
+    return id + "-" + toTask.id;
+  }
+
+  // Handle dataview tasks (inline metadata)
   await addSignToTaskInFile(vault, fromTask, "id", id, linkingStyle);
   await addSignToTaskInFile(vault, toTask, "stop", id, linkingStyle);
 
   return id + "-" + toTask.id;
+}
+
+/**
+ * Add a dependency to a note-based task by updating its frontmatter
+ */
+async function addDependencyToNoteTask(
+  vault: Vault,
+  toTask: Task,
+  fromTask: Task
+): Promise<void> {
+  if (!toTask.link) return;
+  const file = vault.getAbstractFileByPath(toTask.link);
+  if (!(file instanceof TFile)) return;
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    
+    // Find frontmatter boundaries
+    let frontmatterStart = -1;
+    let frontmatterEnd = -1;
+    
+    if (lines[0] === "---") {
+      frontmatterStart = 0;
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i] === "---") {
+          frontmatterEnd = i;
+          break;
+        }
+      }
+    }
+    
+    if (frontmatterStart === -1 || frontmatterEnd === -1) {
+      console.warn("No frontmatter found in note-based task");
+      return fileContent;
+    }
+    
+    // Parse the frontmatter to find blockedBy section
+    const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
+    let blockedByIndex = -1;
+    let blockedByIndent = "";
+    
+    for (let i = 0; i < frontmatterLines.length; i++) {
+      if (frontmatterLines[i].match(/^blockedBy:\s*$/)) {
+        blockedByIndex = i;
+        blockedByIndent = "  "; // Standard YAML indent
+        break;
+      }
+    }
+    
+    // Create the new dependency entry
+    const depEntry = `${blockedByIndent}- uid: "[[${fromTask.text}]]"\n${blockedByIndent}  reltype: FINISHTOSTART`;
+    
+    if (blockedByIndex === -1) {
+      // No blockedBy field exists, add it before the closing ---
+      lines.splice(frontmatterEnd, 0, "blockedBy:", depEntry);
+    } else {
+      // blockedBy exists, find where to insert (after the last blockedBy item)
+      let insertIndex = frontmatterStart + 1 + blockedByIndex + 1;
+      
+      // Find the end of the blockedBy list
+      while (insertIndex < frontmatterStart + 1 + frontmatterLines.length) {
+        const line = lines[insertIndex];
+        if (line.match(/^\s{2}- uid:/)) {
+          insertIndex++;
+          // Skip the reltype line
+          if (insertIndex < lines.length && lines[insertIndex].match(/^\s{4}reltype:/)) {
+            insertIndex++;
+          }
+        } else {
+          break;
+        }
+      }
+      
+      lines.splice(insertIndex, 0, depEntry);
+    }
+    
+    return lines.join("\n");
+  });
 }
 
 /**
@@ -378,7 +463,82 @@ export async function removeLinkSignsBetweenTasks(
   hash: string
 ): Promise<void> {
   if (!toTask.link) return;
+  
+  // Handle note-based tasks differently
+  if (toTask.type === "note") {
+    await removeDependencyFromNoteTask(vault, toTask, hash);
+    return;
+  }
+  
   await removeSignFromTaskInFile(vault, toTask, "stop", hash);
+}
+
+/**
+ * Remove a dependency from a note-based task by updating its frontmatter
+ */
+async function removeDependencyFromNoteTask(
+  vault: Vault,
+  toTask: Task,
+  fromTaskId: string
+): Promise<void> {
+  if (!toTask.link) return;
+  const file = vault.getAbstractFileByPath(toTask.link);
+  if (!(file instanceof TFile)) return;
+
+  console.log(`Removing dependency: fromTaskId=${fromTaskId}, toTask=${toTask.id}`);
+
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    
+    // Find frontmatter boundaries
+    let frontmatterStart = -1;
+    let frontmatterEnd = -1;
+    
+    if (lines[0] === "---") {
+      frontmatterStart = 0;
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i] === "---") {
+          frontmatterEnd = i;
+          break;
+        }
+      }
+    }
+    
+    console.log(`Frontmatter: start=${frontmatterStart}, end=${frontmatterEnd}`);
+    
+    if (frontmatterStart === -1 || frontmatterEnd === -1) {
+      console.warn("No frontmatter found");
+      return fileContent;
+    }
+    
+    // Find and remove the dependency entry
+    // The fromTaskId is a file path like "TaskNotes/Tasks/Example task 1.md"
+    // We need to extract the basename
+    const basename = fromTaskId.replace(/\.md$/, "").split("/").pop();
+    console.log(`Looking for basename: ${basename}`);
+    
+    let i = frontmatterStart + 1;
+    let found = false;
+    while (i < frontmatterEnd) {
+      const line = lines[i];
+      console.log(`Checking line ${i}: "${line}"`);
+      if (line.match(/^\s{2}- uid:/) && line.includes(`[[${basename}]]`)) {
+        console.log(`Found match at line ${i}, removing...`);
+        // Found the entry, remove it and the next reltype line
+        lines.splice(i, 1);
+        if (i < lines.length && lines[i].match(/^\s{4}reltype:/)) {
+          lines.splice(i, 1);
+        }
+        frontmatterEnd -= 2; // Adjust end index after removal
+        found = true;
+      } else {
+        i++;
+      }
+    }
+    
+    console.log(`Removal ${found ? 'succeeded' : 'failed'}`);
+    return lines.join("\n");
+  });
 }
 
 export async function removeSignFromTaskInFile(
