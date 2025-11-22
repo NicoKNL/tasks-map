@@ -596,12 +596,22 @@ async function addDependencyToNoteTask(
       }
     }
 
-    // Create the new dependency entry
-    const depEntry = `${blockedByIndent}- uid: "[[${fromTask.text}]]"\n${blockedByIndent}  reltype: FINISHTOSTART`;
+    // Check if this dependency already exists
+    const taskIdentifier = `[[${fromTask.text}]]`;
+    for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+      if (lines[i].includes(`uid:`) && lines[i].includes(taskIdentifier)) {
+        // Dependency already exists, don't add it again
+        return fileContent;
+      }
+    }
+
+    // Create the new dependency entry as two separate lines
+    const uidLine = `${blockedByIndent}- uid: "${taskIdentifier}"`;
+    const reltypeLine = `${blockedByIndent}  reltype: FINISHTOSTART`;
 
     if (blockedByIndex === -1) {
       // No blockedBy field exists, add it before the closing ---
-      lines.splice(frontmatterEnd, 0, "blockedBy:", depEntry);
+      lines.splice(frontmatterEnd, 0, "blockedBy:", uidLine, reltypeLine);
     } else {
       // blockedBy exists, find where to insert (after the last blockedBy item)
       let insertIndex = frontmatterStart + 1 + blockedByIndex + 1;
@@ -623,7 +633,7 @@ async function addDependencyToNoteTask(
         }
       }
 
-      lines.splice(insertIndex, 0, depEntry);
+      lines.splice(insertIndex, 0, uidLine, reltypeLine);
     }
 
     return lines.join("\n");
@@ -821,10 +831,12 @@ async function removeDependencyFromNoteTask(
     let i = frontmatterStart + 1;
     while (i < frontmatterEnd) {
       const line = lines[i];
-      if (line.match(/^\s{2}- uid:/) && line.includes(`[[${basename}]]`)) {
+      // Match uid lines with any amount of leading whitespace (to handle malformed indentation)
+      if (line.match(/^\s*- uid:/) && line.includes(`[[${basename}]]`)) {
         // Found the entry, remove it and the next reltype line
         lines.splice(i, 1);
-        if (i < lines.length && lines[i].match(/^\s{4}reltype:/)) {
+        // Also check for reltype with any amount of leading whitespace
+        if (i < lines.length && lines[i].match(/^\s*reltype:/)) {
           lines.splice(i, 1);
         }
         frontmatterEnd -= 2; // Adjust end index after removal
