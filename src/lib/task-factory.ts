@@ -16,7 +16,6 @@ import {
 
 export class TaskFactory {
   public parse(rawTask: RawTask, type: "dataview" | "note" = "dataview"): Task {
-
     const status = rawTask.status;
     const text = rawTask.text;
 
