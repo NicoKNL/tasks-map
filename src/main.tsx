@@ -3,6 +3,7 @@ import { WorkspaceLeaf, Plugin } from "obsidian";
 import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
 import { TasksMapSettings, DEFAULT_SETTINGS } from "./types/settings";
 import { TasksMapSettingTab } from "./settings/settings-tab";
+import { getAllTasks } from "./lib/utils";
 
 export default class TasksMapPlugin extends Plugin {
   settings: TasksMapSettings = DEFAULT_SETTINGS;
@@ -25,6 +26,11 @@ export default class TasksMapPlugin extends Plugin {
       callback: () => {
         this.activateViewInMainArea();
       },
+    });
+
+    // Always register a ribbon for open tasks map
+    this.addRibbonIcon("map", "open-tasks-map-view", () => {
+      this.activateViewInMainArea();
     });
   }
 

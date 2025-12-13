@@ -1,11 +1,25 @@
 import React from "react";
-import { App } from "obsidian";
+import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { ArrowUpRight } from "lucide-react";
 
 interface LinkButtonProps {
   taskStatus?: "todo" | "done" | "canceled" | "in_progress";
   link: string;
   app: App;
+}
+
+// Detect the file is opened.
+function findLeafWithFile(app: any, filePath: string): WorkspaceLeaf | null {
+  const leaves = app.workspace.getLeavesOfType("markdown");
+
+  for (const leaf of leaves) {
+    const fileView = leaf.view as FileView;
+    if (fileView?.file && fileView.file.path === filePath) {
+      return leaf;
+    }
+  }
+
+  return null;
 }
 
 export const LinkButton = ({
@@ -19,11 +33,30 @@ export const LinkButton = ({
       : taskStatus === "canceled"
         ? "error"
         : "normal";
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    app.workspace.openLinkText(link, link);
-  };
+    // app.workspace.openLinkText(link, link);
+
+    // 首先尝试找到文件对象
+    const abstractFile = app.vault.getAbstractFileByPath(link);
+
+    if (!(abstractFile instanceof TFile)) {
+      throw new Error(`File not found: ${link}`);
+    }
+
+    // Find the opened tab
+    const existingLeaf = findLeafWithFile(app, link);
+
+    if (existingLeaf) {
+      // Switch to the tab
+      await app.workspace.revealLeaf(existingLeaf);
+      app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+    } else {
+      // Open in new tab
+      await app.workspace.openLinkText(link, link);
+    }
+  };;
 
   return (
     <button
