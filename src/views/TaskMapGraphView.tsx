@@ -67,6 +67,11 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
     vaultRef.current = vault;
   }, [vault]);
 
+  // reload tasks when open map
+  useEffect(() => {
+    reloadTasks();
+  }, []);
+
   // Maintain a live registry of tags per task for efficient allTags computation
   const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
     Map<string, string[]>
