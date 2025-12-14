@@ -67,6 +67,16 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
     vaultRef.current = vault;
   }, [vault]);
 
+  useEffect(() => {
+    // Wait for a short moment to ensure vault is ready
+    // Tasks may not be immediately available on vault open through the Dataview plugin
+    const timeoutId = window.setTimeout(() => {
+      reloadTasks();
+    }, 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   // Maintain a live registry of tags per task for efficient allTags computation
   const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
     Map<string, string[]>
