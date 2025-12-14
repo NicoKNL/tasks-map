@@ -56,7 +56,7 @@ export const LinkButton = ({
       // Open in new tab
       await app.workspace.openLinkText(link, link);
     }
-  };;
+  };
 
   return (
     <button
