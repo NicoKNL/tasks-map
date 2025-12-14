@@ -9,7 +9,7 @@ interface LinkButtonProps {
 }
 
 // Detect the file is opened.
-function findLeafWithFile(app: any, filePath: string): WorkspaceLeaf | null {
+function findLeafWithFile(app: App, filePath: string): WorkspaceLeaf | null {
   const leaves = app.workspace.getLeavesOfType("markdown");
 
   for (const leaf of leaves) {
