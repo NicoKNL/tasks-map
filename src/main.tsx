@@ -26,6 +26,10 @@ export default class TasksMapPlugin extends Plugin {
         this.activateViewInMainArea();
       },
     });
+
+    this.addRibbonIcon("map", "Open tasks map view", () => {
+      this.activateViewInMainArea();
+    });
   }
 
   async loadSettings() {
