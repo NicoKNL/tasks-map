@@ -633,3 +633,16 @@ If your plugin does not need CSS, delete this file.
   background-color: rgba(0, 0, 0, 0.3) !important;
   color: white !important;
 }
+
+/* Add line text highlight */
+.tasks-map-line-highlight {
+	background-color: rgba(255, 255, 0, 0.3) !important;
+	transition: background-color 0.3s ease;
+	animation: pulse-highlight 1s ease-in-out;
+}
+
+@keyframes tasks-map-pulse-highlight {
+	0% { background-color: rgba(255, 255, 0, 0.1); }
+	50% { background-color: rgba(255, 255, 0, 0.5); }
+	100% { background-color: rgba(255, 255, 0, 0.3); }
+}

@@ -22,7 +22,7 @@ const statusSymbols = {
  * Find the index of a task line in an array of lines by its ID.
  * Supports both emoji format (🆔 abc123) and Dataview format ([[id:: abc123]])
  */
-function findTaskLineByIdOrText(
+export function findTaskLineByIdOrText(
   lines: string[],
   taskId: string,
   taskText: string

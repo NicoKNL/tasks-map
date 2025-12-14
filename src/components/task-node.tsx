@@ -171,7 +171,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
         {showPriorities && <TaskPriority priority={task.priority} />}
         <span ref={summaryRef} className="tasks-map-task-node-summary" />
         <StarButton starred={starred} onClick={handleStarToggle} />
-        <LinkButton link={task.link} app={app} taskStatus={status} />
+        <LinkButton link={task.link} app={app} taskStatus={status} task={task} />
       </div>
 
       <div className="tasks-map-task-node-content">
