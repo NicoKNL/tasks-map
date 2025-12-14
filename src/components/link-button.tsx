@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  App,
-  MarkdownView,
-} from "obsidian";
+import { App, MarkdownView } from "obsidian";
 import { ArrowUpRight } from "lucide-react";
 import { Task } from "../types/task";
 import { findTaskLineByIdOrText } from "../lib/utils";
@@ -48,13 +45,16 @@ export const LinkButton = ({
           // Find the line containing the task text
           const lines = content.split("\n");
 
-          const lineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+          let lineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+          console.info("lineIdx: ", lineIdx);
+          lineIdx = getAdjustedSourceLine(app, lineIdx);
 
           // Highlight the line
           highlighter.highlightLine(app, lineIdx, 2000);
         }
       }
-    }, 100); // Small delay to ensure the editor is fully loaded
+    }, 200); // Small delay to ensure the editor is fully loaded
   };
 
   return (
@@ -65,4 +65,49 @@ export const LinkButton = ({
       <ArrowUpRight size={16} />
     </button>
   );
+};
+
+const getAdjustedSourceLine = (app: App, renderedLine: number): number => {
+  const markdownView = app.workspace.getActiveViewOfType(MarkdownView);
+  if (!markdownView) {
+    console.warn("No active markdown editor");
+    return renderedLine;
+  }
+  const currentMode = markdownView.getMode();
+
+  // If in "source", default live source
+  if (currentMode === "source") {
+    const editor = markdownView.editor;
+    const content = editor.getValue();
+    const lines = content.split("\n");
+
+    const frontmatterEndLine = findFrontmatterEndLine(lines);
+
+    const safeLine = Math.min(renderedLine, lines.length - 1);
+
+    return safeLine - frontmatterEndLine;
+  }
+
+  // In preview
+  if (currentMode === "preview") {
+    // TODO: preview
+    return renderedLine;
+  }
+
+  console.warn(`Unknown Mode: ${currentMode}`);
+  return renderedLine;
+};
+
+const findFrontmatterEndLine = (lines: string[]): number => {
+  if (lines.length < 2 || lines[0] !== "---") {
+    return 0;
+  }
+
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i] === "---") {
+      return i + 1;
+    }
+  }
+
+  return 0;
 };
