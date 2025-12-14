@@ -67,7 +67,6 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
     vaultRef.current = vault;
   }, [vault]);
 
-  // reload tasks when open map
   useEffect(() => {
     // Wait for a short moment to ensure vault is ready
     // Tasks may not be immediately available on vault open through the Dataview plugin
