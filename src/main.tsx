@@ -27,8 +27,7 @@ export default class TasksMapPlugin extends Plugin {
       },
     });
 
-    // Always register a ribbon for open tasks map
-    this.addRibbonIcon("map", "open-tasks-map-view", () => {
+    this.addRibbonIcon("map", "Open tasks map view", () => {
       this.activateViewInMainArea();
     });
   }
