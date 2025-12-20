@@ -36,7 +36,6 @@ export const LinkButton = ({
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // app.workspace.openLinkText(link, link);
 
     const abstractFile = app.vault.getAbstractFileByPath(link);
 
