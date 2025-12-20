@@ -38,22 +38,18 @@ export const LinkButton = ({
     e.stopPropagation();
     // app.workspace.openLinkText(link, link);
 
-    // 首先尝试找到文件对象
     const abstractFile = app.vault.getAbstractFileByPath(link);
 
     if (!(abstractFile instanceof TFile)) {
       throw new Error(`File not found: ${link}`);
     }
 
-    // Find the opened tab
     const existingLeaf = findLeafWithFile(app, link);
 
     if (existingLeaf) {
-      // Switch to the tab
       await app.workspace.revealLeaf(existingLeaf);
       app.workspace.setActiveLeaf(existingLeaf, { focus: true });
     } else {
-      // Open in new tab
       await app.workspace.openLinkText(link, link);
     }
   };
