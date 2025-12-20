@@ -120,13 +120,26 @@ export default function TaskMapGraphView({
   }, []);
 
   useEffect(() => {
-    // Wait for a short moment to ensure vault is ready
-    const timeoutId = window.setTimeout(() => {
-      reloadTasks();
-    }, 1000);
+    // Get the Dataview plugin to check index status
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataviewPlugin = (app as any).plugins?.plugins?.["dataview"];
 
-    return () => window.clearTimeout(timeoutId);
-  }, [reloadTasks]);
+    // Check if Dataview index is already initialized
+    if (dataviewPlugin?.index?.initialized) {
+      // Index already ready, load tasks immediately
+      reloadTasks();
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const metadataCache = (app as any).metadataCache;
+      const eventRef = metadataCache.on("dataview:index-ready", () => {
+        reloadTasks();
+      });
+
+      return () => {
+        metadataCache.offref(eventRef);
+      };
+    }
+  }, [app, reloadTasks]);
 
   // Update tag registry when tasks change
   useEffect(() => {
