@@ -5,6 +5,7 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   useReactFlow,
+  ReactFlowProvider,
 } from "reactflow";
 import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
@@ -34,124 +35,67 @@ interface TaskMapGraphViewProps {
   settings: TasksMapSettings;
 }
 
-export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
+// Helper function to filter tasks
+const getFilteredNodeIds = (
+  tasks: Task[],
+  selectedTags: string[],
+  selectedStatuses: TaskStatus[]
+) => {
+  let filtered = tasks;
+  if (selectedTags.length > 0) {
+    filtered = filtered.filter((task) => {
+      const noTagsSelected = selectedTags.includes(NO_TAGS_VALUE);
+      const regularTagsSelected = selectedTags.filter(
+        (tag) => tag !== NO_TAGS_VALUE
+      );
+      const matchesNoTags = noTagsSelected && task.tags.length === 0;
+      const matchesRegularTags =
+        regularTagsSelected.length > 0 &&
+        regularTagsSelected.some((tag) => task.tags.includes(tag));
+      return matchesNoTags || matchesRegularTags;
+    });
+  }
+  if (selectedStatuses.length > 0) {
+    filtered = filtered.filter((task) =>
+      selectedStatuses.includes(task.status)
+    );
+  }
+  return filtered.map((task) => task.id);
+};
+
+// Inner component that uses ReactFlow hooks (must be inside ReactFlowProvider)
+interface TaskMapGraphInnerProps {
+  settings: TasksMapSettings;
+  tasks: Task[];
+  selectedTags: string[];
+  selectedStatuses: TaskStatus[];
+  setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedStatuses: React.Dispatch<React.SetStateAction<TaskStatus[]>>;
+  reloadTasks: () => void;
+  allTags: string[];
+  updateTaskTags: (taskId: string, newTags: string[]) => void;
+}
+
+function TaskMapGraphInner({
+  settings,
+  tasks,
+  selectedTags,
+  selectedStatuses,
+  setSelectedTags,
+  setSelectedStatuses,
+  reloadTasks,
+  allTags,
+  updateTaskTags,
+}: TaskMapGraphInnerProps) {
   const app = useApp();
   const vault = app.vault;
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [tasks, setTasks] = React.useState<Task[]>([]);
-  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
-  const [selectedStatuses, setSelectedStatuses] = React.useState<TaskStatus[]>([
-    ...ALL_STATUSES,
-  ]);
-  const selectedEdgeRef = React.useRef<string | null>(null);
-  const edgesRef = React.useRef(edges);
-  const tasksRef = React.useRef(tasks);
-  const vaultRef = React.useRef(vault);
   const reactFlowInstance = useReactFlow();
 
   useEffect(() => {
-    selectedEdgeRef.current = selectedEdge;
-  }, [selectedEdge]);
-
-  useEffect(() => {
-    edgesRef.current = edges;
-  }, [edges]);
-
-  useEffect(() => {
-    tasksRef.current = tasks;
-  }, [tasks]);
-
-  useEffect(() => {
-    vaultRef.current = vault;
-  }, [vault]);
-
-  useEffect(() => {
-    // Wait for a short moment to ensure vault is ready
-    // Tasks may not be immediately available on vault open through the Dataview plugin
-    const timeoutId = window.setTimeout(() => {
-      reloadTasks();
-    }, 1000);
-
-    return () => window.clearTimeout(timeoutId);
-  }, []);
-
-  // Maintain a live registry of tags per task for efficient allTags computation
-  const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
-    Map<string, string[]>
-  >(new Map());
-
-  const allTags = useMemo(() => {
-    const tagFrequency = new Map<string, number>();
-    taskTagsRegistry.forEach((tags) => {
-      tags.forEach((tag) => {
-        tagFrequency.set(tag, (tagFrequency.get(tag) || 0) + 1);
-      });
-    });
-    // Sort by frequency (descending), then alphabetically
-    return Array.from(tagFrequency.keys()).sort((a, b) => {
-      const freqDiff = (tagFrequency.get(b) || 0) - (tagFrequency.get(a) || 0);
-      if (freqDiff !== 0) return freqDiff;
-      return a.localeCompare(b, undefined, { sensitivity: "base" });
-    });
-  }, [taskTagsRegistry]);
-
-  const getFilteredNodeIds = (
-    tasks: Task[],
-    selectedTags: string[],
-    selectedStatuses: TaskStatus[]
-  ) => {
-    let filtered = tasks;
-    if (selectedTags.length > 0) {
-      filtered = filtered.filter((task) => {
-        // Check if "No tags" is selected
-        const noTagsSelected = selectedTags.includes(NO_TAGS_VALUE);
-        // Check if regular tags are selected
-        const regularTagsSelected = selectedTags.filter(
-          (tag) => tag !== NO_TAGS_VALUE
-        );
-
-        // If "No tags" is selected and task has no tags
-        const matchesNoTags = noTagsSelected && task.tags.length === 0;
-
-        // If regular tags are selected and task has matching tags
-        const matchesRegularTags =
-          regularTagsSelected.length > 0 &&
-          regularTagsSelected.some((tag) => task.tags.includes(tag));
-
-        // Return true if either condition is met
-        return matchesNoTags || matchesRegularTags;
-      });
-    }
-    if (selectedStatuses.length > 0) {
-      filtered = filtered.filter((task) =>
-        selectedStatuses.includes(task.status)
-      );
-    }
-    return filtered.map((task) => task.id);
-  };
-
-  const reloadTasks = () => {
-    const newTasks = getAllTasks(app);
-    setTasks(newTasks);
-    // Rebuild the tag registry from the reloaded tasks
-    const newRegistry = new Map<string, string[]>();
-    newTasks.forEach((task) => {
-      newRegistry.set(task.id, task.tags);
-    });
-    setTaskTagsRegistry(newRegistry);
-  };
-
-  const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
-    setTaskTagsRegistry((prevRegistry) => {
-      const newRegistry = new Map(prevRegistry);
-      newRegistry.set(taskId, newTags);
-      return newRegistry;
-    });
-  }, []);
-
-  useEffect(() => {
+    new Notice("Updating graph...", 1000);
     let newNodes = createNodesFromTasks(
       tasks,
       settings.layoutDirection,
@@ -173,6 +117,7 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       selectedTags,
       selectedStatuses
     );
+
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
     newEdges = newEdges.filter(
       (e) =>
@@ -184,20 +129,22 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
       newEdges,
       settings.layoutDirection
     );
+
     setNodes(layoutedNodes);
     setEdges(newEdges);
 
-    // Initialize tag registry when tasks change
-    const newRegistry = new Map<string, string[]>();
-    tasks.forEach((task) => {
-      newRegistry.set(task.id, task.tags);
-    });
-    setTaskTagsRegistry(newRegistry);
-
     setTimeout(() => {
       reactFlowInstance.fitView({ duration: 400 });
-    }, 1000); // Allow time for DOM updates
-  }, [tasks, selectedTags, selectedStatuses]);
+    }, 1000);
+  }, [
+    tasks,
+    selectedTags,
+    selectedStatuses,
+    settings,
+    reactFlowInstance,
+    setNodes,
+    setEdges,
+  ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
   const edgeTypes = useMemo(() => ({ hash: HashEdge }), []);
@@ -244,7 +191,6 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
 
       if (!vault || !sourceTask || !targetTask) return;
 
-      // Check if tasks are of different types
       if (sourceTask.type !== targetTask.type) {
         new Notice(
           "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type.",
@@ -327,5 +273,93 @@ export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
         {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
       </div>
     </TagsContext.Provider>
+  );
+}
+
+// Outer component that manages filter state and keys the ReactFlowProvider
+export default function TaskMapGraphView({ settings }: TaskMapGraphViewProps) {
+  const app = useApp();
+  const [tasks, setTasks] = React.useState<Task[]>([]);
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = React.useState<TaskStatus[]>([
+    ...ALL_STATUSES,
+  ]);
+
+  // Maintain a live registry of tags per task for efficient allTags computation
+  const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
+    Map<string, string[]>
+  >(new Map());
+
+  const allTags = useMemo(() => {
+    const tagFrequency = new Map<string, number>();
+    taskTagsRegistry.forEach((tags) => {
+      tags.forEach((tag) => {
+        tagFrequency.set(tag, (tagFrequency.get(tag) || 0) + 1);
+      });
+    });
+    return Array.from(tagFrequency.keys()).sort((a, b) => {
+      const freqDiff = (tagFrequency.get(b) || 0) - (tagFrequency.get(a) || 0);
+      if (freqDiff !== 0) return freqDiff;
+      return a.localeCompare(b, undefined, { sensitivity: "base" });
+    });
+  }, [taskTagsRegistry]);
+
+  const reloadTasks = useCallback(() => {
+    const newTasks = getAllTasks(app);
+    setTasks(newTasks);
+    const newRegistry = new Map<string, string[]>();
+    newTasks.forEach((task) => {
+      newRegistry.set(task.id, task.tags);
+    });
+    setTaskTagsRegistry(newRegistry);
+    new Notice("Tasks reloaded");
+  }, [app]);
+
+  const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
+    setTaskTagsRegistry((prevRegistry) => {
+      const newRegistry = new Map(prevRegistry);
+      newRegistry.set(taskId, newTags);
+      return newRegistry;
+    });
+  }, []);
+
+  useEffect(() => {
+    // Wait for a short moment to ensure vault is ready
+    const timeoutId = window.setTimeout(() => {
+      reloadTasks();
+    }, 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [reloadTasks]);
+
+  // Update tag registry when tasks change
+  useEffect(() => {
+    const newRegistry = new Map<string, string[]>();
+    tasks.forEach((task) => {
+      newRegistry.set(task.id, task.tags);
+    });
+    setTaskTagsRegistry(newRegistry);
+  }, [tasks]);
+
+  // Key the ReactFlowProvider on filter state to force complete remount
+  const providerKey = useMemo(
+    () => `${selectedTags.join(",")}-${selectedStatuses.join(",")}`,
+    [selectedTags, selectedStatuses]
+  );
+
+  return (
+    <ReactFlowProvider key={providerKey}>
+      <TaskMapGraphInner
+        settings={settings}
+        tasks={tasks}
+        selectedTags={selectedTags}
+        selectedStatuses={selectedStatuses}
+        setSelectedTags={setSelectedTags}
+        setSelectedStatuses={setSelectedStatuses}
+        reloadTasks={reloadTasks}
+        allTags={allTags}
+        updateTaskTags={updateTaskTags}
+      />
+    </ReactFlowProvider>
   );
 }

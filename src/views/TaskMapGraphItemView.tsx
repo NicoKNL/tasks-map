@@ -1,6 +1,5 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
-import { ReactFlowProvider } from "reactflow";
 import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
 import { checkDataviewPlugin } from "../lib/utils";
@@ -39,9 +38,7 @@ export default class TaskMapGraphItemView extends ItemView {
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
-          <ReactFlowProvider>
-            <TaskMapGraphView settings={settings} />
-          </ReactFlowProvider>
+          <TaskMapGraphView settings={settings} />
         </AppContext.Provider>
       );
     } else {
