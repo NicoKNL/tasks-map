@@ -147,8 +147,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          PR_TITLE=$(gh pr view ${{ github.event.pull_request.number }} --json title -q '.title')
           PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body -q '.body')
+          RELEASE_NOTES="## ${PR_TITLE}
+
+          ${PR_BODY}"
           gh release create "${{ steps.version.outputs.new_version }}" \
             --title="${{ steps.version.outputs.new_version }}" \
-            --notes "$PR_BODY" \
+            --notes "$RELEASE_NOTES" \
             main.js manifest.json styles.css
