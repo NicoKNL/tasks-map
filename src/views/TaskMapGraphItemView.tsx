@@ -1,3 +1,4 @@
+import React, { useState, useMemo } from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import { ReactFlowProvider } from "reactflow";
@@ -5,6 +6,36 @@ import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
 import { checkDataviewPlugin } from "../lib/utils";
 import TasksMapPlugin from "../main";
+import { TaskStatus } from "src/types/task";
+import { TasksMapSettings } from "src/types/settings";
+
+const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
+
+// Wrapper component that manages filter state and keys the ReactFlowProvider
+function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
+    ...ALL_STATUSES,
+  ]);
+
+  // Key the ReactFlowProvider on filter state to force complete remount
+  const providerKey = useMemo(
+    () => `${selectedTags.join(",")}-${selectedStatuses.join(",")}`,
+    [selectedTags, selectedStatuses]
+  );
+
+  return (
+    <ReactFlowProvider key={providerKey}>
+      <TaskMapGraphView
+        settings={settings}
+        selectedTags={selectedTags}
+        setSelectedTags={setSelectedTags}
+        selectedStatuses={selectedStatuses}
+        setSelectedStatuses={setSelectedStatuses}
+      />
+    </ReactFlowProvider>
+  );
+}
 
 export const VIEW_TYPE = "tasks-map-graph-view";
 
@@ -39,9 +70,7 @@ export default class TaskMapGraphItemView extends ItemView {
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
-          <ReactFlowProvider>
-            <TaskMapGraphView settings={settings} />
-          </ReactFlowProvider>
+          <TaskMapGraphWrapper settings={settings} />
         </AppContext.Provider>
       );
     } else {
