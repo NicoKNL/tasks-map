@@ -633,3 +633,39 @@ If your plugin does not need CSS, delete this file.
   background-color: rgba(0, 0, 0, 0.3) !important;
   color: white !important;
 }
+
+/* Loading Spinner Styles */
+.tasks-map-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--background-primary);
+  z-index: 100;
+}
+
+.tasks-map-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--background-modifier-border);
+  border-top-color: var(--interactive-accent);
+  border-radius: 50%;
+  animation: tasks-map-spin 0.8s linear infinite;
+}
+
+.tasks-map-loading-text {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+@keyframes tasks-map-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

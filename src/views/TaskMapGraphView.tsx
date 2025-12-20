@@ -79,6 +79,7 @@ export default function TaskMapGraphView({
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
 
   // Maintain a live registry of tags per task for efficient allTags computation
@@ -101,14 +102,19 @@ export default function TaskMapGraphView({
   }, [taskTagsRegistry]);
 
   const reloadTasks = useCallback(() => {
-    const newTasks = getAllTasks(app);
-    setTasks(newTasks);
-    const newRegistry = new Map<string, string[]>();
-    newTasks.forEach((task) => {
-      newRegistry.set(task.id, task.tags);
-    });
-    setTaskTagsRegistry(newRegistry);
-    new Notice("Tasks reloaded");
+    setIsLoading(true);
+    // Use setTimeout to allow the loading UI to render before heavy computation
+    setTimeout(() => {
+      const newTasks = getAllTasks(app);
+      setTasks(newTasks);
+      const newRegistry = new Map<string, string[]>();
+      newTasks.forEach((task) => {
+        newRegistry.set(task.id, task.tags);
+      });
+      setTaskTagsRegistry(newRegistry);
+      setIsLoading(false);
+      new Notice("Tasks reloaded");
+    }, 0);
   }, [app]);
 
   const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
@@ -120,13 +126,26 @@ export default function TaskMapGraphView({
   }, []);
 
   useEffect(() => {
-    // Wait for a short moment to ensure vault is ready
-    const timeoutId = window.setTimeout(() => {
-      reloadTasks();
-    }, 1000);
+    // Get the Dataview plugin to check index status
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataviewPlugin = (app as any).plugins?.plugins?.["dataview"];
 
-    return () => window.clearTimeout(timeoutId);
-  }, [reloadTasks]);
+    // Check if Dataview index is already initialized
+    if (dataviewPlugin?.index?.initialized) {
+      // Index already ready, load tasks immediately
+      reloadTasks();
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const metadataCache = (app as any).metadataCache;
+      const eventRef = metadataCache.on("dataview:index-ready", () => {
+        reloadTasks();
+      });
+
+      return () => {
+        metadataCache.offref(eventRef);
+      };
+    }
+  }, [app, reloadTasks]);
 
   // Update tag registry when tasks change
   useEffect(() => {
@@ -285,6 +304,12 @@ export default function TaskMapGraphView({
   return (
     <TagsContext.Provider value={tagsContextValue}>
       <div className="tasks-map-graph-container">
+        {isLoading && (
+          <div className="tasks-map-loading-container">
+            <div className="tasks-map-spinner" />
+            <div className="tasks-map-loading-text">Loading tasks...</div>
+          </div>
+        )}
         <ReactFlow
           nodes={nodes}
           edges={edges}
