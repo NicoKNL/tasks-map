@@ -79,6 +79,7 @@ export default function TaskMapGraphView({
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
 
   // Maintain a live registry of tags per task for efficient allTags computation
@@ -101,14 +102,19 @@ export default function TaskMapGraphView({
   }, [taskTagsRegistry]);
 
   const reloadTasks = useCallback(() => {
-    const newTasks = getAllTasks(app);
-    setTasks(newTasks);
-    const newRegistry = new Map<string, string[]>();
-    newTasks.forEach((task) => {
-      newRegistry.set(task.id, task.tags);
-    });
-    setTaskTagsRegistry(newRegistry);
-    new Notice("Tasks reloaded");
+    setIsLoading(true);
+    // Use setTimeout to allow the loading UI to render before heavy computation
+    setTimeout(() => {
+      const newTasks = getAllTasks(app);
+      setTasks(newTasks);
+      const newRegistry = new Map<string, string[]>();
+      newTasks.forEach((task) => {
+        newRegistry.set(task.id, task.tags);
+      });
+      setTaskTagsRegistry(newRegistry);
+      setIsLoading(false);
+      new Notice("Tasks reloaded");
+    }, 0);
   }, [app]);
 
   const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
@@ -298,6 +304,12 @@ export default function TaskMapGraphView({
   return (
     <TagsContext.Provider value={tagsContextValue}>
       <div className="tasks-map-graph-container">
+        {isLoading && (
+          <div className="tasks-map-loading-container">
+            <div className="tasks-map-spinner" />
+            <div className="tasks-map-loading-text">Loading tasks...</div>
+          </div>
+        )}
         <ReactFlow
           nodes={nodes}
           edges={edges}
