@@ -200,7 +200,8 @@ export default function TaskMapGraphView({
     const layoutedNodes = getLayoutedElements(
       newNodes,
       newEdges,
-      settings.layoutDirection
+      settings.layoutDirection,
+      settings.showTags
     );
 
     setNodes(layoutedNodes);
