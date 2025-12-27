@@ -81,6 +81,7 @@ export default function TaskMapGraphView({
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
+  const skipFitViewRef = React.useRef(false);
 
   // Maintain a live registry of tags per task for efficient allTags computation
   const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
@@ -125,6 +126,16 @@ export default function TaskMapGraphView({
     });
   }, []);
 
+  const handleDeleteTask = useCallback((taskId: string) => {
+    skipFitViewRef.current = true;
+    setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+    setTaskTagsRegistry((prevRegistry) => {
+      const newRegistry = new Map(prevRegistry);
+      newRegistry.delete(taskId);
+      return newRegistry;
+    });
+  }, []);
+
   useEffect(() => {
     // Get the Dataview plugin to check index status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -165,7 +176,8 @@ export default function TaskMapGraphView({
       settings.debugVisualization,
       settings.tagColorMode,
       settings.tagColorSeed,
-      settings.tagStaticColor
+      settings.tagStaticColor,
+      handleDeleteTask
     );
     let newEdges = createEdgesFromTasks(
       tasks,
@@ -194,9 +206,13 @@ export default function TaskMapGraphView({
     setNodes(layoutedNodes);
     setEdges(newEdges);
 
-    setTimeout(() => {
-      reactFlowInstance.fitView({ duration: 400 });
-    }, 1000);
+    if (skipFitViewRef.current) {
+      skipFitViewRef.current = false;
+    } else {
+      setTimeout(() => {
+        reactFlowInstance.fitView({ duration: 400 });
+      }, 1000);
+    }
   }, [
     tasks,
     selectedTags,
@@ -205,6 +221,7 @@ export default function TaskMapGraphView({
     reactFlowInstance,
     setNodes,
     setEdges,
+    handleDeleteTask,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);

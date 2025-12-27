@@ -6,6 +6,7 @@ interface TaskBackgroundProps {
   starred?: boolean;
   expanded?: boolean;
   debugVisualization?: boolean;
+  selected?: boolean;
   children: React.ReactNode;
 }
 
@@ -14,6 +15,7 @@ export function TaskBackground({
   starred = false,
   expanded,
   debugVisualization,
+  selected = false,
   children,
 }: TaskBackgroundProps) {
   const getStatusClass = () => {
@@ -35,6 +37,7 @@ export function TaskBackground({
     starred && "tasks-map-task-background--starred",
     expanded && "tasks-map-task-background--expanded",
     debugVisualization && "tasks-map-task-background--debug",
+    selected && "tasks-map-task-background--selected",
   ]
     .filter(Boolean)
     .join(" ");

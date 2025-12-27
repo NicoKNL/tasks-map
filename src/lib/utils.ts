@@ -122,6 +122,32 @@ export async function updateTaskStatusInVault(
   });
 }
 
+export async function deleteTaskFromVault(task: Task, app: App): Promise<void> {
+  if (!task.link) return;
+  const vault = app?.vault;
+  if (!vault) return;
+  const file = vault.getFileByPath(task.link);
+  if (!file) return;
+
+  // Handle note-based tasks (delete the entire file)
+  if (task.type === "note") {
+    await vault.delete(file);
+    return;
+  }
+
+  // Handle dataview tasks (remove the task line)
+  await vault.process(file, (fileContent) => {
+    const lines = fileContent.split(/\r?\n/);
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) return fileContent;
+
+    // Remove the task line
+    lines.splice(taskLineIdx, 1);
+    return lines.join("\n");
+  });
+}
+
 export async function removeTagFromTaskInVault(
   task: Task,
   tagToRemove: string,
@@ -1195,7 +1221,9 @@ export function createNodesFromTasks(
   debugVisualization: boolean = false,
   tagColorMode: "random" | "static" = "random",
   tagColorSeed: number = 42,
-  tagStaticColor: string = "#3b82f6"
+  tagStaticColor: string = "#3b82f6",
+  // eslint-disable-next-line no-unused-vars
+  onDeleteTask?: (taskId: string) => void
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1213,6 +1241,7 @@ export function createNodesFromTasks(
       tagColorMode,
       tagColorSeed,
       tagStaticColor,
+      onDeleteTask,
     },
     type: "task" as const,
     sourcePosition,
