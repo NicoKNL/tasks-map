@@ -1,0 +1,4 @@
+- [ ] Some task #basic  🆔 fje2wy
+- [ ] Some [[Renovate Bot]] related task #basic  ⛔ fje2wy 🆔 2bv892
+- [ ] Some [external](https://google.com) link #basic  ⛔ 2bv892 🆔 s6t8ha
+- [ ] Final task #basic ⛔ s6t8ha
