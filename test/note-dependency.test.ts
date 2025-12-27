@@ -191,6 +191,74 @@ tags:
         }
       });
     });
+
+    it("should handle non-indented blockedBy entries and match their style", async () => {
+      const taskPath = "TaskNotes/Tasks/Task1.md";
+      // This is the edge case: blockedBy entries with NO indentation
+      const initialContent = `---
+status: open
+blockedBy:
+- uid: "[[Task2]]"
+  reltype: FINISHTOSTART
+---
+# Task 1 Content`;
+
+      vault.setFileContent(taskPath, initialContent);
+
+      const toTask: Task = {
+        id: taskPath,
+        text: "Task1",
+        link: taskPath,
+        type: "note",
+        status: "todo",
+        priority: "",
+        tags: [],
+        starred: false,
+        incomingLinks: [],
+      };
+
+      const fromTask: Task = {
+        id: "TaskNotes/Tasks/Task3.md",
+        text: "Task3",
+        link: "TaskNotes/Tasks/Task3.md",
+        type: "note",
+        status: "todo",
+        priority: "",
+        tags: [],
+        starred: false,
+        incomingLinks: [],
+      };
+
+      await addLinkSignsBetweenTasks(vault, fromTask, toTask, "abc123");
+
+      const updatedContent = vault.getFileContent(taskPath);
+
+      // Both dependencies should exist with NO indentation (matching existing style)
+      expect(updatedContent).toContain('- uid: "[[Task2]]"');
+      expect(updatedContent).toContain('- uid: "[[Task3]]"');
+
+      // Verify correct structure - new entry should be after the existing one
+      const lines = updatedContent.split("\n");
+      const task2Index = lines.findIndex((line: string) =>
+        line.includes('uid: "[[Task2]]"')
+      );
+      const task3Index = lines.findIndex((line: string) =>
+        line.includes('uid: "[[Task3]]"')
+      );
+
+      // Task3 should come after Task2
+      expect(task3Index).toBeGreaterThan(task2Index);
+
+      // Both uid lines should have NO leading indentation
+      expect(lines[task2Index]).toMatch(/^- uid:/);
+      expect(lines[task3Index]).toMatch(/^- uid:/);
+
+      // Frontmatter should still be valid (closing --- exists)
+      const closingDashIndex = lines.findIndex(
+        (line: string, idx: number) => idx > 0 && line === "---"
+      );
+      expect(closingDashIndex).toBeGreaterThan(task3Index);
+    });
   });
 
   describe("Removal Operations", () => {
