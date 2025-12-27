@@ -467,6 +467,16 @@ If your plugin does not need CSS, delete this file.
   flex: 1;
 }
 
+/* Inline code styling for task summaries */
+.tasks-map-inline-code {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background-color: var(--code-background);
+  color: var(--code-normal);
+}
+
 /* GUI Overlay Styles */
 .tasks-map-gui-overlay-bottom {
   position: absolute;
