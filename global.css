@@ -477,6 +477,26 @@ If your plugin does not need CSS, delete this file.
   color: var(--code-normal);
 }
 
+/* Link styling for task summaries */
+.tasks-map-link {
+  color: var(--link-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.tasks-map-link:hover {
+  color: var(--link-color-hover);
+  text-decoration: underline;
+}
+
+.tasks-map-link.internal-link {
+  color: var(--link-color);
+}
+
+.tasks-map-link.internal-link:hover {
+  color: var(--link-color-hover);
+}
+
 /* GUI Overlay Styles */
 .tasks-map-gui-overlay-bottom {
   position: absolute;

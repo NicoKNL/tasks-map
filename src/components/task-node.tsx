@@ -59,7 +59,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagError, setTagError] = useState(false);
   const app = useApp();
-  const summaryRef = useSummaryRenderer(task.summary);
+  const summaryRef = useSummaryRenderer(task.summary, app);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
