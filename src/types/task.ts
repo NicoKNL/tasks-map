@@ -31,6 +31,7 @@ export interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  onDeleteTask?: (taskId: string) => void;
 }
 
 export interface TaskEdgeData {

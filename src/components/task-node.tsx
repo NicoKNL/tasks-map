@@ -7,6 +7,7 @@ import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
 import { StarButton } from "./star-button";
+import { TaskMenu } from "./task-menu";
 import { Tag } from "./tag";
 import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
@@ -33,6 +34,7 @@ interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  onDeleteTask?: (taskId: string) => void;
 }
 
 export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
@@ -45,6 +47,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorMode = "random",
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
+    onDeleteTask,
   } = data;
 
   const { allTags, updateTaskTags } = useContext(TagsContext);
@@ -173,6 +176,11 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
         <span ref={summaryRef} className="tasks-map-task-node-summary" />
         <StarButton starred={starred} onClick={handleStarToggle} />
         <LinkButton link={task.link} app={app} taskStatus={status} />
+        <TaskMenu
+          task={task}
+          app={app}
+          onTaskDeleted={() => onDeleteTask?.(task.id)}
+        />
       </div>
 
       <div className="tasks-map-task-node-content">
