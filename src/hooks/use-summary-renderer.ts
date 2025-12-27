@@ -14,7 +14,8 @@ export function useSummaryRenderer(summary: string) {
 }
 
 function renderSummaryWithLinks(summary: string, container: HTMLElement) {
-  const parts = summary.split(/(\[[^\]]+\]\([^)]+\)|\[\[[^\]]+\]\])/g);
+  // Split by links and inline code blocks
+  const parts = summary.split(/(\[[^\]]+\]\([^)]+\)|\[\[[^\]]+\]\]|`[^`]+`)/g);
 
   parts.forEach((part) => {
     const mdLinkMatch = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
@@ -38,6 +39,17 @@ function renderSummaryWithLinks(summary: string, container: HTMLElement) {
       container.createEl("a", {
         text: file,
         href: `obsidian://open?path=${encodeURIComponent(file.replace(/\s/g, " "))}`,
+      });
+      return;
+    }
+
+    // Check if it's inline code `text`
+    const inlineCodeMatch = part.match(/^`([^`]+)`$/);
+    if (inlineCodeMatch) {
+      const [, code] = inlineCodeMatch;
+      container.createEl("code", {
+        text: code,
+        cls: "tasks-map-inline-code",
       });
       return;
     }
