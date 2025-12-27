@@ -535,6 +535,25 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-error);
 }
 
+/* Hover and Selected States */
+.tasks-map-task-background:hover {
+  outline: 2px solid rgba(var(--tasks-map-color-black-rgb), 0.15);
+  outline-offset: -2px;
+}
+
+.tasks-map-task-background--selected {
+  outline: 2px solid rgba(var(--tasks-map-color-black-rgb), 0.15);
+  outline-offset: -2px;
+}
+
+.theme-dark .tasks-map-task-background:hover {
+  outline-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .tasks-map-task-background--selected {
+  outline-color: rgba(255, 255, 255, 0.2);
+}
+
 .tasks-map-task-background--starred {
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
               0 0 40px rgba(255, 215, 0, 0.4),

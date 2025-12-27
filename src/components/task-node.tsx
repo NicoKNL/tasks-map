@@ -35,7 +35,7 @@ interface TaskNodeData {
   tagStaticColor?: string;
 }
 
-export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
+export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const {
     task,
     layoutDirection = "Horizontal",
@@ -158,6 +158,7 @@ export default function TaskNode({ data }: NodeProps<TaskNodeData>) {
       starred={starred}
       expanded={expanded}
       debugVisualization={debugVisualization}
+      selected={selected}
     >
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
