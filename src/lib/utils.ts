@@ -1222,6 +1222,7 @@ export function createNodesFromTasks(
   tagColorMode: "random" | "static" = "random",
   tagColorSeed: number = 42,
   tagStaticColor: string = "#3b82f6",
+  // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
