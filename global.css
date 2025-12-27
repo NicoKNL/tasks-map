@@ -135,6 +135,7 @@ If your plugin does not need CSS, delete this file.
   position: relative;
   display: flex;
   align-items: center;
+  align-self: flex-start;
 }
 
 .tasks-map-task-menu-button {
