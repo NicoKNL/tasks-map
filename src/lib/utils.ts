@@ -670,8 +670,8 @@ async function addDependencyToNoteTask(
 
     // Parse the frontmatter to find blockedBy section
     const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
+
     let blockedByIndex = -1;
-    const blockedByIndent = "  "; // Standard YAML indent
 
     for (let i = 0; i < frontmatterLines.length; i++) {
       if (frontmatterLines[i].match(/^blockedBy:\s*$/)) {
@@ -682,6 +682,7 @@ async function addDependencyToNoteTask(
 
     // Check if this dependency already exists
     const taskIdentifier = `[[${fromTask.text}]]`;
+
     for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
       if (lines[i].includes(`uid:`) && lines[i].includes(taskIdentifier)) {
         // Dependency already exists, don't add it again
@@ -689,9 +690,23 @@ async function addDependencyToNoteTask(
       }
     }
 
-    // Create the new dependency entry as two separate lines
-    const uidLine = `${blockedByIndent}- uid: "${taskIdentifier}"`;
-    const reltypeLine = `${blockedByIndent}  reltype: FINISHTOSTART`;
+    // Detect the indentation style used in existing blockedBy entries
+    // Some files may have no indentation, others use 2 spaces
+    let detectedIndent = "  "; // Default to 2 spaces
+    if (blockedByIndex !== -1) {
+      const nextLineIdx = blockedByIndex + 1;
+      if (nextLineIdx < frontmatterLines.length) {
+        const nextLine = frontmatterLines[nextLineIdx];
+        // Check if the existing entry has no indentation
+        if (nextLine.match(/^- uid:/)) {
+          detectedIndent = ""; // No indentation
+        }
+      }
+    }
+
+    // Create the new dependency entry using detected indentation
+    const uidLine = `${detectedIndent}- uid: "${taskIdentifier}"`;
+    const reltypeLine = `${detectedIndent}  reltype: FINISHTOSTART`;
 
     if (blockedByIndex === -1) {
       // No blockedBy field exists, add it before the closing ---
@@ -700,15 +715,16 @@ async function addDependencyToNoteTask(
       // blockedBy exists, find where to insert (after the last blockedBy item)
       let insertIndex = frontmatterStart + 1 + blockedByIndex + 1;
 
-      // Find the end of the blockedBy list
+      // Find the end of the blockedBy list - match both indented and non-indented entries
       while (insertIndex < frontmatterStart + 1 + frontmatterLines.length) {
         const line = lines[insertIndex];
-        if (line.match(/^\s{2}- uid:/)) {
+        // Match both "- uid:" (no indent) and "  - uid:" (2-space indent)
+        if (line.match(/^\s*- uid:/)) {
           insertIndex++;
-          // Skip the reltype line
+          // Skip the reltype line (also handle both indented and non-indented)
           if (
             insertIndex < lines.length &&
-            lines[insertIndex].match(/^\s{4}reltype:/)
+            lines[insertIndex].match(/^\s*reltype:/)
           ) {
             insertIndex++;
           }
