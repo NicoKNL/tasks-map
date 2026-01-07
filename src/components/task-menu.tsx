@@ -106,7 +106,6 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
 
       lines[taskLineIdx] = newTaskLine;
       await vault.modify(file, lines.join("\n"));
-
     } catch (error) {
       console.error("Error processing task:", error);
     }

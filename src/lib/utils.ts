@@ -163,7 +163,11 @@ export async function updateTaskStatusInVault(
   });
 }
 
-export async function addTaskLineToVault(task: Task, newTaskLine: string, app: App): Promise<void> {
+export async function addTaskLineToVault(
+  task: Task,
+  newTaskLine: string,
+  app: App
+): Promise<void> {
   if (!task.link) {
     console.log("!task.link: ", newTaskLine);
     return;
