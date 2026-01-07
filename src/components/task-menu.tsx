@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { App } from "obsidian";
 import { Task } from "src/types/task";
+import { CirclePlus, SquarePen } from "lucide-react";
 import {
   addTaskLineToVault,
   deleteTaskFromVault,
@@ -138,11 +139,11 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
       {isOpen && (
         <div className="tasks-map-task-menu-dropdown">
           <button className="tasks-map-task-menu-item" onClick={handleCreate}>
-            <Trash2 size={12} />
+            <CirclePlus size={12} />
             <span>Create task</span>
           </button>
           <button className="tasks-map-task-menu-item" onClick={handleEdit}>
-            <Trash2 size={12} />
+            <SquarePen size={12} />
             <span>Edit task</span>
           </button>
           <button
