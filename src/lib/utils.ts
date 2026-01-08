@@ -18,6 +18,69 @@ const statusSymbols = {
   done: "[x]",
 };
 
+const validDateTypes = [
+  "due",
+  "done",
+  "start",
+  "scheduled",
+  "created",
+  "canceled",
+];
+
+const dataSymbols: Record<string, Record<string, string>> = {
+  due: {
+    emoji: "📅",
+    dataview: "due",
+  },
+  done: {
+    emoji: "✅",
+    dataview: "completion",
+  },
+  start: {
+    emoji: "⏳",
+    dataview: "start",
+  },
+  scheduled: {
+    emoji: "🕐",
+    dataview: "scheduled",
+  },
+  created: {
+    emoji: "➕",
+    dataview: "created",
+  },
+  canceled: {
+    emoji: "❌",
+    dataview: "canceled",
+  },
+};
+
+const formatPatterns: Record<string, Record<string, RegExp>> = {
+  due: {
+    emoji: /📅\s+[^\s]+/g,
+    dataview: /\[\[due::[^\]]+\]\]/g,
+  },
+  done: {
+    emoji: /✅\s+[^\s]+/g,
+    dataview: /\[\[completion::[^\]]+\]\]/g,
+  },
+  start: {
+    emoji: /⏳\s+[^\s]+/g,
+    dataview: /\[\[start::[^\]]+\]\]/g,
+  },
+  scheduled: {
+    emoji: /🕐\s+[^\s]+/g,
+    dataview: /\[\[scheduled::[^\]]+\]\]/g,
+  },
+  created: {
+    emoji: /➕\s+[^\s]+/g,
+    dataview: /\[\[created::[^\]]+\]\]/g,
+  },
+  canceled: {
+    emoji: /❌\s+[^\s]+/g,
+    dataview: /\[\[canceled::[^\]]+\]\]/g,
+  },
+};
+
 /**
  * Estimates the dimensions of a node based on its task content.
  * Takes into account summary length and number of tags.
@@ -159,6 +222,39 @@ export async function updateTaskStatusInVault(
       /\[([ x/\-])\]/, // eslint-disable-line no-useless-escape
       statusSymbols[newStatus]
     );
+
+    // Add done timestamp
+    if (newStatus === "done") {
+      lines[taskLineIdx] = addDateToTask(
+        lines[taskLineIdx],
+        "done",
+        getTodayDate()
+      );
+    }
+    // Delete done timestamp and add start timestamp
+    else if (newStatus === "in_progress") {
+      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "done");
+      lines[taskLineIdx] = addDateToTask(
+        lines[taskLineIdx],
+        "start",
+        getTodayDate()
+      );
+    }
+    // Add canceled timestamp
+    else if (newStatus === "canceled") {
+      lines[taskLineIdx] = addDateToTask(
+        lines[taskLineIdx],
+        "canceled",
+        getTodayDate()
+      );
+    }
+    // Delete canceled and done timestamp
+    else if (newStatus === "todo") {
+      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "canceled");
+      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "done");
+      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "start");
+    }
+
     return lines.join("\n");
   });
 }
@@ -187,6 +283,133 @@ export async function deleteTaskFromVault(task: Task, app: App): Promise<void> {
     lines.splice(taskLineIdx, 1);
     return lines.join("\n");
   });
+}
+
+/**
+ * Adds or updates a date value in a task line, supporting multiple formats.
+ * Supports: Tasks plugin format (due:2023-10-05), emoji format (⏳ 2023-10-05),
+ * Dataview format ([[due::2023-10-05]]), and CSV format (📅2023-10-05)
+ *
+ * @param {string} taskLine - The original task line string
+ * @param {string} dateType - The type of date to add/update ('due', 'done', 'start', 'scheduled', 'created')
+ * @param {string} date - The date string to add (formatted as YYYY-MM-DD or relative date like 'today')
+ * @returns {string} The modified task line with the new/updated date
+ * @throws {Error} If dateType is invalid or taskLine is empty
+ */
+function addDateToTask(taskLine: string, dateType: string, date: string): string {
+  if (!taskLine || taskLine.trim() === '') {
+    throw new Error('Task line cannot be empty');
+  }
+
+  if (!validDateTypes.includes(dateType)) {
+    throw new Error(`Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(', ')}`);
+  }
+
+  // First remove existing date of the same type in all formats
+  const cleanedLine = removeDateFromTask(taskLine, dateType);
+
+  const mappings = dataSymbols[dateType];
+  if (!mappings) {
+    throw new Error(`No format mappings found for date type: ${dateType}`);
+  }
+
+  // Determine existing formats in the line to decide which format to use
+  const existingFormats = detectExistingFormats(cleanedLine);
+
+  // Choose format based on existing formats or default to tasks format
+  let newDateTag = '';
+  if (existingFormats === "dataview") {
+    newDateTag = ` [[${mappings.dataview}::${date}]]`;
+  } else {
+    newDateTag = ` ${mappings.emoji} ${date}`;
+  }
+
+  // Add the new date tag before any existing tags (which typically appear at the end)
+  const tagRegex =
+    /(\s+(?:[^\s]+:[^\s]+|\[\[[^\]]+\]\]|[\u{1F300}-\u{1FAFF}]\s+[^\s]+))+$/u;
+  const tagMatch = cleanedLine.match(tagRegex);
+
+  if (tagMatch) {
+    // Insert new date before existing tags
+    return cleanedLine.replace(tagRegex, newDateTag + tagMatch[0]);
+  } else {
+    // No existing tags, add to the end
+    return cleanedLine + newDateTag;
+  }
+}
+
+/**
+ * Removes a date of a specified type from a task line, supporting all formats.
+ *
+ * @param {string} taskLine - The original task line string
+ * @param {string} dateType - The type of date to remove ('due', 'done', 'start', 'scheduled', 'created')
+ * @returns {string} The modified task line without the specified date type
+ * @throws {Error} If dateType is invalid
+ */
+function removeDateFromTask(taskLine: string, dateType: string): string {
+  if (!validDateTypes.includes(dateType)) {
+    throw new Error(`Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(', ')}`);
+  }
+
+  if (!taskLine || taskLine.trim() === '') {
+    return taskLine;
+  }
+
+  const patterns = formatPatterns[dateType];
+  if (!patterns) {
+    throw new Error(`No patterns found for date type: ${dateType}`);
+  }
+
+  let result = taskLine;
+
+  // Remove all formats of the specified date type
+  for (const [, pattern] of Object.entries(patterns)) {
+    result = result.replace(pattern, '');
+  }
+
+  // Special handling for CSV format with multiple dates
+  const csvPattern = new RegExp(`\\s+${dateType}:[^\\s]+(,[^\\s]+)*`, 'g');
+  result = result.replace(csvPattern, '');
+
+  // Clean up any double spaces that might result from removal
+  result = result.replace(/\s+/g, ' ').trim();
+
+  // Remove any leftover commas from CSV format
+  result = result.replace(/(\s*,\s*){2,}/g, ', ');
+  result = result.replace(/^\s*,\s*|\s*,\s*$/g, '');
+
+  return result;
+}
+
+/**
+ * Detects which date formats are already present in a task line.
+ *
+ * @param {string} taskLine - The task line to analyze
+ * @returns {Set<string>} Set of detected formats ('emoji', 'dataview')
+ */
+function detectExistingFormats(taskLine: string): string {
+  let detectedFormats = "emoji";
+
+  // Check for Dataview formats
+  const dataviewRegex = /\[\[[^\]]+::[^\]]+\]\]/g;
+  if (dataviewRegex.test(taskLine)) {
+    detectedFormats = "dataview";
+  }
+
+  return detectedFormats;
+}
+
+/**
+ * Gets today's date in YYYY-MM-DD format (most common in Obsidian tasks)
+ * @returns {string} Today's date formatted as YYYY-MM-DD
+ */
+function getTodayDate(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+  const day = String(today.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 
 export async function removeTagFromTaskInVault(
