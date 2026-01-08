@@ -296,13 +296,19 @@ export async function deleteTaskFromVault(task: Task, app: App): Promise<void> {
  * @returns {string} The modified task line with the new/updated date
  * @throws {Error} If dateType is invalid or taskLine is empty
  */
-function addDateToTask(taskLine: string, dateType: string, date: string): string {
-  if (!taskLine || taskLine.trim() === '') {
-    throw new Error('Task line cannot be empty');
+function addDateToTask(
+  taskLine: string,
+  dateType: string,
+  date: string
+): string {
+  if (!taskLine || taskLine.trim() === "") {
+    throw new Error("Task line cannot be empty");
   }
 
   if (!validDateTypes.includes(dateType)) {
-    throw new Error(`Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(', ')}`);
+    throw new Error(
+      `Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(", ")}`
+    );
   }
 
   // First remove existing date of the same type in all formats
@@ -317,7 +323,7 @@ function addDateToTask(taskLine: string, dateType: string, date: string): string
   const existingFormats = detectExistingFormats(cleanedLine);
 
   // Choose format based on existing formats or default to tasks format
-  let newDateTag = '';
+  let newDateTag = "";
   if (existingFormats === "dataview") {
     newDateTag = ` [[${mappings.dataview}::${date}]]`;
   } else {
@@ -348,10 +354,12 @@ function addDateToTask(taskLine: string, dateType: string, date: string): string
  */
 function removeDateFromTask(taskLine: string, dateType: string): string {
   if (!validDateTypes.includes(dateType)) {
-    throw new Error(`Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(', ')}`);
+    throw new Error(
+      `Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(", ")}`
+    );
   }
 
-  if (!taskLine || taskLine.trim() === '') {
+  if (!taskLine || taskLine.trim() === "") {
     return taskLine;
   }
 
@@ -364,19 +372,19 @@ function removeDateFromTask(taskLine: string, dateType: string): string {
 
   // Remove all formats of the specified date type
   for (const [, pattern] of Object.entries(patterns)) {
-    result = result.replace(pattern, '');
+    result = result.replace(pattern, "");
   }
 
   // Special handling for CSV format with multiple dates
-  const csvPattern = new RegExp(`\\s+${dateType}:[^\\s]+(,[^\\s]+)*`, 'g');
-  result = result.replace(csvPattern, '');
+  const csvPattern = new RegExp(`\\s+${dateType}:[^\\s]+(,[^\\s]+)*`, "g");
+  result = result.replace(csvPattern, "");
 
   // Clean up any double spaces that might result from removal
-  result = result.replace(/\s+/g, ' ').trim();
+  result = result.replace(/\s+/g, " ").trim();
 
   // Remove any leftover commas from CSV format
-  result = result.replace(/(\s*,\s*){2,}/g, ', ');
-  result = result.replace(/^\s*,\s*|\s*,\s*$/g, '');
+  result = result.replace(/(\s*,\s*){2,}/g, ", ");
+  result = result.replace(/^\s*,\s*|\s*,\s*$/g, "");
 
   return result;
 }
@@ -406,8 +414,8 @@ function detectExistingFormats(taskLine: string): string {
 function getTodayDate(): string {
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
+  const day = String(today.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
