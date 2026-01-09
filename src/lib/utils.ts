@@ -240,14 +240,6 @@ export async function updateTaskStatusInVault(
         getTodayDate()
       );
     }
-    // Add canceled timestamp
-    else if (newStatus === "canceled") {
-      lines[taskLineIdx] = addDateToTask(
-        lines[taskLineIdx],
-        "canceled",
-        getTodayDate()
-      );
-    }
     // Delete canceled and done timestamp
     else if (newStatus === "todo") {
       lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "canceled");
