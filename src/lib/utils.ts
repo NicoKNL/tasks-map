@@ -37,11 +37,11 @@ const dataSymbols: Record<string, Record<string, string>> = {
     dataview: "completion",
   },
   start: {
-    emoji: "⏳",
+    emoji: "🛫",
     dataview: "start",
   },
   scheduled: {
-    emoji: "🕐",
+    emoji: "⏳",
     dataview: "scheduled",
   },
   created: {
