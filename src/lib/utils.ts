@@ -64,11 +64,11 @@ const formatPatterns: Record<string, Record<string, RegExp>> = {
     dataview: /\[\[completion::[^\]]+\]\]/g,
   },
   start: {
-    emoji: /⏳\s+[^\s]+/g,
+    emoji: /🛫\s+[^\s]+/g,
     dataview: /\[\[start::[^\]]+\]\]/g,
   },
   scheduled: {
-    emoji: /🕐\s+[^\s]+/g,
+    emoji: /⏳\s+[^\s]+/g,
     dataview: /\[\[scheduled::[^\]]+\]\]/g,
   },
   created: {
