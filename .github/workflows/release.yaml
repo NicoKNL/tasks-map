@@ -86,6 +86,7 @@ jobs:
           fetch-depth: 0
           # Ensure we're on the main branch after the PR is merged
           ref: ${{ github.event.pull_request.base.ref }}
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Get PR labels
         id: check-labels
