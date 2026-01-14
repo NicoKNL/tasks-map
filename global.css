@@ -538,7 +538,6 @@ If your plugin does not need CSS, delete this file.
 	display: flex;
 	align-items: center;
 	font-size: 12px;
-	/*color: var(--text-muted);*/
 	transition: color 0.2s ease;
 }
 
