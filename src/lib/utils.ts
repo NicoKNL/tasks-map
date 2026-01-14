@@ -163,7 +163,10 @@ export async function addTaskLineToVault(
   await task.addTaskLine(newTaskLine, app);
 }
 
-export async function deleteTaskFromVault(task: BaseTask, app: App): Promise<void> {
+export async function deleteTaskFromVault(
+  task: BaseTask,
+  app: App
+): Promise<void> {
   await task.delete(app);
 }
 
@@ -235,7 +238,6 @@ export function addDateToTask(
  * @throws {Error} If dateType is invalid
  */
 export function removeDateFromTask(taskLine: string, dateType: string): string {
-
   if (!validDateTypes.includes(dateType)) {
     throw new Error(
       `Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(", ")}`

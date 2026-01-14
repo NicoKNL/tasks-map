@@ -19,8 +19,7 @@ export class NoteTask extends BaseTask {
       const lines = fileContent.split(/\r?\n/);
 
       // Find frontmatter boundaries
-      const { frontmatterStart, frontmatterEnd } =
-        this.findFrontmatter(lines);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
 
       if (frontmatterStart === -1 || frontmatterEnd === -1) {
         return fileContent;
@@ -98,8 +97,7 @@ export class NoteTask extends BaseTask {
 
     await vault.process(file, (fileContent) => {
       const lines = fileContent.split(/\r?\n/);
-      const { frontmatterStart, frontmatterEnd } =
-        this.findFrontmatter(lines);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
 
       if (frontmatterStart === -1 || frontmatterEnd === -1) {
         return fileContent;
@@ -132,8 +130,7 @@ export class NoteTask extends BaseTask {
 
     await vault.process(file, (fileContent) => {
       const lines = fileContent.split(/\r?\n/);
-      const { frontmatterStart, frontmatterEnd } =
-        this.findFrontmatter(lines);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
 
       if (frontmatterStart === -1 || frontmatterEnd === -1) {
         return fileContent;
@@ -160,8 +157,7 @@ export class NoteTask extends BaseTask {
 
     await vault.process(file, (fileContent) => {
       const lines = fileContent.split(/\r?\n/);
-      const { frontmatterStart, frontmatterEnd } =
-        this.findFrontmatter(lines);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
 
       if (frontmatterStart === -1 || frontmatterEnd === -1) {
         return fileContent;
@@ -244,10 +240,7 @@ export class NoteTask extends BaseTask {
     });
   }
 
-  async addLinkMetadata(
-    vault: Vault,
-    fromTask: BaseTask
-  ): Promise<void> {
+  async addLinkMetadata(vault: Vault, fromTask: BaseTask): Promise<void> {
     await this.addDependencyToFrontmatter(vault, fromTask);
   }
 
@@ -292,8 +285,7 @@ export class NoteTask extends BaseTask {
 
     await vault.process(file, (fileContent) => {
       const lines = fileContent.split(/\r?\n/);
-      const { frontmatterStart, frontmatterEnd } =
-        this.findFrontmatter(lines);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
 
       if (frontmatterStart === -1 || frontmatterEnd === -1) {
         return fileContent;
