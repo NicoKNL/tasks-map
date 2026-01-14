@@ -1,5 +1,6 @@
 import { Vault, App } from './mocks/obsidian';
 import { Task } from '../src/types/task';
+import { NoteTask } from '../src/types/note-task';
 import {
   addTagToTaskInVault,
   removeTagFromTaskInVault,
@@ -27,18 +28,17 @@ priority: Normal
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: [],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await addTagToTaskInVault(task, "urgent", app);
 
@@ -65,18 +65,17 @@ tags:
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: ["work", "project"],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await addTagToTaskInVault(task, "urgent", app);
 
@@ -106,18 +105,17 @@ tags:
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: ["urgent", "work"],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await addTagToTaskInVault(task, "urgent", app);
 
@@ -143,18 +141,17 @@ blockedBy:
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "⏫",
         tags: [],
         starred: true,
         incomingLinks: [],
-      };
+      })
 
       await addTagToTaskInVault(task, "urgent", app);
 
@@ -187,18 +184,17 @@ tags:
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: ["urgent", "work", "project"],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await removeTagFromTaskInVault(task, "work", app);
 
@@ -223,18 +219,17 @@ priority: Normal
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: ["tag1", "tag2", "tag3"],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await removeTagFromTaskInVault(task, "tag2", app);
 
@@ -262,18 +257,17 @@ priority: Normal
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: [],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await addStarToTaskInVault(task, app);
 
@@ -297,18 +291,17 @@ priority: Normal
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: [],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await addStarToTaskInVault(task, app);
 
@@ -333,18 +326,17 @@ blockedBy:
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "⏫",
         tags: ["urgent"],
         starred: false,
         incomingLinks: [],
-      };
+      })
 
       await addStarToTaskInVault(task, app);
 
@@ -375,18 +367,17 @@ priority: Normal
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: [],
         starred: true,
         incomingLinks: [],
-      };
+      })
 
       await removeStarFromTaskInVault(task, app);
 
@@ -412,18 +403,17 @@ blockedBy:
 
       vault.setFileContent(taskPath, initialContent);
 
-      const task: Task = {
-        id: taskPath,
+      const task: Task = new NoteTask({
+id: taskPath,
         text: "Task1",
         summary: "Task1",
         link: taskPath,
-        type: "note",
         status: "todo",
         priority: "",
         tags: ["urgent", "work"],
         starred: true,
         incomingLinks: [],
-      };
+      })
 
       await removeStarFromTaskInVault(task, app);
 

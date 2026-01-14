@@ -291,36 +291,44 @@ export class NoteTask extends BaseTask {
         return fileContent;
       }
 
-      // Find or create dependsOn section
+      // Extract task name from path (e.g., "TaskNotes/Tasks/Task2.md" -> "Task2")
+      const taskName = fromTask.text || fromTask.id.split("/").pop()?.replace(/\.md$/, "") || "";
+      const uidValue = `[[${taskName}]]`;
+
+      // Find or create blockedBy section
       let i = frontmatterStart + 1;
-      let dependsOnLineIdx = -1;
+      let blockedByLineIdx = -1;
       while (i < frontmatterEnd) {
-        if (lines[i] === "dependsOn:") {
-          dependsOnLineIdx = i;
+        if (lines[i] === "blockedBy:") {
+          blockedByLineIdx = i;
           break;
         }
         i++;
       }
 
-      // If dependsOn section doesn't exist, add it
-      if (dependsOnLineIdx === -1) {
-        lines.splice(frontmatterEnd, 0, "dependsOn:", `  - ${fromTask.id}`);
+      // If blockedBy section doesn't exist, add it
+      if (blockedByLineIdx === -1) {
+        lines.splice(frontmatterEnd, 0, "blockedBy:", `  - uid: "${uidValue}"`, `    reltype: FINISHTOSTART`);
         return lines.join("\n");
       }
 
       // Check if dependency already exists
-      i = dependsOnLineIdx + 1;
-      while (i < frontmatterEnd && lines[i].match(/^\s{2}- /)) {
-        const depMatch = lines[i].match(/^\s{2}- (.+)$/);
-        if (depMatch && depMatch[1] === fromTask.id) {
+      i = blockedByLineIdx + 1;
+      while (i < frontmatterEnd && lines[i].match(/^\s{2}- uid:/)) {
+        const uidMatch = lines[i].match(/^\s{2}- uid: "(.+)"$/);
+        if (uidMatch && uidMatch[1] === uidValue) {
           // Dependency already exists
           return fileContent;
         }
+        // Skip to next item (skip reltype line)
         i++;
+        if (i < frontmatterEnd && lines[i].match(/^\s{4}reltype:/)) {
+          i++;
+        }
       }
 
       // Add the dependency
-      lines.splice(i, 0, `  - ${fromTask.id}`);
+      lines.splice(i, 0, `  - uid: "${uidValue}"`, `    reltype: FINISHTOSTART`);
 
       return lines.join("\n");
     });
@@ -346,23 +354,40 @@ export class NoteTask extends BaseTask {
         return fileContent;
       }
 
-      // Find and remove the dependency from dependsOn array
+      // Extract task name from the path (e.g., "TaskNotes/Tasks/Task2.md" -> "Task2")
+      // The fromTaskId might be a full path or just a task name
+      let taskNameToRemove = fromTaskId;
+      if (fromTaskId.includes("/") || fromTaskId.endsWith(".md")) {
+        taskNameToRemove = fromTaskId.split("/").pop()?.replace(/\.md$/, "") || fromTaskId;
+      }
+
+      // Find and remove the dependency from blockedBy array
       let i = frontmatterStart + 1;
       while (i < frontmatterEnd) {
         const line = lines[i];
-        if (line === "dependsOn:") {
-          // Found dependsOn section
+        if (line === "blockedBy:" || line.match(/^blockedBy:/)) {
+          // Found blockedBy section
           i++;
-          while (i < frontmatterEnd && lines[i].match(/^\s{2}- /)) {
-            const depLine = lines[i];
-            const depMatch = depLine.match(/^\s{2}- (.+)$/);
-            if (depMatch && depMatch[1] === fromTaskId) {
-              // Found the dependency, remove it
-              lines.splice(i, 1);
+          while (i < frontmatterEnd && (lines[i].match(/^\s*- uid:/) || lines[i].match(/^\s{2}- uid:/))) {
+            const uidLine = lines[i];
+            // Check if this uid line contains the task we're looking for
+            // Match both [[TaskName]] and just TaskName
+            if (uidLine.includes(`[[${taskNameToRemove}]]`) || uidLine.includes(taskNameToRemove)) {
+              // Found the dependency, remove both uid and reltype lines
+              lines.splice(i, 1); // Remove uid line
               frontmatterEnd--;
+              // Check if next line is reltype and remove it too
+              if (i < frontmatterEnd && lines[i].match(/^\s+reltype:/)) {
+                lines.splice(i, 1);
+                frontmatterEnd--;
+              }
               break;
             }
+            // Skip to next item
             i++;
+            if (i < frontmatterEnd && lines[i].match(/^\s+reltype:/)) {
+              i++;
+            }
           }
           break;
         }
