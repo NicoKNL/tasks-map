@@ -109,7 +109,6 @@ export default function TaskMapGraphView({
     });
   }, [taskTagsRegistry]);
 
-  // 动态添加/移除CSS类
   React.useEffect(() => {
     if (containerRef.current) {
       if (hideTags) {
