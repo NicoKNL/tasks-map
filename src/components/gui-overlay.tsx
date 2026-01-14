@@ -13,7 +13,7 @@ interface GuiOverlayProps {
   setSelectedStatuses: (statuses: TaskStatus[]) => void; // eslint-disable-line no-unused-vars
   showTags?: boolean;
   hideTags?: boolean;
-  setHideTags?: React.Dispatch<React.SetStateAction<boolean>>;
+  setHideTags: () => void; // eslint-disable-line no-unused-vars
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -31,9 +31,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   } = props;
 
   const handleToggleHideTags = () => {
-    if (setHideTags) {
-      setHideTags(!hideTags);
-    }
+    setHideTags();
   };
 
   return (

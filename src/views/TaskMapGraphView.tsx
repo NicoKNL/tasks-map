@@ -83,10 +83,12 @@ export default function TaskMapGraphView({
   const reactFlowInstance = useReactFlow();
   const skipFitViewRef = React.useRef(false);
 
-  // 添加标签隐藏状态
   const [hideTags, setHideTags] = React.useState(false);
-  // 创建容器ref
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const toggleHideTags = useCallback(() => {
+    setHideTags((prev) => !prev);
+  }, []);
 
   // Maintain a live registry of tags per task for efficient allTags computation
   const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
@@ -370,7 +372,7 @@ export default function TaskMapGraphView({
             setSelectedStatuses={setSelectedStatuses}
             showTags={settings.showTags}
             hideTags={hideTags}
-            setHideTags={setHideTags}
+            setHideTags={toggleHideTags}
           />
           <TaskMinimap />
           <Background />
