@@ -7,7 +7,7 @@ import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
 import { StarButton } from "./star-button";
-import { TaskMenu } from "./task-menu";
+import TaskMenu from "./task-menu";
 import { Tag } from "./tag";
 import { TaskStatusToggle } from "./task-status";
 import { TaskBackground } from "./task-background";
