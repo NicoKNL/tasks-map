@@ -292,7 +292,10 @@ export class NoteTask extends BaseTask {
       }
 
       // Extract task name from path (e.g., "TaskNotes/Tasks/Task2.md" -> "Task2")
-      const taskName = fromTask.text || fromTask.id.split("/").pop()?.replace(/\.md$/, "") || "";
+      const taskName =
+        fromTask.text ||
+        fromTask.id.split("/").pop()?.replace(/\.md$/, "") ||
+        "";
       const uidValue = `[[${taskName}]]`;
 
       // Find or create blockedBy section
@@ -308,7 +311,13 @@ export class NoteTask extends BaseTask {
 
       // If blockedBy section doesn't exist, add it
       if (blockedByLineIdx === -1) {
-        lines.splice(frontmatterEnd, 0, "blockedBy:", `  - uid: "${uidValue}"`, `    reltype: FINISHTOSTART`);
+        lines.splice(
+          frontmatterEnd,
+          0,
+          "blockedBy:",
+          `  - uid: "${uidValue}"`,
+          `    reltype: FINISHTOSTART`
+        );
         return lines.join("\n");
       }
 
@@ -328,7 +337,12 @@ export class NoteTask extends BaseTask {
       }
 
       // Add the dependency
-      lines.splice(i, 0, `  - uid: "${uidValue}"`, `    reltype: FINISHTOSTART`);
+      lines.splice(
+        i,
+        0,
+        `  - uid: "${uidValue}"`,
+        `    reltype: FINISHTOSTART`
+      );
 
       return lines.join("\n");
     });
@@ -358,7 +372,8 @@ export class NoteTask extends BaseTask {
       // The fromTaskId might be a full path or just a task name
       let taskNameToRemove = fromTaskId;
       if (fromTaskId.includes("/") || fromTaskId.endsWith(".md")) {
-        taskNameToRemove = fromTaskId.split("/").pop()?.replace(/\.md$/, "") || fromTaskId;
+        taskNameToRemove =
+          fromTaskId.split("/").pop()?.replace(/\.md$/, "") || fromTaskId;
       }
 
       // Find and remove the dependency from blockedBy array
@@ -368,11 +383,17 @@ export class NoteTask extends BaseTask {
         if (line === "blockedBy:" || line.match(/^blockedBy:/)) {
           // Found blockedBy section
           i++;
-          while (i < frontmatterEnd && (lines[i].match(/^\s*- uid:/) || lines[i].match(/^\s{2}- uid:/))) {
+          while (
+            i < frontmatterEnd &&
+            (lines[i].match(/^\s*- uid:/) || lines[i].match(/^\s{2}- uid:/))
+          ) {
             const uidLine = lines[i];
             // Check if this uid line contains the task we're looking for
             // Match both [[TaskName]] and just TaskName
-            if (uidLine.includes(`[[${taskNameToRemove}]]`) || uidLine.includes(taskNameToRemove)) {
+            if (
+              uidLine.includes(`[[${taskNameToRemove}]]`) ||
+              uidLine.includes(taskNameToRemove)
+            ) {
               // Found the dependency, remove both uid and reltype lines
               lines.splice(i, 1); // Remove uid line
               frontmatterEnd--;
