@@ -1,11 +1,11 @@
 import React from "react";
-import { Task, TaskStatus } from "src/types/task";
+import { BaseTask, TaskStatus } from "src/types/task";
 import { updateTaskStatusInVault } from "src/lib/utils";
 import { useApp } from "src/hooks/hooks";
 
 interface TaskStatusProps {
   status: TaskStatus;
-  task: Task;
+  task: BaseTask;
   onStatusChange: (newStatus: TaskStatus) => void; // eslint-disable-line no-unused-vars
 }
 

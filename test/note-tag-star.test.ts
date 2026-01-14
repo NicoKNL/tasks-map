@@ -1,5 +1,5 @@
 import { Vault, App } from './mocks/obsidian';
-import { Task } from '../src/types/task';
+import { BaseTask } from '../src/types/task';
 import { NoteTask } from '../src/types/note-task';
 import {
   addTagToTaskInVault,

@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
-import { Task } from "src/types/task";
+import { BaseTask } from "src/types/task";
 import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
@@ -26,7 +26,7 @@ export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
 
 interface TaskNodeData {
-  task: Task;
+  task: BaseTask;
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTags?: boolean;

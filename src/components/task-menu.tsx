@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { App } from "obsidian";
-import { Task } from "src/types/task";
+import { BaseTask } from "src/types/task";
 import { CirclePlus, SquarePen } from "lucide-react";
 import {
   addTaskLineToVault,
@@ -10,7 +10,7 @@ import {
 } from "../lib/utils";
 
 interface TaskMenuProps {
-  task: Task;
+  task: BaseTask;
   app: App;
   onTaskDeleted?: () => void;
 }

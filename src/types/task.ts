@@ -10,9 +10,8 @@ export interface RawTask {
   link: { path: string };
 }
 
-// Backward compatibility: Task is now BaseTask
-// All tasks are now class instances that extend BaseTask
-export type Task = BaseTask;
+// Re-export BaseTask for convenience
+export { BaseTask };
 
 export interface TaskNodeData {
   task: BaseTask;

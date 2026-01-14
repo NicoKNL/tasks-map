@@ -16,7 +16,7 @@ import {
   createNodesFromTasks,
   createEdgesFromTasks,
 } from "src/lib/utils";
-import { Task } from "src/types/task";
+import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
 import { NO_TAGS_VALUE } from "src/components/tag-select";
@@ -40,7 +40,7 @@ interface TaskMapGraphViewProps {
 
 // Helper function to filter tasks
 const getFilteredNodeIds = (
-  tasks: Task[],
+  tasks: BaseTask[],
   selectedTags: string[],
   selectedStatuses: TaskStatus[]
 ) => {
@@ -77,7 +77,7 @@ export default function TaskMapGraphView({
   const vault = app.vault;
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [tasks, setTasks] = React.useState<Task[]>([]);
+  const [tasks, setTasks] = React.useState<BaseTask[]>([]);
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
