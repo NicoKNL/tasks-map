@@ -1,7 +1,7 @@
-import { Task, TaskStatus } from "src/types/task";
+import { BaseTask, TaskStatus } from "src/types/task";
 
 interface TaskDetailsProps {
-  task: Task;
+  task: BaseTask;
   status: TaskStatus;
 }
 

@@ -54,6 +54,10 @@ export default defineConfig([
             "react/jsx-uses-react": "error",
             "react/jsx-uses-vars": "error",
             "@typescript-eslint/no-explicit-any": "error",
+            "no-unused-vars": ["error", {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_"
+            }],
             "react/forbid-dom-props": ["error", {
                 "forbid": [
                     {
