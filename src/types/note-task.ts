@@ -246,8 +246,7 @@ export class NoteTask extends BaseTask {
 
   async addLinkMetadata(
     vault: Vault,
-    fromTask: BaseTask,
-    _linkingStyle: "individual" | "csv" | "dataview" = "individual"
+    fromTask: BaseTask
   ): Promise<void> {
     await this.addDependencyToFrontmatter(vault, fromTask);
   }

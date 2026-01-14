@@ -6,12 +6,6 @@ import { BaseTask } from "src/types/base-task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
-import {
-  EMOJI_ID_REMOVAL,
-  DATAVIEW_ID_REMOVAL,
-  TAG_REMOVAL,
-  WHITESPACE_NORMALIZE,
-} from "./task-regex";
 
 export const statusSymbols = {
   todo: "[ ]",

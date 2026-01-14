@@ -42,51 +42,51 @@ export abstract class BaseTask {
   /**
    * Update the task's status in the vault
    */
-  abstract updateStatus(newStatus: TaskStatus, app: App): Promise<void>;
+  abstract updateStatus(_newStatus: TaskStatus, _app: App): Promise<void>;
 
   /**
    * Add a new task line to the vault
    */
-  abstract addTaskLine(newTaskLine: string, app: App): Promise<void>;
+  abstract addTaskLine(_newTaskLine: string, _app: App): Promise<void>;
 
   /**
    * Delete the task from the vault
    */
-  abstract delete(app: App): Promise<void>;
+  abstract delete(_app: App): Promise<void>;
 
   /**
    * Add a star/favorite marker to the task
    */
-  abstract addStar(app: App): Promise<void>;
+  abstract addStar(_app: App): Promise<void>;
 
   /**
    * Remove the star/favorite marker from the task
    */
-  abstract removeStar(app: App): Promise<void>;
+  abstract removeStar(_app: App): Promise<void>;
 
   /**
    * Add a tag to the task
    */
-  abstract addTag(tagToAdd: string, app: App): Promise<void>;
+  abstract addTag(_tagToAdd: string, _app: App): Promise<void>;
 
   /**
    * Remove a tag from the task
    */
-  abstract removeTag(tagToRemove: string, app: App): Promise<void>;
+  abstract removeTag(_tagToRemove: string, _app: App): Promise<void>;
 
   /**
    * Add link metadata to this task (for creating dependencies)
    */
   abstract addLinkMetadata(
-    vault: Vault,
-    fromTask: BaseTask,
-    linkingStyle: "individual" | "csv" | "dataview"
+    _vault: Vault,
+    _fromTask: BaseTask,
+    _linkingStyle: "individual" | "csv" | "dataview"
   ): Promise<void>;
 
   /**
    * Remove link metadata from this task (for removing dependencies)
    */
-  abstract removeLinkMetadata(vault: Vault, hash: string): Promise<void>;
+  abstract removeLinkMetadata(_vault: Vault, _hash: string): Promise<void>;
 
   /**
    * Convert to plain object for serialization/compatibility

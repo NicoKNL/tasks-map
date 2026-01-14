@@ -13,7 +13,7 @@ interface GuiOverlayProps {
   setSelectedStatuses: (statuses: TaskStatus[]) => void; // eslint-disable-line no-unused-vars
   showTags?: boolean;
   hideTags?: boolean;
-  setHideTags: () => void; // eslint-disable-line no-unused-vars
+  setHideTags: () => void;  
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
