@@ -337,7 +337,7 @@ export default function TaskMapGraphView({
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
-      {/* 添加 ref */}
+      {}
       <div className="tasks-map-graph-container" ref={containerRef}>
         {isLoading && (
           <div className="tasks-map-loading-container">
