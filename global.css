@@ -263,6 +263,11 @@ If your plugin does not need CSS, delete this file.
   background-color: #3b82f6; /* fallback color */
 }
 
+.tasks-map-graph-container.hide-tags .task-tag,
+.tasks-map-graph-container.hide-tags .task-tags-container {
+	display: none !important;
+}
+
 .tasks-map-tag.removable {
   cursor: pointer;
 }
@@ -523,6 +528,43 @@ If your plugin does not need CSS, delete this file.
   right: 32px;
   z-index: 30;
   min-width: 220px;
+}
+
+.tasks-map-gui-overlay-hidetag-checkbox {
+	position: absolute;
+	top: 120px;
+	right: 32px;
+	z-index: 30;
+	display: flex;
+	align-items: center;
+	font-size: 12px;
+	transition: color 0.2s ease;
+}
+
+.tasks-map-gui-overlay-checkbox-label {
+	display: flex;
+	align-items: center;
+	user-select: none;
+	font-size: 12px;
+	color: var(--text-muted);
+	transition: color 0.2s ease;
+}
+
+.tasks-map-gui-overlay-checkbox-label:hover {
+	color: var(--text-normal);
+}
+
+.tasks-map-gui-overlay-checkbox-input {
+	opacity: 50;
+}
+
+.tasks-map-gui-overlay-checkbox-text {
+	display: inline-block;
+	align-items: center;
+	justify-content: center;
+	height: 50px;
+	line-height: 50px;
+	font-size: 11px;
 }
 
 .tasks-map-gui-overlay-reload-button {

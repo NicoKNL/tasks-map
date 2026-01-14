@@ -83,6 +83,13 @@ export default function TaskMapGraphView({
   const reactFlowInstance = useReactFlow();
   const skipFitViewRef = React.useRef(false);
 
+  const [hideTags, setHideTags] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const toggleHideTags = useCallback(() => {
+    setHideTags((prev) => !prev);
+  }, []);
+
   // Maintain a live registry of tags per task for efficient allTags computation
   const [taskTagsRegistry, setTaskTagsRegistry] = React.useState<
     Map<string, string[]>
@@ -101,6 +108,16 @@ export default function TaskMapGraphView({
       return a.localeCompare(b, undefined, { sensitivity: "base" });
     });
   }, [taskTagsRegistry]);
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      if (hideTags) {
+        containerRef.current.classList.add("hide-tags");
+      } else {
+        containerRef.current.classList.remove("hide-tags");
+      }
+    }
+  }, [hideTags]);
 
   const reloadTasks = useCallback(() => {
     setIsLoading(true);
@@ -321,7 +338,8 @@ export default function TaskMapGraphView({
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
-      <div className="tasks-map-graph-container">
+      {}
+      <div className="tasks-map-graph-container" ref={containerRef}>
         {isLoading && (
           <div className="tasks-map-loading-container">
             <div className="tasks-map-spinner" />
@@ -351,6 +369,9 @@ export default function TaskMapGraphView({
             allStatuses={ALL_STATUSES}
             selectedStatuses={selectedStatuses}
             setSelectedStatuses={setSelectedStatuses}
+            showTags={settings.showTags}
+            hideTags={hideTags}
+            setHideTags={toggleHideTags}
           />
           <TaskMinimap />
           <Background />

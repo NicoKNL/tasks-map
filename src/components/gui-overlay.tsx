@@ -1,6 +1,7 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import { TaskStatus } from "src/types/task";
+import React from "react";
 
 interface GuiOverlayProps {
   allTags: string[];
@@ -10,6 +11,9 @@ interface GuiOverlayProps {
   allStatuses: TaskStatus[];
   selectedStatuses: TaskStatus[];
   setSelectedStatuses: (statuses: TaskStatus[]) => void; // eslint-disable-line no-unused-vars
+  showTags?: boolean;
+  hideTags?: boolean;
+  setHideTags: () => void; // eslint-disable-line no-unused-vars
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -21,10 +25,32 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     allStatuses,
     selectedStatuses,
     setSelectedStatuses,
+    showTags = true,
+    hideTags = false,
+    setHideTags,
   } = props;
+
+  const handleToggleHideTags = () => {
+    setHideTags();
+  };
 
   return (
     <>
+      {showTags && (
+        <div className="tasks-map-gui-overlay-hidetag-checkbox">
+          <label className="tasks-map-gui-overlay-checkbox-label">
+            <input
+              type="checkbox"
+              checked={hideTags}
+              onChange={handleToggleHideTags}
+              className="tasks-map-gui-overlay-checkbox-input"
+            />
+            <span className="tasks-map-gui-overlay-checkbox-text">
+              Hide tags
+            </span>
+          </label>
+        </div>
+      )}
       <div className="tasks-map-gui-overlay-tag-select">
         <TagSelect
           allTags={allTags}
