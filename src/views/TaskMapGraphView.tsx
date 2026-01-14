@@ -17,6 +17,7 @@ import {
   createEdgesFromTasks,
 } from "src/lib/utils";
 import { Task } from "src/types/task";
+import { BaseTask } from "src/types/task-base";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
 import { NO_TAGS_VALUE } from "src/components/tag-select";

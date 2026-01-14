@@ -1,4 +1,5 @@
 import { Node, Edge } from "reactflow";
+import { BaseTask } from "./task-base";
 
 export type TaskStatus = "todo" | "in_progress" | "canceled" | "done";
 export type TaskType = "dataview" | "note";
@@ -9,21 +10,12 @@ export interface RawTask {
   link: { path: string };
 }
 
-export interface Task {
-  id: string;
-  type: TaskType; // How to identify this task for linking
-  summary: string;
-  text: string;
-  tags: string[];
-  status: TaskStatus; // [ ] todo, [/] in_progress, [-] canceled, [x] done
-  priority: string;
-  link: string;
-  incomingLinks: string[]; // References to other tasks (format depends on type)
-  starred: boolean;
-}
+// Backward compatibility: Task is now BaseTask
+// All tasks are now class instances that extend BaseTask
+export type Task = BaseTask;
 
 export interface TaskNodeData {
-  task: Task;
+  task: BaseTask;
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTags?: boolean;

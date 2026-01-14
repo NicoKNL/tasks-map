@@ -1,4 +1,7 @@
-import { Task, TaskStatus, RawTask } from "src/types/task";
+import { TaskStatus, RawTask } from "src/types/task";
+import { BaseTask } from "src/types/task-base";
+import { DataviewTask } from "src/types/dataview-task";
+import { NoteTask } from "src/types/note-task";
 
 import {
   EMOJI_ID_PATTERN,
@@ -15,13 +18,15 @@ import {
 } from "./task-regex";
 
 export class TaskFactory {
-  public parse(rawTask: RawTask, type: "dataview" | "note" = "dataview"): Task {
+  public parse(
+    rawTask: RawTask,
+    type: "dataview" | "note" = "dataview"
+  ): BaseTask {
     const status = rawTask.status;
     const text = rawTask.text;
 
-    return {
+    const taskData = {
       id: this.parseIdFromText(text),
-      type: type,
       summary: this.makeSummary(text),
       text: this.cleanText(text),
       tags: this.parseTags(text),
@@ -31,9 +36,16 @@ export class TaskFactory {
       incomingLinks: this.parseIncomingLinks(text),
       starred: this.parseStarred(text),
     };
+
+    // Return the appropriate subclass based on type
+    if (type === "note") {
+      return new NoteTask(taskData);
+    } else {
+      return new DataviewTask(taskData);
+    }
   }
 
-  public isEmptyTask(task: Task): boolean {
+  public isEmptyTask(task: BaseTask): boolean {
     // A task is considered empty if its summary (which strips tags, IDs, emojis, etc.)
     // is empty or whitespace-only
     return task.summary.trim().length === 0;

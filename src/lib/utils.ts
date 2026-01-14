@@ -1,6 +1,8 @@
+// Task utility functions - refactored to use OOP with polymorphism
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
-import { Task, TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
+import { TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
+import { BaseTask } from "src/types/task-base";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
@@ -11,7 +13,7 @@ import {
   WHITESPACE_NORMALIZE,
 } from "./task-regex";
 
-const statusSymbols = {
+export const statusSymbols = {
   todo: "[ ]",
   in_progress: "[/]",
   canceled: "[-]",
@@ -86,7 +88,7 @@ const formatPatterns: Record<string, Record<string, RegExp>> = {
  * Takes into account summary length and number of tags.
  */
 export function estimateNodeDimensions(
-  task: Task,
+  task: BaseTask,
   showTags: boolean = true
 ): { width: number; height: number } {
   // Base dimensions
@@ -152,192 +154,23 @@ export function findTaskLineByIdOrText(
 }
 
 export async function updateTaskStatusInVault(
-  task: Task,
+  task: BaseTask,
   newStatus: TaskStatus,
   app: App
 ): Promise<void> {
-  if (!task.link || !task.text) return;
-  const vault = app?.vault;
-  if (!vault) return;
-  const file = vault.getFileByPath(task.link);
-  if (!file) return;
-
-  // Handle note-based tasks differently (they use frontmatter)
-  if (task.type === "note") {
-    await vault.process(file, (fileContent) => {
-      const lines = fileContent.split(/\r?\n/);
-
-      // Find frontmatter boundaries
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-
-      if (lines[0] === "---") {
-        frontmatterStart = 0;
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i] === "---") {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      if (frontmatterStart === -1 || frontmatterEnd === -1) {
-        return fileContent;
-      }
-
-      // Map TaskStatus to note-based status format
-      const noteStatus =
-        newStatus === "todo"
-          ? "open"
-          : newStatus === "done"
-            ? "done"
-            : newStatus === "in_progress"
-              ? "in-progress"
-              : newStatus === "canceled"
-                ? "canceled"
-                : "open";
-
-      // Find and update status line
-      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
-        if (lines[i].startsWith("status:")) {
-          lines[i] = `status: ${noteStatus}`;
-          break;
-        }
-      }
-
-      return lines.join("\n");
-    });
-    return;
-  }
-
-  // Handle dataview tasks (inline status)
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) return fileContent;
-
-    // TODO: Verify if the escape is really useless here (or change this parsing completely). It was added by the linter, but it seems necessary for correct regex.
-    lines[taskLineIdx] = lines[taskLineIdx].replace(
-      /\[([ x/\-])\]/, // eslint-disable-line no-useless-escape
-      statusSymbols[newStatus]
-    );
-
-    // Add done timestamp
-    if (newStatus === "done") {
-      lines[taskLineIdx] = addDateToTask(
-        lines[taskLineIdx],
-        "done",
-        getTodayDate()
-      );
-    }
-    // Delete done timestamp and add start timestamp
-    else if (newStatus === "in_progress") {
-      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "done");
-      lines[taskLineIdx] = addDateToTask(
-        lines[taskLineIdx],
-        "start",
-        getTodayDate()
-      );
-    }
-    // Delete canceled and done timestamp
-    else if (newStatus === "todo") {
-      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "canceled");
-      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "done");
-      lines[taskLineIdx] = removeDateFromTask(lines[taskLineIdx], "start");
-    }
-
-    return lines.join("\n");
-  });
+  await task.updateStatus(newStatus, app);
 }
 
 export async function addTaskLineToVault(
-  task: Task,
+  task: BaseTask,
   newTaskLine: string,
   app: App
 ): Promise<void> {
-  if (!task.link) {
-    console.log("!task.link: ", newTaskLine);
-    return;
-  }
-  const vault = app?.vault;
-  if (!vault) {
-    console.log("!vault: ", newTaskLine);
-    return;
-  }
-  const file = vault.getFileByPath(task.link);
-  if (!file) {
-    console.log("!file: ", newTaskLine);
-    return;
-  }
-
-  // Handle note-based tasks, create a new file in same folder
-  if (task.type === "note") {
-    const originalFile = vault.getFileByPath(task.link);
-    if (!originalFile) {
-      console.log("!originalFile: ", newTaskLine);
-      return;
-    }
-
-    const folderPath = originalFile.parent?.path;
-    if (!folderPath) {
-      console.log("!folderPath: ", newTaskLine);
-      return;
-    }
-
-    const timestamp = Date.now();
-    const newFileName = `Task-${timestamp}.md`;
-    const newFilePath = `${folderPath}/${newFileName}`;
-
-    await vault.create(newFilePath, `# ${task.text}\n\n${task.text}`);
-
-    return;
-  }
-
-  // Handle dataview tasks, add task at next line
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) {
-      console.log("taskLineIdx === -1: ", newTaskLine);
-      return fileContent;
-    }
-
-    if (task.type === "dataview") {
-      const insertIdx = Math.min(taskLineIdx + 1, lines.length);
-
-      lines.splice(insertIdx, 0, newTaskLine);
-    }
-
-    return lines.join("\n");
-  });
+  await task.addTaskLine(newTaskLine, app);
 }
 
-export async function deleteTaskFromVault(task: Task, app: App): Promise<void> {
-  if (!task.link) return;
-  const vault = app?.vault;
-  if (!vault) return;
-  const file = vault.getFileByPath(task.link);
-  if (!file) return;
-
-  // Handle note-based tasks (delete the entire file)
-  if (task.type === "note") {
-    await vault.delete(file);
-    return;
-  }
-
-  // Handle dataview tasks (remove the task line)
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) return fileContent;
-
-    // Remove the task line
-    lines.splice(taskLineIdx, 1);
-    return lines.join("\n");
-  });
+export async function deleteTaskFromVault(task: BaseTask, app: App): Promise<void> {
+  await task.delete(app);
 }
 
 /**
@@ -351,7 +184,7 @@ export async function deleteTaskFromVault(task: Task, app: App): Promise<void> {
  * @returns {string} The modified task line with the new/updated date
  * @throws {Error} If dateType is invalid or taskLine is empty
  */
-function addDateToTask(
+export function addDateToTask(
   taskLine: string,
   dateType: string,
   date: string
@@ -407,7 +240,8 @@ function addDateToTask(
  * @returns {string} The modified task line without the specified date type
  * @throws {Error} If dateType is invalid
  */
-function removeDateFromTask(taskLine: string, dateType: string): string {
+export function removeDateFromTask(taskLine: string, dateType: string): string {
+
   if (!validDateTypes.includes(dateType)) {
     throw new Error(
       `Invalid date type: ${dateType}. Must be one of: ${validDateTypes.join(", ")}`
@@ -466,7 +300,7 @@ function detectExistingFormats(taskLine: string): string {
  * Gets today's date in YYYY-MM-DD format (most common in Obsidian tasks)
  * @returns {string} Today's date formatted as YYYY-MM-DD
  */
-function getTodayDate(): string {
+export function getTodayDate(): string {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
@@ -476,365 +310,33 @@ function getTodayDate(): string {
 }
 
 export async function removeTagFromTaskInVault(
-  task: Task,
+  task: BaseTask,
   tagToRemove: string,
   app: App
 ): Promise<void> {
-  if (!task.link || !task.text) return;
-  const vault = app?.vault;
-  if (!vault) return;
-  const file = vault.getFileByPath(task.link);
-  if (!file) return;
-
-  // Handle note-based tasks differently (they use frontmatter)
-  if (task.type === "note") {
-    await vault.process(file, (fileContent) => {
-      const lines = fileContent.split(/\r?\n/);
-
-      // Find frontmatter boundaries
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-
-      if (lines[0] === "---") {
-        frontmatterStart = 0;
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i] === "---") {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      if (frontmatterStart === -1 || frontmatterEnd === -1) {
-        return fileContent;
-      }
-
-      // Find and remove the tag from the tags array
-      // Tags are stored as "  - tagname" under "tags:"
-      let i = frontmatterStart + 1;
-      while (i < frontmatterEnd) {
-        const line = lines[i];
-        if (line === "tags:") {
-          // Found tags section, look for the tag in the following lines
-          i++;
-          while (i < frontmatterEnd && lines[i].match(/^\s{2}- /)) {
-            const tagLine = lines[i];
-            const tagMatch = tagLine.match(/^\s{2}- (.+)$/);
-            if (tagMatch && tagMatch[1] === tagToRemove) {
-              // Found the tag, remove it
-              lines.splice(i, 1);
-              frontmatterEnd--;
-              break;
-            }
-            i++;
-          }
-          break;
-        }
-        i++;
-      }
-
-      return lines.join("\n");
-    });
-    return;
-  }
-
-  // Handle dataview tasks (inline tags)
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-
-    let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) {
-      // Fallback: try to find by matching core task text (without tags/IDs)
-      const coreTaskText = task.text
-        .replace(EMOJI_ID_REMOVAL, "") // Remove emoji ID
-        .replace(DATAVIEW_ID_REMOVAL, "") // Remove Dataview ID
-        .replace(TAG_REMOVAL, "") // Remove tags
-        .replace(WHITESPACE_NORMALIZE, " ") // Normalize whitespace
-        .trim();
-
-      taskLineIdx = lines.findIndex((line: string) => {
-        const coreLineText = line
-          .replace(EMOJI_ID_REMOVAL, "")
-          .replace(DATAVIEW_ID_REMOVAL, "")
-          .replace(TAG_REMOVAL, "")
-          .replace(WHITESPACE_NORMALIZE, " ")
-          .trim();
-        return (
-          coreLineText.includes(coreTaskText) ||
-          coreTaskText.includes(coreLineText)
-        );
-      });
-
-      if (taskLineIdx === -1) return fileContent;
-    }
-
-    // Remove the tag from the line
-    const currentLine = lines[taskLineIdx];
-
-    // Match tags in format #tag or #tag/subtag, with optional leading/trailing whitespace
-    const tagPattern = new RegExp(
-      `\\s*#${tagToRemove.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/\\S*)?(?=\\s|$)`,
-      "g"
-    );
-
-    const newLine = currentLine
-      .replace(tagPattern, "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    lines[taskLineIdx] = newLine;
-
-    return lines.join("\n");
-  });
+  await task.removeTag(tagToRemove, app);
 }
 
 export async function addStarToTaskInVault(
-  task: Task,
+  task: BaseTask,
   app: App
 ): Promise<void> {
-  if (!task.link || !task.text) return;
-  const vault = app?.vault;
-  if (!vault) return;
-  const file = vault.getFileByPath(task.link);
-  if (!file) return;
-
-  // Handle note-based tasks differently (they use frontmatter)
-  if (task.type === "note") {
-    await vault.process(file, (fileContent) => {
-      const lines = fileContent.split(/\r?\n/);
-
-      // Find frontmatter boundaries
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-
-      if (lines[0] === "---") {
-        frontmatterStart = 0;
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i] === "---") {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      if (frontmatterStart === -1 || frontmatterEnd === -1) {
-        return fileContent;
-      }
-
-      // Check if starred field already exists
-      let starredIndex = -1;
-      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
-        if (lines[i].match(/^starred:\s*/)) {
-          starredIndex = i;
-          break;
-        }
-      }
-
-      if (starredIndex !== -1) {
-        // Update existing starred field
-        lines[starredIndex] = "starred: true";
-      } else {
-        // Add starred field after priority if it exists, otherwise before tags
-        let insertIndex = frontmatterEnd;
-        for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
-          if (lines[i].match(/^priority:\s*/)) {
-            insertIndex = i + 1;
-            break;
-          }
-        }
-        lines.splice(insertIndex, 0, "starred: true");
-      }
-
-      return lines.join("\n");
-    });
-    return;
-  }
-
-  // Handle dataview tasks (inline star emoji)
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) return fileContent;
-
-    // Check if star already exists
-    if (lines[taskLineIdx].includes("⭐")) return fileContent;
-
-    // Add star at the end of the line
-    lines[taskLineIdx] = lines[taskLineIdx] + " ⭐";
-    return lines.join("\n");
-  });
+  await task.addStar(app);
 }
 
 export async function removeStarFromTaskInVault(
-  task: Task,
+  task: BaseTask,
   app: App
 ): Promise<void> {
-  if (!task.link || !task.text) return;
-  const vault = app?.vault;
-  if (!vault) return;
-  const file = vault.getFileByPath(task.link);
-  if (!file) return;
-
-  // Handle note-based tasks differently (they use frontmatter)
-  if (task.type === "note") {
-    await vault.process(file, (fileContent) => {
-      const lines = fileContent.split(/\r?\n/);
-
-      // Find frontmatter boundaries
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-
-      if (lines[0] === "---") {
-        frontmatterStart = 0;
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i] === "---") {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      if (frontmatterStart === -1 || frontmatterEnd === -1) {
-        return fileContent;
-      }
-
-      // Find and update starred field
-      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
-        if (lines[i].match(/^starred:\s*/)) {
-          lines[i] = "starred: false";
-          break;
-        }
-      }
-
-      return lines.join("\n");
-    });
-    return;
-  }
-
-  // Handle dataview tasks (inline star emoji)
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) return fileContent;
-
-    // Remove star emoji
-    lines[taskLineIdx] = lines[taskLineIdx].replace(/\s*⭐\s*/g, " ").trim();
-    return lines.join("\n");
-  });
+  await task.removeStar(app);
 }
 
 export async function addTagToTaskInVault(
-  task: Task,
+  task: BaseTask,
   tagToAdd: string,
   app: App
 ): Promise<void> {
-  if (!task.link || !task.text) return;
-  const vault = app?.vault;
-  if (!vault) return;
-  const file = vault.getFileByPath(task.link);
-  if (!file) return;
-
-  // Handle note-based tasks differently (they use frontmatter)
-  if (task.type === "note") {
-    await vault.process(file, (fileContent) => {
-      const lines = fileContent.split(/\r?\n/);
-
-      // Find frontmatter boundaries
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-
-      if (lines[0] === "---") {
-        frontmatterStart = 0;
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i] === "---") {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      if (frontmatterStart === -1 || frontmatterEnd === -1) {
-        return fileContent;
-      }
-
-      // Find the tags section and add the tag
-      // Tags are stored as "  - tagname" under "tags:"
-      let i = frontmatterStart + 1;
-      let tagsIndex = -1;
-
-      while (i < frontmatterEnd) {
-        const line = lines[i];
-        if (line === "tags:") {
-          tagsIndex = i;
-          // Check if tag already exists
-          let j = i + 1;
-          while (j < frontmatterEnd && lines[j].match(/^\s{2}- /)) {
-            const tagLine = lines[j];
-            const tagMatch = tagLine.match(/^\s{2}- (.+)$/);
-            if (tagMatch && tagMatch[1] === tagToAdd) {
-              // Tag already exists
-              return fileContent;
-            }
-            j++;
-          }
-          // Add the tag after the last tag in the list
-          lines.splice(j, 0, `  - ${tagToAdd}`);
-          break;
-        }
-        i++;
-      }
-
-      // If no tags section exists, create one
-      if (tagsIndex === -1) {
-        lines.splice(frontmatterEnd, 0, "tags:", `  - ${tagToAdd}`);
-      }
-
-      return lines.join("\n");
-    });
-    return;
-  }
-
-  // Handle dataview tasks (inline tags)
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-    let taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-    if (taskLineIdx === -1) {
-      // Fallback: try to find by matching core task text (without tags/IDs)
-      const coreTaskText = task.text
-        .replace(EMOJI_ID_REMOVAL, "") // Remove emoji ID
-        .replace(DATAVIEW_ID_REMOVAL, "") // Remove Dataview ID
-        .replace(TAG_REMOVAL, "") // Remove tags
-        .replace(WHITESPACE_NORMALIZE, " ") // Normalize whitespace
-        .trim();
-
-      taskLineIdx = lines.findIndex((line: string) => {
-        const coreLineText = line
-          .replace(EMOJI_ID_REMOVAL, "")
-          .replace(DATAVIEW_ID_REMOVAL, "")
-          .replace(TAG_REMOVAL, "")
-          .replace(WHITESPACE_NORMALIZE, " ")
-          .trim();
-        return (
-          coreLineText.includes(coreTaskText) ||
-          coreTaskText.includes(coreLineText)
-        );
-      });
-
-      if (taskLineIdx === -1) return fileContent;
-    }
-
-    // Add the tag to the end of the line
-    const currentLine = lines[taskLineIdx];
-    // Ensure the tag starts with # if it doesn't already
-    const formattedTag = tagToAdd.startsWith("#") ? tagToAdd : `#${tagToAdd}`;
-    lines[taskLineIdx] = currentLine.trim() + ` ${formattedTag}`;
-
-    return lines.join("\n");
-  });
+  await task.addTag(tagToAdd, app);
 }
 
 export function getLayoutedElements(
@@ -853,7 +355,7 @@ export function getLayoutedElements(
 
   nodes.forEach((node) => {
     // Get task from node data to estimate dimensions
-    const task = node.data?.task as Task | undefined;
+    const task = node.data?.task as BaseTask | undefined;
     const dimensions = task
       ? estimateNodeDimensions(task, showTags)
       : { width: NODEWIDTH, height: NODEHEIGHT };
@@ -900,114 +402,18 @@ export function getLayoutedElements(
  */
 export async function addLinkSignsBetweenTasks(
   vault: Vault,
-  fromTask: Task,
-  toTask: Task,
+  fromTask: BaseTask,
+  toTask: BaseTask,
   linkingStyle: "individual" | "csv" | "dataview" = "individual"
 ): Promise<string | undefined> {
   if (!fromTask.link || !toTask.link) return undefined;
 
   const id = fromTask.id;
 
-  // Handle note-based tasks differently (they use frontmatter, not inline metadata)
-  if (toTask.type === "note") {
-    await addDependencyToNoteTask(vault, toTask, fromTask);
-    return id + "-" + toTask.id;
-  }
-
-  // Handle dataview tasks (inline metadata)
-  await addSignToTaskInFile(vault, fromTask, "id", id, linkingStyle);
-  await addSignToTaskInFile(vault, toTask, "stop", id, linkingStyle);
+  // Use polymorphism - each task type handles its own linking logic
+  await toTask.addLinkMetadata(vault, fromTask, linkingStyle);
 
   return id + "-" + toTask.id;
-}
-
-/**
- * Add a dependency to a note-based task by updating its frontmatter
- */
-async function addDependencyToNoteTask(
-  vault: Vault,
-  toTask: Task,
-  fromTask: Task
-): Promise<void> {
-  if (!toTask.link) return;
-  const file = vault.getAbstractFileByPath(toTask.link);
-  if (!(file instanceof TFile)) return;
-
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-
-    // Find frontmatter boundaries
-    let frontmatterStart = -1;
-    let frontmatterEnd = -1;
-
-    if (lines[0] === "---") {
-      frontmatterStart = 0;
-      for (let i = 1; i < lines.length; i++) {
-        if (lines[i] === "---") {
-          frontmatterEnd = i;
-          break;
-        }
-      }
-    }
-
-    if (frontmatterStart === -1 || frontmatterEnd === -1) {
-      return fileContent;
-    }
-
-    // Parse the frontmatter to find blockedBy section
-    const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
-    let blockedByIndex = -1;
-    const blockedByIndent = "  "; // Standard YAML indent
-
-    for (let i = 0; i < frontmatterLines.length; i++) {
-      if (frontmatterLines[i].match(/^blockedBy:\s*$/)) {
-        blockedByIndex = i;
-        break;
-      }
-    }
-
-    // Check if this dependency already exists
-    const taskIdentifier = `[[${fromTask.text}]]`;
-    for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
-      if (lines[i].includes(`uid:`) && lines[i].includes(taskIdentifier)) {
-        // Dependency already exists, don't add it again
-        return fileContent;
-      }
-    }
-
-    // Create the new dependency entry as two separate lines
-    const uidLine = `${blockedByIndent}- uid: "${taskIdentifier}"`;
-    const reltypeLine = `${blockedByIndent}  reltype: FINISHTOSTART`;
-
-    if (blockedByIndex === -1) {
-      // No blockedBy field exists, add it before the closing ---
-      lines.splice(frontmatterEnd, 0, "blockedBy:", uidLine, reltypeLine);
-    } else {
-      // blockedBy exists, find where to insert (after the last blockedBy item)
-      let insertIndex = frontmatterStart + 1 + blockedByIndex + 1;
-
-      // Find the end of the blockedBy list
-      while (insertIndex < frontmatterStart + 1 + frontmatterLines.length) {
-        const line = lines[insertIndex];
-        if (line.match(/^\s{2}- uid:/)) {
-          insertIndex++;
-          // Skip the reltype line
-          if (
-            insertIndex < lines.length &&
-            lines[insertIndex].match(/^\s{4}reltype:/)
-          ) {
-            insertIndex++;
-          }
-        } else {
-          break;
-        }
-      }
-
-      lines.splice(insertIndex, 0, uidLine, reltypeLine);
-    }
-
-    return lines.join("\n");
-  });
 }
 
 /**
@@ -1020,7 +426,7 @@ async function addDependencyToNoteTask(
  */
 export async function addSignToTaskInFile(
   vault: Vault,
-  task: Task,
+  task: BaseTask,
   type: "stop" | "id",
   hash: string,
   linkingStyle: "individual" | "csv" | "dataview" = "individual"
@@ -1146,82 +552,18 @@ export async function addSignToTaskInFile(
 // Remove a link hash from both source and target tasks in their files
 export async function removeLinkSignsBetweenTasks(
   vault: Vault,
-  toTask: Task,
+  toTask: BaseTask,
   hash: string
 ): Promise<void> {
   if (!toTask.link) return;
 
-  // Handle note-based tasks differently
-  if (toTask.type === "note") {
-    await removeDependencyFromNoteTask(vault, toTask, hash);
-    return;
-  }
-
-  await removeSignFromTaskInFile(vault, toTask, "stop", hash);
-}
-
-/**
- * Remove a dependency from a note-based task by updating its frontmatter
- */
-async function removeDependencyFromNoteTask(
-  vault: Vault,
-  toTask: Task,
-  fromTaskId: string
-): Promise<void> {
-  if (!toTask.link) return;
-  const file = vault.getAbstractFileByPath(toTask.link);
-  if (!(file instanceof TFile)) return;
-
-  await vault.process(file, (fileContent) => {
-    const lines = fileContent.split(/\r?\n/);
-
-    // Find frontmatter boundaries
-    let frontmatterStart = -1;
-    let frontmatterEnd = -1;
-
-    if (lines[0] === "---") {
-      frontmatterStart = 0;
-      for (let i = 1; i < lines.length; i++) {
-        if (lines[i] === "---") {
-          frontmatterEnd = i;
-          break;
-        }
-      }
-    }
-
-    if (frontmatterStart === -1 || frontmatterEnd === -1) {
-      return fileContent;
-    }
-
-    // Find and remove the dependency entry
-    // The fromTaskId is a file path like "TaskNotes/Tasks/Example task 1.md"
-    // We need to extract the basename
-    const basename = fromTaskId.replace(/\.md$/, "").split("/").pop();
-
-    let i = frontmatterStart + 1;
-    while (i < frontmatterEnd) {
-      const line = lines[i];
-      // Match uid lines with any amount of leading whitespace (to handle malformed indentation)
-      if (line.match(/^\s*- uid:/) && line.includes(`[[${basename}]]`)) {
-        // Found the entry, remove it and the next reltype line
-        lines.splice(i, 1);
-        // Also check for reltype with any amount of leading whitespace
-        if (i < lines.length && lines[i].match(/^\s*reltype:/)) {
-          lines.splice(i, 1);
-        }
-        frontmatterEnd -= 2; // Adjust end index after removal
-      } else {
-        i++;
-      }
-    }
-
-    return lines.join("\n");
-  });
+  // Use polymorphism - each task type handles its own link removal logic
+  await toTask.removeLinkMetadata(vault, hash);
 }
 
 export async function removeSignFromTaskInFile(
   vault: Vault,
-  task: Task,
+  task: BaseTask,
   type: "stop" | "id",
   hash: string
 ): Promise<void> {
@@ -1314,9 +656,9 @@ export async function removeSignFromTaskInFile(
 
 // TODO: Improve typing for app parameter
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getAllTasks(app: any): Task[] {
+export function getAllTasks(app: any): BaseTask[] {
   // Central function to gather tasks from all available sources
-  const allTasks: Task[] = [];
+  const allTasks: BaseTask[] = [];
 
   // Source 1: Dataview plugin tasks
   allTasks.push(...getAllDataviewTasks(app));
@@ -1328,7 +670,7 @@ export function getAllTasks(app: any): Task[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getAllDataviewTasks(app: any): Task[] {
+export function getAllDataviewTasks(app: any): BaseTask[] {
   let tasks: RawTask[] = [];
 
   // plugins exists, just not on the Obsidian App API?:
@@ -1350,8 +692,8 @@ export function getAllDataviewTasks(app: any): Task[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getNoteTasks(app: any): Task[] {
-  const tasks: Task[] = [];
+export function getNoteTasks(app: any): BaseTask[] {
+  const tasks: BaseTask[] = [];
   const vault = app.vault;
   const metadataCache = app.metadataCache;
 
@@ -1411,7 +753,7 @@ function normalizeNotePriority(priority: string): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseTaskNote(file: any, cache: any, app: any): Task | null {
+function parseTaskNote(file: any, cache: any, app: any): BaseTask | null {
   const frontmatter = cache.frontmatter || {};
   const factory = new TaskFactory();
 
@@ -1558,7 +900,7 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
 }
 
 export function createNodesFromTasks(
-  tasks: Task[],
+  tasks: BaseTask[],
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
   showPriorities: boolean = true,
   showTags: boolean = true,
@@ -1595,7 +937,7 @@ export function createNodesFromTasks(
 }
 
 export function createEdgesFromTasks(
-  tasks: Task[],
+  tasks: BaseTask[],
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
   debugVisualization: boolean = false
 ): TaskEdge[] {
@@ -1605,7 +947,7 @@ export function createEdgesFromTasks(
   // Works for both dataview tasks (ID-based) and note tasks (file path-based)
   // because both use their respective identifiers consistently
   tasks.forEach((task) => {
-    task.incomingLinks.forEach((parentTaskId) => {
+    task.incomingLinks.forEach((parentTaskId: string) => {
       edges.push({
         id: `${parentTaskId}-${task.id}`,
         source: parentTaskId,
