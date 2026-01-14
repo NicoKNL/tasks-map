@@ -1,5 +1,5 @@
 import { App, Vault } from "obsidian";
-import { BaseTask } from "./task-base";
+import { BaseTask } from "./base-task";
 import { TaskStatus } from "./task";
 
 /**

@@ -1,5 +1,5 @@
 import { TaskStatus, RawTask } from "src/types/task";
-import { BaseTask } from "src/types/task-base";
+import { BaseTask } from "src/types/base-task";
 import { DataviewTask } from "src/types/dataview-task";
 import { NoteTask } from "src/types/note-task";
 

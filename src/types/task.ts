@@ -1,5 +1,5 @@
 import { Node, Edge } from "reactflow";
-import { BaseTask } from "./task-base";
+import { BaseTask } from "./base-task";
 
 export type TaskStatus = "todo" | "in_progress" | "canceled" | "done";
 export type TaskType = "dataview" | "note";

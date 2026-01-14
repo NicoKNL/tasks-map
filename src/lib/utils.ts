@@ -2,7 +2,7 @@
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
 import { TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
-import { BaseTask } from "src/types/task-base";
+import { BaseTask } from "src/types/base-task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
