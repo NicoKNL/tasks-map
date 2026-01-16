@@ -294,7 +294,7 @@ export default function TaskMapGraphView({
               id: "",
               text: "New Task",
               summary: "New Task",
-              link: "HomePage.md",
+              link: settings.taskInbox,
               status: "todo",
               priority: "",
               tags: [],
@@ -336,7 +336,7 @@ export default function TaskMapGraphView({
         status: "todo", // UI 阶段可以先写死
         text: taskLine, // createTaskLineModal() 返回的完整文本
         link: {
-          path: "HomePage.md", // settings 里的 inbox 文件路径
+          path: settings.taskInbox, // settings 里的 inbox 文件路径
         },
       };
       const newTask = factory.parse(rawTask, "dataview");
@@ -357,7 +357,11 @@ export default function TaskMapGraphView({
         })
       );
 
-      await addIsolatedTaskLineToVault(taskLine, "HomePage.md", app);
+      await addIsolatedTaskLineToVault(
+        taskLine,
+        settings.taskInbox,
+        app
+      );
 
       new Notice("New task has been created!");
     },
