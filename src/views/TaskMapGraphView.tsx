@@ -18,7 +18,7 @@ import {
   addTaskLineToVault,
   addIsolatedTaskLineToVault,
 } from "src/lib/utils";
-import { BaseTask } from "src/types/task";
+import { BaseTask, RawTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import TaskNode from "src/components/task-node";
 import { NO_TAGS_VALUE } from "src/components/tag-select";
@@ -31,6 +31,7 @@ import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
 import { NoteTask } from "../types/note-task";
 import { DataviewTask } from "../types/dataview-task";
+import { TaskFactory } from "../lib/task-factory";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -270,7 +271,6 @@ export default function TaskMapGraphView({
       }
 
       // 双击逻辑在这里
-      new Notice("123124124");
       const bounds = containerRef.current?.getBoundingClientRect();
       if (!bounds) return;
 
@@ -281,18 +281,8 @@ export default function TaskMapGraphView({
 
       const tempTaskId = `${Date.now()}`;
 
-      const task = new DataviewTask({
-        id: tempTaskId,
-        text: "New Task",
-        summary: "New Task",
-        link: "HomePage.md",
-        status: "todo",
-        priority: "",
-        tags: [],
-        starred: false,
-        incomingLinks: [],
-      });
-
+      // 创建临时节点
+      skipFitViewRef.current = true;
       setNodes((nds) => [
         ...nds,
         {
@@ -300,7 +290,17 @@ export default function TaskMapGraphView({
           type: "task",
           position: position,
           data: {
-            task: task,
+            task: new DataviewTask({
+              id: "",
+              text: "New Task",
+              summary: "New Task",
+              link: "HomePage.md",
+              status: "todo",
+              priority: "",
+              tags: [],
+              starred: false,
+              incomingLinks: [],
+            }),
             layoutDirection: "Horizontal",
             showPriorities: true,
             showTags: true,
@@ -325,10 +325,41 @@ export default function TaskMapGraphView({
       const tasksApi = tasksPlugin.apiV1;
 
       let taskLine = await tasksApi.createTaskLineModal();
+      if (!taskLine) {
+        new Notice("Task creation cancelled.");
+        return;
+      }
 
-      // 在这里解析一下任务，刷新UI的临时节点
+      // 更新临时节点
+      const factory = new TaskFactory();
+      const rawTask: RawTask = {
+        status: "todo", // UI 阶段可以先写死
+        text: taskLine, // createTaskLineModal() 返回的完整文本
+        link: {
+          path: "HomePage.md", // settings 里的 inbox 文件路径
+        },
+      };
+      const newTask = factory.parse(rawTask, "dataview");
+
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id !== tempTaskId) return node;
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              task: newTask,
+              isTemp: false,
+            },
+            draggable: true,
+          };
+        })
+      );
 
       await addIsolatedTaskLineToVault(taskLine, "HomePage.md", app);
+
+      new Notice("New task has been created!");
     },
     [setSelectedEdge]
   );
