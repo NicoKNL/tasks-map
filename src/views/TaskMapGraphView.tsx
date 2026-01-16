@@ -15,6 +15,8 @@ import {
   removeLinkSignsBetweenTasks,
   createNodesFromTasks,
   createEdgesFromTasks,
+  addTaskLineToVault,
+  addIsolatedTaskLineToVault,
 } from "src/lib/utils";
 import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
@@ -27,6 +29,8 @@ import { TagsContext } from "src/contexts/context";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
+import { NoteTask } from "../types/note-task";
+import { DataviewTask } from "../types/dataview-task";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -258,9 +262,76 @@ export default function TaskMapGraphView({
     setSelectedEdge(null);
   }, [setSelectedEdge]);
 
-  const onPaneClick = useCallback(() => {
-    setSelectedEdge(null);
-  }, [setSelectedEdge]);
+  const onPaneClick = useCallback(
+    async (event: React.MouseEvent) => {
+      if (event.detail !== 2) {
+        setSelectedEdge(null);
+        return;
+      }
+
+      // 双击逻辑在这里
+      new Notice("123124124");
+      const bounds = containerRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+
+      const position = reactFlowInstance.project({
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+      });
+
+      const tempTaskId = `${Date.now()}`;
+
+      const task = new DataviewTask({
+        id: tempTaskId,
+        text: "New Task",
+        summary: "New Task",
+        link: "HomePage.md",
+        status: "todo",
+        priority: "",
+        tags: [],
+        starred: false,
+        incomingLinks: [],
+      });
+
+      setNodes((nds) => [
+        ...nds,
+        {
+          id: tempTaskId,
+          type: "task",
+          position: position,
+          data: {
+            task: task,
+            layoutDirection: "Horizontal",
+            showPriorities: true,
+            showTags: true,
+            debugVisualization: false,
+            tagColorMode: "random",
+            tagColorSeed: 42,
+            tagStaticColor: "#3b82f6",
+            isTemp: true, // 关键标记
+          },
+          // sourcePosition,
+          // targetPosition,
+          draggable: true,
+        },
+      ]);
+
+      // @ts-ignore
+      const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
+      if (!tasksPlugin?.apiV1) {
+        console.error("Tasks plugin not found or API not available");
+        return;
+      }
+      const tasksApi = tasksPlugin.apiV1;
+
+      let taskLine = await tasksApi.createTaskLineModal();
+
+      // 在这里解析一下任务，刷新UI的临时节点
+
+      await addIsolatedTaskLineToVault(taskLine, "HomePage.md", app);
+    },
+    [setSelectedEdge]
+  );
 
   const onDeleteSelectedEdge = useCallback(async () => {
     if (!selectedEdge) return;

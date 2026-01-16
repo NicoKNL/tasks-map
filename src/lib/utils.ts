@@ -163,6 +163,38 @@ export async function addTaskLineToVault(
   await task.addTaskLine(newTaskLine, app);
 }
 
+export async function addIsolatedTaskLineToVault(
+  newText: string,
+  filePath: string,
+  app: App
+) {
+  const file = app.vault.getAbstractFileByPath(filePath);
+
+  if (!(file instanceof TFile)) {
+    throw new Error(`文件 ${filePath} 不存在`);
+  }
+
+  await app.vault.process(file, (data: string) => {
+    // 检查是否已存在相同内容
+    if (data.includes(newText)) {
+      return data; // 直接返回原始内容
+    }
+
+    // 构建新内容
+    let separator = "";
+    if (data.length > 0) {
+      if (!data.endsWith("\n\n")) {
+        // 确保至少有一个换行符，最好是两个（空行）
+        separator = data.endsWith("\n") ? "\n" : "\n\n";
+      } else if (!data.endsWith("\n")) {
+        separator = "\n";
+      }
+    }
+
+    return data + separator + newText + "\n";
+  });
+}
+
 export async function deleteTaskFromVault(
   task: BaseTask,
   app: App
