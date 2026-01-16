@@ -270,7 +270,6 @@ export default function TaskMapGraphView({
         return;
       }
 
-      // 双击逻辑在这里
       const bounds = containerRef.current?.getBoundingClientRect();
       if (!bounds) return;
 
@@ -280,41 +279,7 @@ export default function TaskMapGraphView({
       });
 
       const tempTaskId = `${Date.now()}`;
-
-      // 创建临时节点
-      skipFitViewRef.current = true;
-      setNodes((nds) => [
-        ...nds,
-        {
-          id: tempTaskId,
-          type: "task",
-          position: position,
-          data: {
-            task: new DataviewTask({
-              id: "",
-              text: "New Task",
-              summary: "New Task",
-              link: settings.taskInbox,
-              status: "todo",
-              priority: "",
-              tags: [],
-              starred: false,
-              incomingLinks: [],
-            }),
-            layoutDirection: "Horizontal",
-            showPriorities: true,
-            showTags: true,
-            debugVisualization: false,
-            tagColorMode: "random",
-            tagColorSeed: 42,
-            tagStaticColor: "#3b82f6",
-            isTemp: true, // 关键标记
-          },
-          // sourcePosition,
-          // targetPosition,
-          draggable: true,
-        },
-      ]);
+      const factory = new TaskFactory();
 
       // @ts-ignore
       const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
@@ -329,33 +294,38 @@ export default function TaskMapGraphView({
         new Notice("Task creation cancelled.");
         return;
       }
-
-      // 更新临时节点
-      const factory = new TaskFactory();
       const rawTask: RawTask = {
-        status: "todo", // UI 阶段可以先写死
-        text: taskLine, // createTaskLineModal() 返回的完整文本
+        status: "todo",
+        text: taskLine,
         link: {
-          path: settings.taskInbox, // settings 里的 inbox 文件路径
+          path: settings.taskInbox,
         },
       };
       const newTask = factory.parse(rawTask, "dataview");
 
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.id !== tempTaskId) return node;
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              task: newTask,
-              isTemp: false,
-            },
-            draggable: true,
-          };
-        })
-      );
+      skipFitViewRef.current = true;
+      setNodes((nds) => [
+        ...nds,
+        {
+          id: tempTaskId,
+          type: "task",
+          position: position,
+          data: {
+            task: newTask,
+            layoutDirection: "Horizontal",
+            showPriorities: true,
+            showTags: true,
+            debugVisualization: false,
+            tagColorMode: "random",
+            tagColorSeed: 42,
+            tagStaticColor: "#3b82f6",
+            isTemp: false,
+          },
+          // sourcePosition,
+          // targetPosition,
+          draggable: true,
+        },
+      ]);
 
       await addIsolatedTaskLineToVault(
         taskLine,
