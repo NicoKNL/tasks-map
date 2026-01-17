@@ -30,7 +30,7 @@ jobs:
 
       - name: Determine version
         id: semver
-        uses: ronaldphilipsen/semVersie@v2.0.
+        uses: ronaldphilipsen/semVersie@v2.0.2
 
   release:
     if: needs.version.outputs.release == 'true'
