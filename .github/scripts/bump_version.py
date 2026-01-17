@@ -5,6 +5,7 @@ import os
 import re
 import tomllib
 
+
 class SemVer:
     def __init__(self, major, minor, patch):
         self.major = int(major)
@@ -14,7 +15,7 @@ class SemVer:
     @staticmethod
     def from_str(version_str):
         """Parse a version string into a SemVer object"""
-        match = re.match(r'(\d+)\.(\d+)\.(\d+)', version_str)
+        match = re.match(r"(\d+)\.(\d+)\.(\d+)", version_str)
         if not match:
             raise ValueError(f"Invalid version string: {version_str}")
         return SemVer(*match.groups())
@@ -28,12 +29,20 @@ class SemVer:
     def __eq__(self, other):
         if not isinstance(other, SemVer):
             return NotImplemented
-        return (self.major, self.minor, self.patch) == (other.major, other.minor, other.patch)
+        return (self.major, self.minor, self.patch) == (
+            other.major,
+            other.minor,
+            other.patch,
+        )
 
     def __lt__(self, other):
         if not isinstance(other, SemVer):
             return NotImplemented
-        return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
+        return (self.major, self.minor, self.patch) < (
+            other.major,
+            other.minor,
+            other.patch,
+        )
 
     def __le__(self, other):
         return self < other or self == other
@@ -48,30 +57,32 @@ class SemVer:
 def get_latest_version():
     """Get the latest version from the tags"""
     try:
-        with open('versions.json', 'r') as f:
+        with open("versions.json", "r") as f:
             versions = [SemVer.from_str(k) for k in json.load(f).keys()]
             return str(max(versions))
 
     except FileNotFoundError:
-        return '0.0.0'
+        return "0.0.0"
+
 
 def bump_version(current_version, bump_type):
     """Bump the version according to semver rules"""
-    major, minor, patch = map(int, current_version.split('.'))
+    major, minor, patch = map(int, current_version.split("."))
 
-    if bump_type == 'major':
+    if bump_type == "major":
         return f"{major + 1}.0.0"
-    elif bump_type == 'minor':
+    elif bump_type == "minor":
         return f"{major}.{minor + 1}.0"
-    elif bump_type == 'patch':
+    elif bump_type == "patch":
         return f"{major}.{minor}.{patch + 1}"
     else:
         return current_version
 
+
 def update_json_file(file_path, new_version, mode, key=None):
     """Update version in a JSON file"""
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
     except FileNotFoundError:
         print(f"Warning: {file_path} not found, skipping...")
@@ -88,27 +99,28 @@ def update_json_file(file_path, new_version, mode, key=None):
     elif mode == "append":
         # For versions.json, we update both the latest version and append to the list
         if file_path.endswith("versions.json"):
-            data[new_version] = "1.8.0" # TODO: Make this dynamic
+            data[new_version] = "1.8.0"  # TODO: Make this dynamic
 
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         json.dump(data, f, indent=4)
+
 
 def update_file_versions(new_version, config_path):
     """Update version in all configured files"""
     try:
-        with open(config_path, 'rb') as f:
+        with open(config_path, "rb") as f:
             config = tomllib.load(f)
     except FileNotFoundError:
         print(f"Error: {config_path} not found")
         sys.exit(1)
 
     # Process each release configuration
-    for release_type, files in config.get('releases', {}).items():
+    for release_type, files in config.get("releases", {}).items():
         print(f"Processing {release_type} release updates...")
         for file_config in files:
-            file_path = file_config['file']
-            mode = file_config.get('mode', 'replace')
-            key = file_config.get('key', 'version')
+            file_path = file_config["file"]
+            mode = file_config.get("mode", "replace")
+            key = file_config.get("key", "version")
 
             if not os.path.exists(file_path):
                 print(f"Warning: {file_path} not found, skipping...")
@@ -116,26 +128,23 @@ def update_file_versions(new_version, config_path):
 
             update_json_file(file_path, new_version, mode, key)
 
+
 def main():
     if len(sys.argv) != 2:
-        print("Usage: bump_version.py <bump_type>")
+        print("Usage: bump_version.py <version>")
         sys.exit(1)
 
-    bump_type = sys.argv[1]
-    if bump_type not in ['major', 'minor', 'patch', 'noimpact']:
-        print("Error: bump_type must be one of: major, minor, patch, noimpact")
+    new_version = sys.argv[1]
+
+    # Validate version format
+    if not re.match(r"^\d+\.\d+\.\d+$", new_version):
+        print(f"Error: Invalid version format: {new_version}")
         sys.exit(1)
-
-    if bump_type == 'noimpact':
-        print("No version bump required")
-        sys.exit(0)
-
-    current_version = get_latest_version()
-    new_version = bump_version(current_version, bump_type)
 
     # Update all files with new version
-    update_file_versions(new_version, 'semver-config.toml')
-    print(new_version, end="")
+    update_file_versions(new_version, "semver-config.toml")
+    print(f"Updated version to {new_version}")
+
 
 if __name__ == "__main__":
     main()
