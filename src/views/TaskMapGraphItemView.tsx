@@ -14,14 +14,16 @@ const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 // Wrapper component that manages filter state and keys the ReactFlowProvider
 function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [excludedTags, setExcludedTags] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
     ...ALL_STATUSES,
   ]);
 
   // Key the ReactFlowProvider on filter state to force complete remount
   const providerKey = useMemo(
-    () => `${selectedTags.join(",")}-${selectedStatuses.join(",")}`,
-    [selectedTags, selectedStatuses]
+    () =>
+      `${selectedTags.join(",")}-${excludedTags.join(",")}-${selectedStatuses.join(",")}`,
+    [selectedTags, excludedTags, selectedStatuses]
   );
 
   return (
@@ -30,6 +32,8 @@ function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
         settings={settings}
         selectedTags={selectedTags}
         setSelectedTags={setSelectedTags}
+        excludedTags={excludedTags}
+        setExcludedTags={setExcludedTags}
         selectedStatuses={selectedStatuses}
         setSelectedStatuses={setSelectedStatuses}
       />

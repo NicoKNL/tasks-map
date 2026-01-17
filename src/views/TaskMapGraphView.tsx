@@ -34,6 +34,8 @@ interface TaskMapGraphViewProps {
   settings: TasksMapSettings;
   selectedTags: string[];
   setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
+  excludedTags: string[];
+  setExcludedTags: React.Dispatch<React.SetStateAction<string[]>>;
   selectedStatuses: TaskStatus[];
   setSelectedStatuses: React.Dispatch<React.SetStateAction<TaskStatus[]>>;
 }
@@ -42,7 +44,8 @@ interface TaskMapGraphViewProps {
 const getFilteredNodeIds = (
   tasks: BaseTask[],
   selectedTags: string[],
-  selectedStatuses: TaskStatus[]
+  selectedStatuses: TaskStatus[],
+  excludedTags: string[]
 ) => {
   let filtered = tasks;
   if (selectedTags.length > 0) {
@@ -58,6 +61,14 @@ const getFilteredNodeIds = (
       return matchesNoTags || matchesRegularTags;
     });
   }
+  if (excludedTags.length > 0) {
+    filtered = filtered.filter((task) => {
+      // Exclude tasks that have any of the excluded tags
+      return !excludedTags.some((excludedTag) =>
+        task.tags.includes(excludedTag)
+      );
+    });
+  }
   if (selectedStatuses.length > 0) {
     filtered = filtered.filter((task) =>
       selectedStatuses.includes(task.status)
@@ -70,6 +81,8 @@ export default function TaskMapGraphView({
   settings,
   selectedTags,
   setSelectedTags,
+  excludedTags,
+  setExcludedTags,
   selectedStatuses,
   setSelectedStatuses,
 }: TaskMapGraphViewProps) {
@@ -205,7 +218,8 @@ export default function TaskMapGraphView({
     const filteredNodeIds = getFilteredNodeIds(
       tasks,
       selectedTags,
-      selectedStatuses
+      selectedStatuses,
+      excludedTags
     );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
@@ -365,6 +379,8 @@ export default function TaskMapGraphView({
             allTags={allTags}
             selectedTags={selectedTags}
             setSelectedTags={setSelectedTags}
+            excludedTags={excludedTags}
+            setExcludedTags={setExcludedTags}
             reloadTasks={reloadTasks}
             allStatuses={ALL_STATUSES}
             selectedStatuses={selectedStatuses}
