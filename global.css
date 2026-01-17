@@ -164,11 +164,9 @@ If your plugin does not need CSS, delete this file.
   margin-top: 5px;
   min-width: 120px;
   background: var(--background-primary);
-  /* border: 1px solid var(--background-modifier-border); */
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
   z-index: 100;
-  /* overflow: hidden; */
 }
 
 .tasks-map-task-menu-item {
