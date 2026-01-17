@@ -21,7 +21,6 @@ jobs:
     outputs:
       release: ${{ steps.semver.outputs.release }}
       version: ${{ steps.semver.outputs.version }}
-      tag: ${{ steps.semver.outputs.tag }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -73,8 +72,8 @@ jobs:
           git add -A
           git commit -m "chore: release version ${{ needs.version.outputs.version }}"
           git push origin ${{ github.event.pull_request.base.ref }}
-          git tag ${{ needs.version.outputs.tag }}
-          git push origin ${{ needs.version.outputs.tag }}
+          git tag ${{ needs.version.outputs.version }}
+          git push origin ${{ needs.version.outputs.version }}
 
       - name: Create release
         env:
@@ -85,7 +84,7 @@ jobs:
           RELEASE_NOTES="## ${PR_TITLE}
 
           ${PR_BODY}"
-          gh release create "${{ needs.version.outputs.tag }}" \
-            --title="${PR_TITLE}" \
+          gh release create "${{ needs.version.outputs.version }}" \
+            --title="${{ needs.version.outputs.version }}" \
             --notes "$RELEASE_NOTES" \
             main.js manifest.json styles.css
