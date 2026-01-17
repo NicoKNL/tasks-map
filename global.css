@@ -161,13 +161,12 @@ If your plugin does not need CSS, delete this file.
   position: absolute;
   top: 100%;
   right: 0;
+  margin-top: 5px;
   min-width: 120px;
   background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
   z-index: 100;
-  overflow: hidden;
 }
 
 .tasks-map-task-menu-item {
@@ -182,6 +181,21 @@ If your plugin does not need CSS, delete this file.
   font-size: 12px;
   color: var(--text-normal);
   text-align: left;
+  border-radius: 0;
+}
+
+.tasks-map-task-menu-item:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.tasks-map-task-menu-item:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .tasks-map-task-menu-item:hover {
