@@ -535,9 +535,6 @@ If your plugin does not need CSS, delete this file.
   right: 16px;
   z-index: 35;
   pointer-events: auto;
-}
-
-.tasks-map-filter-panel-content {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
@@ -545,6 +542,46 @@ If your plugin does not need CSS, delete this file.
   min-width: 280px;
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
   backdrop-filter: blur(8px);
+}
+
+.tasks-map-filter-panel.minimized {
+  min-width: unset;
+  padding: 0;
+  width: fit-content;
+  height: fit-content;
+}
+
+.tasks-map-filter-panel-toggle {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-normal);
+  padding: 3px;
+  border-radius: 4px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+}
+
+.tasks-map-filter-panel.minimized .tasks-map-filter-panel-toggle {
+  position: static;
+  padding: 8px;
+  width: 34px;
+  height: 34px;
+}
+
+.tasks-map-filter-panel-toggle:hover {
+  background: var(--background-primary-alt);
+}
+
+.tasks-map-filter-panel-content {
+  display: none;
 }
 
 .tasks-map-filter-section {

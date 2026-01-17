@@ -1,7 +1,8 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import { TaskStatus } from "src/types/task";
-import React from "react";
+import React, { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface GuiOverlayProps {
   allTags: string[];
@@ -34,69 +35,85 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     setHideTags,
   } = props;
 
+  const [isMinimized, setIsMinimized] = useState(false);
+
   const handleToggleHideTags = () => {
     setHideTags();
   };
 
+  const toggleMinimized = () => {
+    setIsMinimized((prev) => !prev);
+  };
+
   return (
-    <div className="tasks-map-filter-panel">
-      <div className="tasks-map-filter-panel-content">
-        <div className="tasks-map-filter-section">
-          <div className="tasks-map-filter-item">
-            <label className="tasks-map-filter-label">Status</label>
-            <MultiSelect
-              options={allStatuses}
-              selected={selectedStatuses}
-              setSelected={setSelectedStatuses}
-              placeholder="Filter by status..."
-            />
-          </div>
-
-          <div className="tasks-map-filter-item">
-            <label className="tasks-map-filter-label">Include labels</label>
-            <TagSelect
-              allTags={allTags}
-              selectedTags={selectedTags}
-              setSelectedTags={setSelectedTags}
-            />
-          </div>
-
-          <div className="tasks-map-filter-item">
-            <label className="tasks-map-filter-label">Exclude labels</label>
-            <TagSelect
-              allTags={allTags}
-              selectedTags={excludedTags}
-              setSelectedTags={setExcludedTags}
-            />
-          </div>
-
-          {showTags && (
+    <div className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}>
+      <button
+        className="tasks-map-filter-panel-toggle"
+        onClick={toggleMinimized}
+        title={isMinimized ? "Expand filters" : "Minimize filters"}
+      >
+        {isMinimized ? <ChevronLeft size={18} /> : <ChevronRight size={12} />}
+      </button>
+      
+      {!isMinimized && (
+        <>
+          <div className="tasks-map-filter-section">
             <div className="tasks-map-filter-item">
-              <label className="tasks-map-gui-overlay-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={hideTags}
-                  onChange={handleToggleHideTags}
-                  className="tasks-map-gui-overlay-checkbox-input"
-                />
-                <span className="tasks-map-gui-overlay-checkbox-text">
-                  Hide tags on nodes
-                </span>
-              </label>
+              <label className="tasks-map-filter-label">Status</label>
+              <MultiSelect
+                options={allStatuses}
+                selected={selectedStatuses}
+                setSelected={setSelectedStatuses}
+                placeholder="Filter by status..."
+              />
             </div>
-          )}
-        </div>
 
-        {/* Reload Button */}
-        <div className="tasks-map-filter-actions">
-          <button
-            onClick={reloadTasks}
-            className="tasks-map-gui-overlay-reload-button"
-          >
-            Reload tasks
-          </button>
-        </div>
-      </div>
+            <div className="tasks-map-filter-item">
+              <label className="tasks-map-filter-label">Include labels</label>
+              <TagSelect
+                allTags={allTags}
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+              />
+            </div>
+
+            <div className="tasks-map-filter-item">
+              <label className="tasks-map-filter-label">Exclude labels</label>
+              <TagSelect
+                allTags={allTags}
+                selectedTags={excludedTags}
+                setSelectedTags={setExcludedTags}
+              />
+            </div>
+
+            {showTags && (
+              <div className="tasks-map-filter-item">
+                <label className="tasks-map-gui-overlay-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={hideTags}
+                    onChange={handleToggleHideTags}
+                    className="tasks-map-gui-overlay-checkbox-input"
+                  />
+                  <span className="tasks-map-gui-overlay-checkbox-text">
+                    Hide tags on nodes
+                  </span>
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Reload Button */}
+          <div className="tasks-map-filter-actions">
+            <button
+              onClick={reloadTasks}
+              className="tasks-map-gui-overlay-reload-button"
+            >
+              Reload tasks
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
