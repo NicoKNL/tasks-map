@@ -85,7 +85,7 @@ jobs:
           RELEASE_NOTES="## ${PR_TITLE}
 
           ${PR_BODY}"
-          gh release create "${{ needs.validate.outputs.tag }}" \
-            --title="${{ needs.validate.outputs.tag }}" \
+          gh release create "${{ needs.version.outputs.tag }}" \
+            --title="${PR_TITLE}" \
             --notes "$RELEASE_NOTES" \
             main.js manifest.json styles.css
