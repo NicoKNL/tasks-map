@@ -1,4 +1,4 @@
-import { App, Vault } from "obsidian";
+import { App, Vault, parseYaml, stringifyYaml } from "obsidian";
 import { BaseTask } from "./base-task";
 import { TaskStatus } from "./task";
 
@@ -291,6 +291,15 @@ export class NoteTask extends BaseTask {
         return fileContent;
       }
 
+      // Extract frontmatter YAML content (excluding the --- delimiters)
+      const frontmatterYaml = lines
+        .slice(frontmatterStart + 1, frontmatterEnd)
+        .join("\n");
+      const bodyContent = lines.slice(frontmatterEnd + 1).join("\n");
+
+      // Parse YAML into an object
+      const frontmatterData = parseYaml(frontmatterYaml) || {};
+
       // Extract task name from path (e.g., "TaskNotes/Tasks/Task2.md" -> "Task2")
       const taskName =
         fromTask.text ||
@@ -298,53 +307,28 @@ export class NoteTask extends BaseTask {
         "";
       const uidValue = `[[${taskName}]]`;
 
-      // Find or create blockedBy section
-      let i = frontmatterStart + 1;
-      let blockedByLineIdx = -1;
-      while (i < frontmatterEnd) {
-        if (lines[i].match(/^blockedBy:\s*$/)) {
-          blockedByLineIdx = i;
-          break;
-        }
-        i++;
-      }
-
-      // If blockedBy section doesn't exist, add it
-      if (blockedByLineIdx === -1) {
-        lines.splice(
-          frontmatterEnd,
-          0,
-          "blockedBy:",
-          `  - uid: "${uidValue}"`,
-          `    reltype: FINISHTOSTART`
-        );
-        return lines.join("\n");
+      // Ensure blockedBy array exists
+      if (!frontmatterData.blockedBy) {
+        frontmatterData.blockedBy = [];
+      } else if (!Array.isArray(frontmatterData.blockedBy)) {
+        frontmatterData.blockedBy = [];
       }
 
       // Check if dependency already exists
-      i = blockedByLineIdx + 1;
-      while (i < frontmatterEnd && lines[i].match(/^\s{2}- uid:/)) {
-        const uidMatch = lines[i].match(/^\s{2}- uid: "(.+)"$/);
-        if (uidMatch && uidMatch[1] === uidValue) {
-          // Dependency already exists
-          return fileContent;
-        }
-        // Skip to next item (skip reltype line)
-        i++;
-        if (i < frontmatterEnd && lines[i].match(/^\s{4}reltype:/)) {
-          i++;
-        }
-      }
-
-      // Add the dependency
-      lines.splice(
-        i,
-        0,
-        `  - uid: "${uidValue}"`,
-        `    reltype: FINISHTOSTART`
+      const exists = frontmatterData.blockedBy.some(
+        (dep: any) => dep && dep.uid === uidValue
       );
 
-      return lines.join("\n");
+      if (!exists) {
+        frontmatterData.blockedBy.push({
+          uid: uidValue,
+          reltype: "FINISHTOSTART",
+        });
+      }
+
+      const newFrontmatterYaml = stringifyYaml(frontmatterData);
+
+      return `---\n${newFrontmatterYaml}---\n${bodyContent}`;
     });
   }
 
@@ -362,11 +346,20 @@ export class NoteTask extends BaseTask {
 
     await vault.process(file, (fileContent) => {
       const lines = fileContent.split(/\r?\n/);
-      let { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
 
       if (frontmatterStart === -1 || frontmatterEnd === -1) {
         return fileContent;
       }
+
+      // Extract frontmatter YAML content (excluding the --- delimiters)
+      const frontmatterYaml = lines
+        .slice(frontmatterStart + 1, frontmatterEnd)
+        .join("\n");
+      const bodyContent = lines.slice(frontmatterEnd + 1).join("\n");
+
+      // Parse YAML into an object
+      const frontmatterData = parseYaml(frontmatterYaml) || {};
 
       // Extract task name from the path (e.g., "TaskNotes/Tasks/Task2.md" -> "Task2")
       // The fromTaskId might be a full path or just a task name
@@ -376,46 +369,22 @@ export class NoteTask extends BaseTask {
           fromTaskId.split("/").pop()?.replace(/\.md$/, "") || fromTaskId;
       }
 
-      // Find and remove the dependency from blockedBy array
-      let i = frontmatterStart + 1;
-      while (i < frontmatterEnd) {
-        const line = lines[i];
-        if (line === "blockedBy:" || line.match(/^blockedBy:/)) {
-          // Found blockedBy section
-          i++;
-          while (
-            i < frontmatterEnd &&
-            (lines[i].match(/^\s*- uid:/) || lines[i].match(/^\s{2}- uid:/))
-          ) {
-            const uidLine = lines[i];
-            // Check if this uid line contains the task we're looking for
-            // Match both [[TaskName]] and just TaskName
-            if (
-              uidLine.includes(`[[${taskNameToRemove}]]`) ||
-              uidLine.includes(taskNameToRemove)
-            ) {
-              // Found the dependency, remove both uid and reltype lines
-              lines.splice(i, 1); // Remove uid line
-              frontmatterEnd--;
-              // Check if next line is reltype and remove it too
-              if (i < frontmatterEnd && lines[i].match(/^\s+reltype:/)) {
-                lines.splice(i, 1);
-                frontmatterEnd--;
-              }
-              break;
-            }
-            // Skip to next item
-            i++;
-            if (i < frontmatterEnd && lines[i].match(/^\s+reltype:/)) {
-              i++;
-            }
-          }
-          break;
+      const uidToRemove = `[[${taskNameToRemove}]]`;
+
+      // Remove the dependency from blockedBy array
+      if (Array.isArray(frontmatterData.blockedBy)) {
+        frontmatterData.blockedBy = frontmatterData.blockedBy.filter(
+          (dep: any) => dep && dep.uid !== uidToRemove
+        );
+
+        if (frontmatterData.blockedBy.length === 0) {
+          delete frontmatterData.blockedBy;
         }
-        i++;
       }
 
-      return lines.join("\n");
+      const newFrontmatterYaml = stringifyYaml(frontmatterData);
+
+      return `---\n${newFrontmatterYaml}---\n${bodyContent}`;
     });
   }
 }
