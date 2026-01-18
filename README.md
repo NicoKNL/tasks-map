@@ -3,7 +3,7 @@
 </p>
 <p align="center">
 <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/NicoKNL/tasks-map/qualify.yaml?branch=main&label=%F0%9F%92%8E%20qualify">
-	<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/NicoKNL/tasks-map/release.yaml?event=pull_request_target&label=%F0%9F%93%A6%20release">
+	<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/NicoKNL/tasks-map/release.yaml?event=pull_request&label=%F0%9F%93%A6%20release">
 	<img alt="GitHub Release" src="https://img.shields.io/github/v/release/NicoKNL/tasks-map">
 	<img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/NicoKNL/tasks-map/total">
 </p>
