@@ -18,12 +18,13 @@ function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
     ...ALL_STATUSES,
   ]);
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
   // Key the ReactFlowProvider on filter state to force complete remount
   const providerKey = useMemo(
     () =>
-      `${selectedTags.join(",")}-${excludedTags.join(",")}-${selectedStatuses.join(",")}`,
-    [selectedTags, excludedTags, selectedStatuses]
+      `${selectedTags.join(",")}-${excludedTags.join(",")}-${selectedStatuses.join(",")}-${selectedFiles.join(",")}`,
+    [selectedTags, excludedTags, selectedStatuses, selectedFiles]
   );
 
   return (
@@ -36,6 +37,8 @@ function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
         setExcludedTags={setExcludedTags}
         selectedStatuses={selectedStatuses}
         setSelectedStatuses={setSelectedStatuses}
+        selectedFiles={selectedFiles}
+        setSelectedFiles={setSelectedFiles}
       />
     </ReactFlowProvider>
   );
