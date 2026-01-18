@@ -302,7 +302,7 @@ export class NoteTask extends BaseTask {
       let i = frontmatterStart + 1;
       let blockedByLineIdx = -1;
       while (i < frontmatterEnd) {
-        if (lines[i] === "blockedBy:") {
+        if (lines[i].match(/^blockedBy:\s*$/)) {
           blockedByLineIdx = i;
           break;
         }
