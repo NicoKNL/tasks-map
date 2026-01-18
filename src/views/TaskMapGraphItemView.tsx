@@ -8,20 +8,24 @@ import { checkDataviewPlugin } from "../lib/utils";
 import TasksMapPlugin from "../main";
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
+import { t } from "../i18n";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
 // Wrapper component that manages filter state and keys the ReactFlowProvider
 function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [excludedTags, setExcludedTags] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
     ...ALL_STATUSES,
   ]);
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
   // Key the ReactFlowProvider on filter state to force complete remount
   const providerKey = useMemo(
-    () => `${selectedTags.join(",")}-${selectedStatuses.join(",")}`,
-    [selectedTags, selectedStatuses]
+    () =>
+      `${selectedTags.join(",")}-${excludedTags.join(",")}-${selectedStatuses.join(",")}-${selectedFiles.join(",")}`,
+    [selectedTags, excludedTags, selectedStatuses, selectedFiles]
   );
 
   return (
@@ -30,8 +34,12 @@ function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
         settings={settings}
         selectedTags={selectedTags}
         setSelectedTags={setSelectedTags}
+        excludedTags={excludedTags}
+        setExcludedTags={setExcludedTags}
         selectedStatuses={selectedStatuses}
         setSelectedStatuses={setSelectedStatuses}
+        selectedFiles={selectedFiles}
+        setSelectedFiles={setSelectedFiles}
       />
     </ReactFlowProvider>
   );
@@ -51,7 +59,7 @@ export default class TaskMapGraphItemView extends ItemView {
   }
 
   getDisplayText() {
-    return "Tasks map";
+    return t("view.title");
   }
 
   async onOpen() {
@@ -79,15 +87,13 @@ export default class TaskMapGraphItemView extends ItemView {
           <div className="tasks-map-centered-message-content">
             <div className="tasks-map-message-icon">⚠️</div>
             <h3 className="tasks-map-message-title">
-              Tasks Map requires the Dataview plugin to be installed and
-              enabled.
+              {t("view.dataview_required")}
             </h3>
             <p className="tasks-map-message-description">
               {dataviewCheck.getMessage()}
             </p>
             <p className="tasks-map-message-description">
-              Visit the Community Plugins section in Settings to install or
-              enable Dataview.
+              {t("view.visit_community_plugins")}
             </p>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { Language } from "../i18n";
+
 export interface TasksMapSettings {
   showPriorities: boolean;
   showTags: boolean;
@@ -13,6 +15,9 @@ export interface TasksMapSettings {
   tagColorMode: "random" | "static";
   tagColorSeed: number;
   tagStaticColor: string;
+
+  // Language setting
+  language: Language;
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -30,4 +35,7 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
   tagColorMode: "random",
   tagColorSeed: 42,
   tagStaticColor: "#3b82f6",
+
+  // Language default
+  language: "en",
 };

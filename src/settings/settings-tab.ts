@@ -1,6 +1,8 @@
-import { App, Notice, PluginSettingTab, Setting, TFolder } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import TasksMapPlugin from "../main";
 import { getTagColor } from "../lib/utils";
+import { t } from "../i18n";
+import { SUPPORTED_LANGUAGES } from "../i18n";
 
 let debounceTimer: number | null = null;
 
@@ -52,11 +54,30 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    new Setting(containerEl).setHeading().setName("Display Options");
+    new Setting(containerEl)
+      .setName(t("settings.language"))
+      .setDesc(t("settings.language_desc"))
+      .addDropdown((dropdown) => {
+        SUPPORTED_LANGUAGES.forEach((lang) => {
+          dropdown.addOption(lang.value, lang.label);
+        });
+        dropdown
+          .setValue(this.plugin.settings.language)
+          .onChange(async (value) => {
+            this.plugin.settings.language = value as "en" | "nl" | "zh-CN";
+            await this.plugin.saveSettings();
+            // Redraw the settings tab with new language
+            this.display();
+          });
+      });
 
     new Setting(containerEl)
-      .setName("Show task priorities")
-      .setDesc("Display priority indicators on task nodes")
+      .setHeading()
+      .setName(t("settings.display_options"));
+
+    new Setting(containerEl)
+      .setName(t("settings.show_task_priorities"))
+      .setDesc(t("settings.show_task_priorities_desc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showPriorities)
@@ -67,8 +88,8 @@ export class TasksMapSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Show task tags")
-      .setDesc("Display tags on task nodes")
+      .setName(t("settings.show_task_tags"))
+      .setDesc(t("settings.show_task_tags_desc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showTags)
@@ -129,15 +150,15 @@ export class TasksMapSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl).setHeading().setName("Layout");
+    new Setting(containerEl).setHeading().setName(t("settings.layout"));
 
     new Setting(containerEl)
-      .setName("Layout direction")
-      .setDesc("Direction for the node layout")
+      .setName(t("settings.layout_direction"))
+      .setDesc(t("settings.layout_direction_desc"))
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("Horizontal", "Horizontal")
-          .addOption("Vertical", "Vertical")
+          .addOption("Horizontal", t("settings.layout_horizontal"))
+          .addOption("Vertical", t("settings.layout_vertical"))
           .setValue(this.plugin.settings.layoutDirection)
           .onChange(async (value) => {
             this.plugin.settings.layoutDirection = value as
@@ -147,15 +168,15 @@ export class TasksMapSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl).setHeading().setName("Tag Appearance");
+    new Setting(containerEl).setHeading().setName(t("settings.tag_appearance"));
 
     new Setting(containerEl)
-      .setName("Tag color mode")
-      .setDesc("Choose how tag colors are generated")
+      .setName(t("settings.tag_color_mode"))
+      .setDesc(t("settings.tag_color_mode_desc"))
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("random", "Random colors (seeded)")
-          .addOption("static", "Static color for all tags")
+          .addOption("random", t("settings.tag_color_random"))
+          .addOption("static", t("settings.tag_color_static"))
           .setValue(this.plugin.settings.tagColorMode)
           .onChange(async (value) => {
             this.plugin.settings.tagColorMode = value as "random" | "static";
@@ -166,10 +187,8 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.tagColorMode === "random") {
       new Setting(containerEl)
-        .setName("Color seed")
-        .setDesc(
-          "Seed value for random color generation (same seed = same colors)"
-        )
+        .setName(t("settings.color_seed"))
+        .setDesc(t("settings.color_seed_desc"))
         .addText((text) =>
           text
             .setPlaceholder("42")
@@ -195,8 +214,8 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
       // Add preview container for random mode
       const previewSetting = new Setting(containerEl)
-        .setName("Preview")
-        .setDesc("Example tags with random colors");
+        .setName(t("settings.preview"))
+        .setDesc(t("settings.preview_random_desc"));
 
       this.createTagPreview(
         previewSetting.settingEl,
@@ -208,8 +227,8 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.tagColorMode === "static") {
       new Setting(containerEl)
-        .setName("Static tag color")
-        .setDesc("Color to use for all tags")
+        .setName(t("settings.static_tag_color"))
+        .setDesc(t("settings.static_tag_color_desc"))
         .addColorPicker((colorPicker) =>
           colorPicker
             .setValue(this.plugin.settings.tagStaticColor)
@@ -234,8 +253,8 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
       // Add preview container for static mode
       const previewSetting = new Setting(containerEl)
-        .setName("Preview")
-        .setDesc("Example tags with static color");
+        .setName(t("settings.preview"))
+        .setDesc(t("settings.preview_static_desc"));
 
       this.createTagPreview(
         previewSetting.settingEl,
@@ -246,16 +265,18 @@ export class TasksMapSettingTab extends PluginSettingTab {
       );
     }
 
-    new Setting(containerEl).setHeading().setName("Simple Task Relations");
+    new Setting(containerEl)
+      .setHeading()
+      .setName(t("settings.simple_task_relations"));
 
     new Setting(containerEl)
-      .setName("Linking style")
-      .setDesc("How task dependencies are specified in simple tasks")
+      .setName(t("settings.linking_style"))
+      .setDesc(t("settings.linking_style_desc"))
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("csv", "CSV (Tasks plugin default)")
-          .addOption("individual", "Individual")
-          .addOption("dataview", "Dataview")
+          .addOption("csv", t("settings.linking_csv"))
+          .addOption("individual", t("settings.linking_individual"))
+          .addOption("dataview", t("settings.linking_dataview"))
           .setValue(this.plugin.settings.linkingStyle)
           .onChange(async (value) => {
             this.plugin.settings.linkingStyle = value as
@@ -278,59 +299,60 @@ export class TasksMapSettingTab extends PluginSettingTab {
         const title = previewContainer.createDiv({
           cls: "tasks-map-preview-title",
         });
-        title.textContent = "Individual Style:";
+        title.textContent = t("settings.linking_individual_title");
 
         const desc = previewContainer.createDiv({
           cls: "tasks-map-preview-desc",
         });
-        desc.textContent = "Each dependency with its own emoji identifier";
+        desc.textContent = t("settings.linking_individual_desc");
 
         const example = previewContainer.createDiv({
           cls: "tasks-map-preview-example",
         });
-        example.textContent = "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789";
+        example.textContent = t("settings.linking_individual_example");
       } else if (style === "dataview") {
         const title = previewContainer.createDiv({
           cls: "tasks-map-preview-title",
         });
-        title.textContent = "Dataview Style:";
+        title.textContent = t("settings.linking_dataview_title");
 
         const desc = previewContainer.createDiv({
           cls: "tasks-map-preview-desc",
         });
-        desc.textContent = "Dependencies using Dataview inline field syntax";
+        desc.textContent = t("settings.linking_dataview_desc");
 
         const example = previewContainer.createDiv({
           cls: "tasks-map-preview-example",
         });
-        example.textContent =
-          "- [ ] My task [[dependsOn:: abc123,def456,ghi789]]";
+        example.textContent = t("settings.linking_dataview_example");
       } else {
         const title = previewContainer.createDiv({
           cls: "tasks-map-preview-title",
         });
-        title.textContent = "CSV Style (Tasks plugin default):";
+        title.textContent = t("settings.linking_csv_title");
 
         const desc = previewContainer.createDiv({
           cls: "tasks-map-preview-desc",
         });
-        desc.textContent = "Multiple dependencies comma-separated";
+        desc.textContent = t("settings.linking_csv_desc");
 
         const example = previewContainer.createDiv({
           cls: "tasks-map-preview-example",
         });
-        example.textContent = "- [ ] My task ⛔ abc123,def456,ghi789";
+        example.textContent = t("settings.linking_csv_example");
       }
     };
 
     // Initialize preview
     updatePreview(this.plugin.settings.linkingStyle);
 
-    new Setting(containerEl).setHeading().setName("Advanced Options");
+    new Setting(containerEl)
+      .setHeading()
+      .setName(t("settings.advanced_options"));
 
     new Setting(containerEl)
-      .setName("Debug visualization")
-      .setDesc("Show additional debug information in the graph view")
+      .setName(t("settings.debug_visualization"))
+      .setDesc(t("settings.debug_visualization_desc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.debugVisualization)

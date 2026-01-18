@@ -6,6 +6,7 @@ import { BaseTask } from "src/types/base-task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
+import { t } from "../i18n";
 
 export const statusSymbols = {
   todo: "[ ]",
@@ -1015,10 +1016,10 @@ export function checkDataviewPlugin(app: any) {
 
   const getMessage = () => {
     if (!isInstalled) {
-      return "Dataview plugin is not installed. Please install the Dataview plugin from Community Plugins to use Tasks Map.";
+      return t("view.dataview_not_installed");
     }
     if (!isEnabled) {
-      return "Dataview plugin is installed but not enabled. Please enable the Dataview plugin in Settings > Community Plugins to use Tasks Map.";
+      return t("view.dataview_disabled");
     }
     if (!isLoaded) {
       return "Dataview plugin is enabled but not loaded properly. Please restart Obsidian or reload the Dataview plugin.";

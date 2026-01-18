@@ -161,13 +161,12 @@ If your plugin does not need CSS, delete this file.
   position: absolute;
   top: 100%;
   right: 0;
+  margin-top: 5px;
   min-width: 120px;
   background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
   z-index: 100;
-  overflow: hidden;
 }
 
 .tasks-map-task-menu-item {
@@ -182,6 +181,21 @@ If your plugin does not need CSS, delete this file.
   font-size: 12px;
   color: var(--text-normal);
   text-align: left;
+  border-radius: 0;
+}
+
+.tasks-map-task-menu-item:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.tasks-map-task-menu-item:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .tasks-map-task-menu-item:hover {
@@ -514,6 +528,172 @@ If your plugin does not need CSS, delete this file.
   pointer-events: auto;
 }
 
+/* Filter Panel Styles */
+.tasks-map-filter-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 35;
+  pointer-events: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 280px;
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.tasks-map-filter-panel.minimized {
+  min-width: unset;
+  padding: 0;
+  width: fit-content;
+  height: fit-content;
+}
+
+.tasks-map-filter-panel-toggle {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-normal);
+  padding: 3px;
+  border-radius: 4px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+}
+
+.tasks-map-filter-panel.minimized .tasks-map-filter-panel-toggle {
+  position: static;
+  padding: 8px;
+  width: 34px;
+  height: 34px;
+}
+
+.tasks-map-filter-panel-toggle:hover {
+  background: var(--background-primary-alt);
+}
+
+.tasks-map-filter-panel-content {
+  display: none;
+}
+
+.tasks-map-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tasks-map-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tasks-map-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.tasks-map-filter-advanced-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin: 12px 0 8px 0;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-normal);
+  transition: all 0.2s ease;
+}
+
+.tasks-map-filter-advanced-toggle:hover {
+  background: var(--background-primary-alt);
+  border-color: var(--text-muted);
+}
+
+.tasks-map-filter-advanced-toggle svg {
+  flex-shrink: 0;
+}
+
+.tasks-map-filter-advanced {
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 12px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tasks-map-filter-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasks-map-gui-overlay-checkbox-label {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.tasks-map-gui-overlay-checkbox-label:hover {
+  color: var(--text-normal);
+}
+
+.tasks-map-gui-overlay-checkbox-input {
+  cursor: pointer;
+  margin: 0;
+}
+
+.tasks-map-gui-overlay-checkbox-text {
+  font-size: 12px;
+}
+
+.tasks-map-gui-overlay-reload-button {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.tasks-map-gui-overlay-reload-button:hover {
+  opacity: 0.9;
+}
+
+/* Legacy styles - kept for backward compatibility */
 .tasks-map-gui-overlay-tag-select {
   position: absolute;
   top: 24px;
@@ -531,46 +711,14 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-gui-overlay-hidetag-checkbox {
-	position: absolute;
-	top: 120px;
-	right: 32px;
-	z-index: 30;
-	display: flex;
-	align-items: center;
-	font-size: 12px;
-	transition: color 0.2s ease;
-}
-
-.tasks-map-gui-overlay-checkbox-label {
-	display: flex;
-	align-items: center;
-	user-select: none;
-	font-size: 12px;
-	color: var(--text-muted);
-	transition: color 0.2s ease;
-}
-
-.tasks-map-gui-overlay-checkbox-label:hover {
-	color: var(--text-normal);
-}
-
-.tasks-map-gui-overlay-checkbox-input {
-	opacity: 50;
-}
-
-.tasks-map-gui-overlay-checkbox-text {
-	display: inline-block;
-	align-items: center;
-	justify-content: center;
-	height: 50px;
-	line-height: 50px;
-	font-size: 11px;
-}
-
-.tasks-map-gui-overlay-reload-button {
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-weight: 600;
+  position: absolute;
+  top: 120px;
+  right: 32px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  transition: color 0.2s ease;
 }
 
 /* Task Priority Styles */
