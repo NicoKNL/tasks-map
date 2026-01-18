@@ -129,6 +129,75 @@ id: "TaskNotes/Tasks/Task3.md",
       });
     });
 
+    it("should not create duplicate blockedBy field when one exists with trailing whitespace", async () => {
+      const taskPath = "TaskNotes/Tasks/Task1.md";
+      // Simulates the real-world case where blockedBy: already exists with trailing space
+      const initialContent = `---
+status: open
+priority: High
+tags: [task, project]
+blockedBy: 
+- uid: "[[TaskA]]"
+  reltype: FINISHTOSTART
+---
+# Task Content`;
+
+      vault.setFileContent(taskPath, initialContent);
+
+      const toTask: Task = new NoteTask({
+        id: taskPath,
+        text: "Task1",
+        summary: "Task1",
+        link: taskPath,
+        status: "todo",
+        priority: "",
+        tags: [],
+        starred: false,
+        incomingLinks: [],
+      });
+
+      const fromTask: Task = new NoteTask({
+        id: "TaskNotes/Tasks/TaskB.md",
+        text: "TaskB",
+        summary: "TaskB",
+        link: "TaskNotes/Tasks/TaskB.md",
+        status: "todo",
+        priority: "",
+        tags: [],
+        starred: false,
+        incomingLinks: [],
+      });
+
+      await addLinkSignsBetweenTasks(vault, fromTask, toTask, "test123");
+
+      const updatedContent = vault.getFileContent(taskPath);
+      
+      // Log the actual output to see the duplicate blockedBy: fields
+      console.log("=== ACTUAL FRONTMATTER (showing the bug) ===");
+      console.log(updatedContent);
+      console.log("=== END ===");
+
+      // Check that both dependencies exist
+      expect(updatedContent).toContain('[[TaskA]]');
+      expect(updatedContent).toContain('[[TaskB]]');
+
+      // THE KEY TEST: There should be exactly ONE "blockedBy:" in the frontmatter
+      const blockedByMatches = updatedContent.match(/^blockedBy:/gm);
+      expect(blockedByMatches).not.toBeNull();
+      expect(blockedByMatches?.length).toBe(1);
+
+      // Verify correct YAML structure with both dependencies
+      expect(updatedContent).toContain('- uid: "[[TaskA]]"');
+      expect(updatedContent).toContain('- uid: "[[TaskB]]"');
+      
+      // Both should have reltype
+      const lines = updatedContent.split("\n");
+      const uidLines = lines.filter((line: string) => line.includes("- uid:"));
+      const reltypeLines = lines.filter((line: string) => line.includes("reltype:"));
+      expect(uidLines.length).toBe(2);
+      expect(reltypeLines.length).toBe(2);
+    });
+
     it("should preserve frontmatter indentation when adding dependencies", async () => {
       const taskPath = "TaskNotes/Tasks/Task1.md";
       const initialContent = `---
