@@ -2,6 +2,11 @@ import { App, Vault, parseYaml, stringifyYaml } from "obsidian";
 import { BaseTask } from "./base-task";
 import { TaskStatus } from "./task";
 
+interface DependencyEntry {
+  uid: string;
+  reltype: string;
+}
+
 /**
  * Note-based task that stores metadata in frontmatter
  */
@@ -316,7 +321,7 @@ export class NoteTask extends BaseTask {
 
       // Check if dependency already exists
       const exists = frontmatterData.blockedBy.some(
-        (dep: any) => dep && dep.uid === uidValue
+        (dep: DependencyEntry) => dep && dep.uid === uidValue
       );
 
       if (!exists) {
@@ -374,7 +379,7 @@ export class NoteTask extends BaseTask {
       // Remove the dependency from blockedBy array
       if (Array.isArray(frontmatterData.blockedBy)) {
         frontmatterData.blockedBy = frontmatterData.blockedBy.filter(
-          (dep: any) => dep && dep.uid !== uidToRemove
+          (dep: DependencyEntry) => dep && dep.uid !== uidToRemove
         );
 
         if (frontmatterData.blockedBy.length === 0) {
