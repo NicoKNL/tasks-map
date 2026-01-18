@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting, TFolder } from "obsidian";
 import TasksMapPlugin from "../main";
 import { getTagColor } from "../lib/utils";
 import { t } from "../i18n";

@@ -5,6 +5,7 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   useReactFlow,
+  Position,
 } from "reactflow";
 import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
@@ -15,7 +16,6 @@ import {
   removeLinkSignsBetweenTasks,
   createNodesFromTasks,
   createEdgesFromTasks,
-  addTaskLineToVault,
   addIsolatedTaskLineToVault,
 } from "src/lib/utils";
 import { BaseTask, RawTask } from "src/types/task";
@@ -30,8 +30,6 @@ import { t } from "../i18n";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
-import { NoteTask } from "../types/note-task";
-import { DataviewTask } from "../types/dataview-task";
 import { TaskFactory } from "../lib/task-factory";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
@@ -363,6 +361,10 @@ export default function TaskMapGraphView({
       };
       const newTask = factory.parse(rawTask, "dataview");
 
+      const isVertical = settings.layoutDirection === "Vertical";
+      const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+      const targetPosition = isVertical ? Position.Top : Position.Left;
+
       skipFitViewRef.current = true;
       setNodes((nds) => [
         ...nds,
@@ -372,26 +374,22 @@ export default function TaskMapGraphView({
           position: position,
           data: {
             task: newTask,
-            layoutDirection: "Horizontal",
-            showPriorities: true,
-            showTags: true,
-            debugVisualization: false,
-            tagColorMode: "random",
-            tagColorSeed: 42,
-            tagStaticColor: "#3b82f6",
-            isTemp: false,
+            layoutDirection: settings.layoutDirection,
+            showPriorities: settings.showPriorities,
+            showTags: settings.showTags,
+            debugVisualization: settings.debugVisualization,
+            tagColorMode: settings.tagColorMode,
+            tagColorSeed: settings.tagColorSeed,
+            tagStaticColor: settings.tagStaticColor,
+            onDeleteTask: handleDeleteTask,
           },
-          // sourcePosition,
-          // targetPosition,
+          sourcePosition,
+          targetPosition,
           draggable: true,
         },
       ]);
 
-      await addIsolatedTaskLineToVault(
-        taskLine,
-        settings.taskInbox,
-        app
-      );
+      await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
 
       new Notice("New task has been created!");
     },
