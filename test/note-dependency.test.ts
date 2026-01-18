@@ -171,11 +171,6 @@ blockedBy:
       await addLinkSignsBetweenTasks(vault, fromTask, toTask, "test123");
 
       const updatedContent = vault.getFileContent(taskPath);
-      
-      // Log the actual output to see the duplicate blockedBy: fields
-      console.log("=== ACTUAL FRONTMATTER (showing the bug) ===");
-      console.log(updatedContent);
-      console.log("=== END ===");
 
       // Check that both dependencies exist
       expect(updatedContent).toContain('[[TaskA]]');
