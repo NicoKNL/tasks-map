@@ -1,0 +1,82 @@
+{
+  "plugin": {
+    "name": "任务地图",
+    "description": "任务的图形视图"
+  },
+  "commands": {
+    "open_map_view": "打开地图视图"
+  },
+  "ribbon": {
+    "open_tasks_map": "打开任务地图视图"
+  },
+  "view": {
+    "title": "任务地图",
+    "dataview_required": "任务地图需要安装并启用 Dataview 插件。",
+    "dataview_not_installed": "当前未安装 Dataview 插件。",
+    "dataview_disabled": "Dataview 插件已安装但未启用。",
+    "visit_community_plugins": "请访问设置中的社区插件部分以安装或启用 Dataview。"
+  },
+  "settings": {
+    "display_options": "显示选项",
+    "show_task_priorities": "显示任务优先级",
+    "show_task_priorities_desc": "在任务节点上显示优先级指示器",
+    "show_task_tags": "显示任务标签",
+    "show_task_tags_desc": "在任务节点上显示标签",
+    "layout": "布局",
+    "layout_direction": "布局方向",
+    "layout_direction_desc": "节点布局的方向",
+    "layout_horizontal": "水平",
+    "layout_vertical": "垂直",
+    "tag_appearance": "标签外观",
+    "tag_color_mode": "标签颜色模式",
+    "tag_color_mode_desc": "选择如何生成标签颜色",
+    "tag_color_random": "随机颜色（有种子）",
+    "tag_color_static": "所有标签使用静态颜色",
+    "color_seed": "颜色种子",
+    "color_seed_desc": "随机颜色生成的种子值（相同种子 = 相同颜色）",
+    "preview": "预览",
+    "preview_random_desc": "随机颜色的示例标签",
+    "preview_static_desc": "静态颜色的示例标签",
+    "static_tag_color": "静态标签颜色",
+    "static_tag_color_desc": "所有标签使用的颜色",
+    "simple_task_relations": "简单任务关系",
+    "linking_style": "链接样式",
+    "linking_style_desc": "如何在简单任务中指定任务依赖关系",
+    "linking_csv": "CSV（任务插件默认）",
+    "linking_individual": "单独",
+    "linking_dataview": "Dataview",
+    "linking_individual_title": "单独样式：",
+    "linking_individual_desc": "每个依赖项都有自己的表情符号标识符",
+    "linking_individual_example": "- [ ] 我的任务 ⛔ abc123 ⛔ def456 ⛔ ghi789",
+    "linking_dataview_title": "Dataview 样式：",
+    "linking_dataview_desc": "使用 Dataview 内联字段语法的依赖项",
+    "linking_dataview_example": "- [ ] 我的任务 [[dependsOn:: abc123,def456,ghi789]]",
+    "linking_csv_title": "CSV 样式（任务插件默认）：",
+    "linking_csv_desc": "多个依赖项用逗号分隔",
+    "linking_csv_example": "- [ ] 我的任务 ⛔ abc123,def456,ghi789",
+    "advanced_options": "高级选项",
+    "debug_visualization": "调试可视化",
+    "debug_visualization_desc": "在图形视图中显示附加调试信息",
+    "language": "语言",
+    "language_desc": "选择插件界面的语言"
+  },
+  "filters": {
+    "status": "状态",
+    "include_labels": "包含标签",
+    "exclude_labels": "排除标签",
+    "files_folders": "文件 / 文件夹",
+    "hide_tags_on_nodes": "隐藏节点上的标签",
+    "reload_tasks": "重新加载任务",
+    "expand_filters": "展开筛选器",
+    "minimize_filters": "最小化筛选器",
+    "filter_by_status": "按状态筛选...",
+    "filter_by_file": "按文件或文件夹筛选..."
+  },
+  "multiselect": {
+    "select": "选择...",
+    "no_tags": "无标签"
+  },
+  "errors": {
+    "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
+  }
+}

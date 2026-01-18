@@ -1,4 +1,5 @@
 import Select, { MultiValue } from "react-select";
+import { t } from "../i18n";
 
 interface MultiSelectProps<T extends string> {
   options: T[];
@@ -13,7 +14,7 @@ export default function MultiSelect<T extends string>({
   options,
   selected,
   setSelected,
-  placeholder = "Select...",
+  placeholder = t("multiselect.select"),
 }: MultiSelectProps<T>) {
   return (
     <Select

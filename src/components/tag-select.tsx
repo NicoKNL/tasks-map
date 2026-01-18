@@ -1,7 +1,7 @@
 import Select, { MultiValue } from "react-select";
+import { t } from "../i18n";
 
 export const NO_TAGS_VALUE = "__NO_TAGS__";
-const NO_TAGS_LABEL = "No tags";
 
 interface TagSelectProps {
   allTags: string[];
@@ -17,7 +17,7 @@ export default function TagSelect({
   setSelectedTags,
 }: TagSelectProps) {
   const options: TagOption[] = [
-    { value: NO_TAGS_VALUE, label: NO_TAGS_LABEL },
+    { value: NO_TAGS_VALUE, label: t("multiselect.no_tags") },
     ...allTags.map((tag) => ({ value: tag, label: tag })),
   ];
 
@@ -27,12 +27,12 @@ export default function TagSelect({
       options={options}
       value={selectedTags.map((tag) => ({
         value: tag,
-        label: tag === NO_TAGS_VALUE ? NO_TAGS_LABEL : tag,
+        label: tag === NO_TAGS_VALUE ? t("multiselect.no_tags") : tag,
       }))}
       onChange={(opts: MultiValue<TagOption>) =>
         setSelectedTags(opts.map((o) => o.value))
       }
-      placeholder="Filter by tags..."
+      placeholder={t("filters.filter_by_status")}
       styles={{
         menu: (base) => ({
           ...base,

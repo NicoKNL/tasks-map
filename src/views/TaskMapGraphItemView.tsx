@@ -8,6 +8,7 @@ import { checkDataviewPlugin } from "../lib/utils";
 import TasksMapPlugin from "../main";
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
+import { t } from "../i18n";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -58,7 +59,7 @@ export default class TaskMapGraphItemView extends ItemView {
   }
 
   getDisplayText() {
-    return "Tasks map";
+    return t("view.title");
   }
 
   async onOpen() {
@@ -86,15 +87,13 @@ export default class TaskMapGraphItemView extends ItemView {
           <div className="tasks-map-centered-message-content">
             <div className="tasks-map-message-icon">⚠️</div>
             <h3 className="tasks-map-message-title">
-              Tasks Map requires the Dataview plugin to be installed and
-              enabled.
+              {t("view.dataview_required")}
             </h3>
             <p className="tasks-map-message-description">
               {dataviewCheck.getMessage()}
             </p>
             <p className="tasks-map-message-description">
-              Visit the Community Plugins section in Settings to install or
-              enable Dataview.
+              {t("view.visit_community_plugins")}
             </p>
           </div>
         </div>

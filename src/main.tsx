@@ -3,6 +3,7 @@ import { WorkspaceLeaf, Plugin } from "obsidian";
 import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
 import { TasksMapSettings, DEFAULT_SETTINGS } from "./types/settings";
 import { TasksMapSettingTab } from "./settings/settings-tab";
+import { initI18n, changeLanguage, t } from "./i18n";
 
 export default class TasksMapPlugin extends Plugin {
   settings: TasksMapSettings = DEFAULT_SETTINGS;
@@ -10,6 +11,9 @@ export default class TasksMapPlugin extends Plugin {
   async onload() {
     // Load settings
     await this.loadSettings();
+
+    // Initialize i18n with saved language
+    await initI18n(this.settings.language);
 
     // Always register the view - it will handle the Dataview check internally
     this.registerView(
@@ -21,13 +25,13 @@ export default class TasksMapPlugin extends Plugin {
 
     this.addCommand({
       id: "open-tasks-map-view",
-      name: "Open map view",
+      name: t("commands.open_map_view"),
       callback: () => {
         this.activateViewInMainArea();
       },
     });
 
-    this.addRibbonIcon("map", "Open tasks map view", () => {
+    this.addRibbonIcon("map", t("ribbon.open_tasks_map"), () => {
       this.activateViewInMainArea();
     });
   }
@@ -38,6 +42,8 @@ export default class TasksMapPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
+    // Update language when settings change
+    changeLanguage(this.settings.language);
   }
 
   async activateViewInMainArea() {

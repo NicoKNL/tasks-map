@@ -3,6 +3,7 @@ import TagSelect from "./tag-select";
 import { TaskStatus } from "src/types/task";
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { t } from "../i18n";
 
 interface GuiOverlayProps {
   allTags: string[];
@@ -56,7 +57,11 @@ export default function GuiOverlay(props: GuiOverlayProps) {
       <button
         className="tasks-map-filter-panel-toggle"
         onClick={toggleMinimized}
-        title={isMinimized ? "Expand filters" : "Minimize filters"}
+        title={
+          isMinimized
+            ? t("filters.expand_filters")
+            : t("filters.minimize_filters")
+        }
       >
         {isMinimized ? <ChevronLeft size={18} /> : <ChevronRight size={12} />}
       </button>
@@ -65,17 +70,21 @@ export default function GuiOverlay(props: GuiOverlayProps) {
         <>
           <div className="tasks-map-filter-section">
             <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">Status</label>
+              <label className="tasks-map-filter-label">
+                {t("filters.status")}
+              </label>
               <MultiSelect
                 options={allStatuses}
                 selected={selectedStatuses}
                 setSelected={setSelectedStatuses}
-                placeholder="Filter by status..."
+                placeholder={t("filters.filter_by_status")}
               />
             </div>
 
             <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">Include labels</label>
+              <label className="tasks-map-filter-label">
+                {t("filters.include_labels")}
+              </label>
               <TagSelect
                 allTags={allTags}
                 selectedTags={selectedTags}
@@ -84,7 +93,9 @@ export default function GuiOverlay(props: GuiOverlayProps) {
             </div>
 
             <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">Exclude labels</label>
+              <label className="tasks-map-filter-label">
+                {t("filters.exclude_labels")}
+              </label>
               <TagSelect
                 allTags={allTags}
                 selectedTags={excludedTags}
@@ -93,12 +104,14 @@ export default function GuiOverlay(props: GuiOverlayProps) {
             </div>
 
             <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">Files / Folders</label>
+              <label className="tasks-map-filter-label">
+                {t("filters.files_folders")}
+              </label>
               <MultiSelect
                 options={allFiles}
                 selected={selectedFiles}
                 setSelected={setSelectedFiles}
-                placeholder="Filter by file or folder..."
+                placeholder={t("filters.filter_by_file")}
               />
             </div>
 
@@ -112,7 +125,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                     className="tasks-map-gui-overlay-checkbox-input"
                   />
                   <span className="tasks-map-gui-overlay-checkbox-text">
-                    Hide tags on nodes
+                    {t("filters.hide_tags_on_nodes")}
                   </span>
                 </label>
               </div>
@@ -125,7 +138,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               onClick={reloadTasks}
               className="tasks-map-gui-overlay-reload-button"
             >
-              Reload tasks
+              {t("filters.reload_tasks")}
             </button>
           </div>
         </>
