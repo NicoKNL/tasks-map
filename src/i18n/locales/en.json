@@ -1,0 +1,82 @@
+{
+  "plugin": {
+    "name": "Tasks Map",
+    "description": "A graph view of your tasks"
+  },
+  "commands": {
+    "open_map_view": "Open map view"
+  },
+  "ribbon": {
+    "open_tasks_map": "Open tasks map view"
+  },
+  "view": {
+    "title": "Tasks map",
+    "dataview_required": "Tasks Map requires the Dataview plugin to be installed and enabled.",
+    "dataview_not_installed": "The Dataview plugin is not currently installed.",
+    "dataview_disabled": "The Dataview plugin is installed but not enabled.",
+    "visit_community_plugins": "Visit the Community Plugins section in Settings to install or enable Dataview."
+  },
+  "settings": {
+    "display_options": "Display Options",
+    "show_task_priorities": "Show task priorities",
+    "show_task_priorities_desc": "Display priority indicators on task nodes",
+    "show_task_tags": "Show task tags",
+    "show_task_tags_desc": "Display tags on task nodes",
+    "layout": "Layout",
+    "layout_direction": "Layout direction",
+    "layout_direction_desc": "Direction for the node layout",
+    "layout_horizontal": "Horizontal",
+    "layout_vertical": "Vertical",
+    "tag_appearance": "Tag Appearance",
+    "tag_color_mode": "Tag color mode",
+    "tag_color_mode_desc": "Choose how tag colors are generated",
+    "tag_color_random": "Random colors (seeded)",
+    "tag_color_static": "Static color for all tags",
+    "color_seed": "Color seed",
+    "color_seed_desc": "Seed value for random color generation (same seed = same colors)",
+    "preview": "Preview",
+    "preview_random_desc": "Example tags with random colors",
+    "preview_static_desc": "Example tags with static color",
+    "static_tag_color": "Static tag color",
+    "static_tag_color_desc": "Color to use for all tags",
+    "simple_task_relations": "Simple Task Relations",
+    "linking_style": "Linking style",
+    "linking_style_desc": "How task dependencies are specified in simple tasks",
+    "linking_csv": "CSV (Tasks plugin default)",
+    "linking_individual": "Individual",
+    "linking_dataview": "Dataview",
+    "linking_individual_title": "Individual Style:",
+    "linking_individual_desc": "Each dependency with its own emoji identifier",
+    "linking_individual_example": "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789",
+    "linking_dataview_title": "Dataview Style:",
+    "linking_dataview_desc": "Dependencies using Dataview inline field syntax",
+    "linking_dataview_example": "- [ ] My task [[dependsOn:: abc123,def456,ghi789]]",
+    "linking_csv_title": "CSV Style (Tasks plugin default):",
+    "linking_csv_desc": "Multiple dependencies comma-separated",
+    "linking_csv_example": "- [ ] My task ⛔ abc123,def456,ghi789",
+    "advanced_options": "Advanced Options",
+    "debug_visualization": "Debug visualization",
+    "debug_visualization_desc": "Show additional debug information in the graph view",
+    "language": "Language",
+    "language_desc": "Select the language for the plugin interface"
+  },
+  "filters": {
+    "status": "Status",
+    "include_labels": "Include labels",
+    "exclude_labels": "Exclude labels",
+    "files_folders": "Files / Folders",
+    "hide_tags_on_nodes": "Hide tags on nodes",
+    "reload_tasks": "Reload tasks",
+    "expand_filters": "Expand filters",
+    "minimize_filters": "Minimize filters",
+    "filter_by_status": "Filter by status...",
+    "filter_by_file": "Filter by file or folder..."
+  },
+  "multiselect": {
+    "select": "Select...",
+    "no_tags": "No tags"
+  },
+  "errors": {
+    "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
+  }
+}

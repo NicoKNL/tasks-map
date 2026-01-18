@@ -1,0 +1,82 @@
+{
+  "plugin": {
+    "name": "Taken Kaart",
+    "description": "Een grafische weergave van je taken"
+  },
+  "commands": {
+    "open_map_view": "Kaartweergave openen"
+  },
+  "ribbon": {
+    "open_tasks_map": "Taken kaartweergave openen"
+  },
+  "view": {
+    "title": "Taken kaart",
+    "dataview_required": "Taken Kaart vereist dat de Dataview-plugin is geïnstalleerd en ingeschakeld.",
+    "dataview_not_installed": "De Dataview-plugin is momenteel niet geïnstalleerd.",
+    "dataview_disabled": "De Dataview-plugin is geïnstalleerd maar niet ingeschakeld.",
+    "visit_community_plugins": "Ga naar het gedeelte Community Plugins in Instellingen om Dataview te installeren of in te schakelen."
+  },
+  "settings": {
+    "display_options": "Weergaveopties",
+    "show_task_priorities": "Taakprioriteiten tonen",
+    "show_task_priorities_desc": "Toon prioriteitsindicatoren op taakknooppunten",
+    "show_task_tags": "Taak tags tonen",
+    "show_task_tags_desc": "Toon tags op taakknooppunten",
+    "layout": "Indeling",
+    "layout_direction": "Indelingsrichting",
+    "layout_direction_desc": "Richting voor de knooppuntindeling",
+    "layout_horizontal": "Horizontaal",
+    "layout_vertical": "Verticaal",
+    "tag_appearance": "Tag Uiterlijk",
+    "tag_color_mode": "Tag kleurmodus",
+    "tag_color_mode_desc": "Kies hoe tagkleuren worden gegenereerd",
+    "tag_color_random": "Willekeurige kleuren (met seed)",
+    "tag_color_static": "Statische kleur voor alle tags",
+    "color_seed": "Kleur seed",
+    "color_seed_desc": "Seed-waarde voor willekeurige kleurgeneratie (dezelfde seed = dezelfde kleuren)",
+    "preview": "Voorbeeld",
+    "preview_random_desc": "Voorbeeldtags met willekeurige kleuren",
+    "preview_static_desc": "Voorbeeldtags met statische kleur",
+    "static_tag_color": "Statische tagkleur",
+    "static_tag_color_desc": "Kleur om te gebruiken voor alle tags",
+    "simple_task_relations": "Eenvoudige Taakrelaties",
+    "linking_style": "Koppelstijl",
+    "linking_style_desc": "Hoe taakafhankelijkheden worden gespecificeerd in eenvoudige taken",
+    "linking_csv": "CSV (Taken plugin standaard)",
+    "linking_individual": "Individueel",
+    "linking_dataview": "Dataview",
+    "linking_individual_title": "Individuele Stijl:",
+    "linking_individual_desc": "Elke afhankelijkheid met zijn eigen emoji-identificatie",
+    "linking_individual_example": "- [ ] Mijn taak ⛔ abc123 ⛔ def456 ⛔ ghi789",
+    "linking_dataview_title": "Dataview Stijl:",
+    "linking_dataview_desc": "Afhankelijkheden met Dataview inline veldsyntax",
+    "linking_dataview_example": "- [ ] Mijn taak [[dependsOn:: abc123,def456,ghi789]]",
+    "linking_csv_title": "CSV Stijl (Taken plugin standaard):",
+    "linking_csv_desc": "Meerdere afhankelijkheden gescheiden door komma's",
+    "linking_csv_example": "- [ ] Mijn taak ⛔ abc123,def456,ghi789",
+    "advanced_options": "Geavanceerde Opties",
+    "debug_visualization": "Debug visualisatie",
+    "debug_visualization_desc": "Toon aanvullende debug-informatie in de grafiekweergave",
+    "language": "Taal",
+    "language_desc": "Selecteer de taal voor de plugin-interface"
+  },
+  "filters": {
+    "status": "Status",
+    "include_labels": "Labels opnemen",
+    "exclude_labels": "Labels uitsluiten",
+    "files_folders": "Bestanden / Mappen",
+    "hide_tags_on_nodes": "Tags op knooppunten verbergen",
+    "reload_tasks": "Taken opnieuw laden",
+    "expand_filters": "Filters uitvouwen",
+    "minimize_filters": "Filters minimaliseren",
+    "filter_by_status": "Filteren op status...",
+    "filter_by_file": "Filteren op bestand of map..."
+  },
+  "multiselect": {
+    "select": "Selecteer...",
+    "no_tags": "Geen tags"
+  },
+  "errors": {
+    "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
+  }
+}

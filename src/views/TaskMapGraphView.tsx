@@ -24,6 +24,7 @@ import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
 import { TagsContext } from "src/contexts/context";
+import { t } from "../i18n";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
@@ -347,10 +348,7 @@ export default function TaskMapGraphView({
       if (!vault || !sourceTask || !targetTask) return;
 
       if (sourceTask.type !== targetTask.type) {
-        new Notice(
-          "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type.",
-          5000
-        );
+        new Notice(t("errors.cannot_create_edges_different_types"), 5000);
         return;
       }
 
