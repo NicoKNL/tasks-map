@@ -121,7 +121,7 @@ export function estimateNodeDimensions(
 
 /**
  * Find the index of a task line in an array of lines by its ID.
- * Supports both emoji format (🆔 abc123) and Dataview format ([[id:: abc123]])
+ * Supports both emoji format (🆔 abc123) and Dataview format ([id:: abc123])
  */
 export function findTaskLineByIdOrText(
   lines: string[],
@@ -137,7 +137,7 @@ export function findTaskLineByIdOrText(
 
   // Try to find by Dataview format ID
   taskLineIdx = lines.findIndex((line: string) =>
-    line.includes(`[[id:: ${taskId}]]`)
+    line.includes(`[id:: ${taskId}]`)
   );
 
   if (taskLineIdx !== -1) return taskLineIdx;
@@ -440,7 +440,7 @@ export async function addSignToTaskInFile(
     if (type === "id") {
       // Check if any ID format is already present
       const emojiIdPresent = /🆔\s*[a-zA-Z0-9]{6}/.test(lines[taskLineIdx]);
-      const dataviewIdPresent = /\[\[id::\s*[a-zA-Z0-9]{6}\]\]/.test(
+      const dataviewIdPresent = /\[id::\s*[a-zA-Z0-9]{6}\]/.test(
         lines[taskLineIdx]
       );
 
@@ -448,7 +448,7 @@ export async function addSignToTaskInFile(
 
       // Add ID in the configured format
       if (linkingStyle === "dataview") {
-        const sign = `[[id:: ${hash}]]`;
+        const sign = `[id:: ${hash}]`;
         if (lines[taskLineIdx].includes(sign)) return fileContent;
         lines[taskLineIdx] = lines[taskLineIdx] + " " + sign;
       } else {
@@ -461,15 +461,15 @@ export async function addSignToTaskInFile(
       // Detect if task is using Dataview format (or if it's the configured style)
       const usesDataviewFormat =
         linkingStyle === "dataview" ||
-        /\[\[id::\s*[a-zA-Z0-9]{6}\]\]/.test(lines[taskLineIdx]) ||
-        /\[\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]\]/.test(
+        /\[id::\s*[a-zA-Z0-9]{6}\]/.test(lines[taskLineIdx]) ||
+        /\[dependsOn::\s*[a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*\]/.test(
           lines[taskLineIdx]
         );
 
       if (usesDataviewFormat) {
         // Handle Dataview format dependencies
         const dataviewRegex =
-          /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/;
+          /\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]/;
         const dataviewMatch = lines[taskLineIdx].match(dataviewRegex);
 
         if (dataviewMatch) {
@@ -481,12 +481,12 @@ export async function addSignToTaskInFile(
             const newList = [...existingIds, hash].join(", ");
             lines[taskLineIdx] = lines[taskLineIdx].replace(
               dataviewRegex,
-              `[[dependsOn:: ${newList}]]`
+              `[dependsOn:: ${newList}]`
             );
           }
         } else {
           // No existing Dataview dependencies, add new one
-          lines[taskLineIdx] = lines[taskLineIdx] + ` [[dependsOn:: ${hash}]]`;
+          lines[taskLineIdx] = lines[taskLineIdx] + ` [dependsOn:: ${hash}]`;
         }
       } else {
         // Handle emoji format stop signs based on linking style
@@ -584,7 +584,7 @@ export async function removeSignFromTaskInFile(
       }
 
       // Remove Dataview ID sign
-      const dataviewSign = `[[id:: ${hash}]]`;
+      const dataviewSign = `[id:: ${hash}]`;
       if (lines[taskLineIdx].includes(dataviewSign)) {
         lines[taskLineIdx] = lines[taskLineIdx]
           .replace(dataviewSign, "")
@@ -593,7 +593,7 @@ export async function removeSignFromTaskInFile(
     } else if (type === "stop") {
       // First try Dataview format
       const dataviewRegex =
-        /\[\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]\]/;
+        /\[dependsOn::\s*([a-zA-Z0-9]{6}(?:,\s*[a-zA-Z0-9]{6})*)\]/;
       const dataviewMatch = lines[taskLineIdx].match(dataviewRegex);
 
       if (dataviewMatch) {
@@ -610,7 +610,7 @@ export async function removeSignFromTaskInFile(
           const newList = filteredIds.join(", ");
           lines[taskLineIdx] = lines[taskLineIdx].replace(
             dataviewRegex,
-            `[[dependsOn:: ${newList}]]`
+            `[dependsOn:: ${newList}]`
           );
         }
       } else {

@@ -50,7 +50,7 @@
     "linking_individual_example": "- [ ] My task ⛔ abc123 ⛔ def456 ⛔ ghi789",
     "linking_dataview_title": "Dataview Style:",
     "linking_dataview_desc": "Dependencies using Dataview inline field syntax",
-    "linking_dataview_example": "- [ ] My task [[dependsOn:: abc123,def456,ghi789]]",
+    "linking_dataview_example": "- [ ] My task [dependsOn:: abc123,def456,ghi789]",
     "linking_csv_title": "CSV Style (Tasks plugin default):",
     "linking_csv_desc": "Multiple dependencies comma-separated",
     "linking_csv_example": "- [ ] My task ⛔ abc123,def456,ghi789",

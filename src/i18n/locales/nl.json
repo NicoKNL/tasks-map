@@ -50,7 +50,7 @@
     "linking_individual_example": "- [ ] Mijn taak ⛔ abc123 ⛔ def456 ⛔ ghi789",
     "linking_dataview_title": "Dataview Stijl:",
     "linking_dataview_desc": "Afhankelijkheden met Dataview inline veldsyntax",
-    "linking_dataview_example": "- [ ] Mijn taak [[dependsOn:: abc123,def456,ghi789]]",
+    "linking_dataview_example": "- [ ] Mijn taak [dependsOn:: abc123,def456,ghi789]",
     "linking_csv_title": "CSV Stijl (Taken plugin standaard):",
     "linking_csv_desc": "Meerdere afhankelijkheden gescheiden door komma's",
     "linking_csv_example": "- [ ] Mijn taak ⛔ abc123,def456,ghi789",
