@@ -34,15 +34,21 @@ interface TaskMapGraphViewProps {
   settings: TasksMapSettings;
   selectedTags: string[];
   setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
+  excludedTags: string[];
+  setExcludedTags: React.Dispatch<React.SetStateAction<string[]>>;
   selectedStatuses: TaskStatus[];
   setSelectedStatuses: React.Dispatch<React.SetStateAction<TaskStatus[]>>;
+  selectedFiles: string[];
+  setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 // Helper function to filter tasks
 const getFilteredNodeIds = (
   tasks: BaseTask[],
   selectedTags: string[],
-  selectedStatuses: TaskStatus[]
+  selectedStatuses: TaskStatus[],
+  excludedTags: string[],
+  selectedFiles: string[]
 ) => {
   let filtered = tasks;
   if (selectedTags.length > 0) {
@@ -58,10 +64,31 @@ const getFilteredNodeIds = (
       return matchesNoTags || matchesRegularTags;
     });
   }
+  if (excludedTags.length > 0) {
+    filtered = filtered.filter((task) => {
+      // Exclude tasks that have any of the excluded tags
+      return !excludedTags.some((excludedTag) =>
+        task.tags.includes(excludedTag)
+      );
+    });
+  }
   if (selectedStatuses.length > 0) {
     filtered = filtered.filter((task) =>
       selectedStatuses.includes(task.status)
     );
+  }
+  if (selectedFiles.length > 0) {
+    filtered = filtered.filter((task) => {
+      // Check if task's file path matches any selected file/folder
+      return selectedFiles.some((selectedPath) => {
+        // If selectedPath ends with /, it's a folder filter
+        if (selectedPath.endsWith("/")) {
+          return task.link.startsWith(selectedPath);
+        }
+        // Otherwise it's an exact file match
+        return task.link === selectedPath;
+      });
+    });
   }
   return filtered.map((task) => task.id);
 };
@@ -70,8 +97,12 @@ export default function TaskMapGraphView({
   settings,
   selectedTags,
   setSelectedTags,
+  excludedTags,
+  setExcludedTags,
   selectedStatuses,
   setSelectedStatuses,
+  selectedFiles,
+  setSelectedFiles,
 }: TaskMapGraphViewProps) {
   const app = useApp();
   const vault = app.vault;
@@ -108,6 +139,32 @@ export default function TaskMapGraphView({
       return a.localeCompare(b, undefined, { sensitivity: "base" });
     });
   }, [taskTagsRegistry]);
+
+  // Compute all unique files and folders from tasks
+  const allFiles = useMemo(() => {
+    const filesSet = new Set<string>();
+    const foldersSet = new Set<string>();
+
+    tasks.forEach((task) => {
+      if (task.link) {
+        // Add the file
+        filesSet.add(task.link);
+
+        // Extract and add all parent folders
+        const parts = task.link.split("/");
+        for (let i = 1; i < parts.length; i++) {
+          const folder = parts.slice(0, i).join("/") + "/";
+          foldersSet.add(folder);
+        }
+      }
+    });
+
+    // Combine folders and files, with folders first
+    const folders = Array.from(foldersSet).sort();
+    const files = Array.from(filesSet).sort();
+
+    return [...folders, ...files];
+  }, [tasks]);
 
   React.useEffect(() => {
     if (containerRef.current) {
@@ -205,7 +262,9 @@ export default function TaskMapGraphView({
     const filteredNodeIds = getFilteredNodeIds(
       tasks,
       selectedTags,
-      selectedStatuses
+      selectedStatuses,
+      excludedTags,
+      selectedFiles
     );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
@@ -365,6 +424,11 @@ export default function TaskMapGraphView({
             allTags={allTags}
             selectedTags={selectedTags}
             setSelectedTags={setSelectedTags}
+            excludedTags={excludedTags}
+            setExcludedTags={setExcludedTags}
+            allFiles={allFiles}
+            selectedFiles={selectedFiles}
+            setSelectedFiles={setSelectedFiles}
             reloadTasks={reloadTasks}
             allStatuses={ALL_STATUSES}
             selectedStatuses={selectedStatuses}
