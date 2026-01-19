@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin, TFolder, Notice } from "obsidian";
+import { WorkspaceLeaf, Plugin } from "obsidian";
 
 import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
 import { TasksMapSettings, DEFAULT_SETTINGS } from "./types/settings";
