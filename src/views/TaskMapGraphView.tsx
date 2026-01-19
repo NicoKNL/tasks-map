@@ -336,7 +336,7 @@ export default function TaskMapGraphView({
         y: event.clientY - bounds.top,
       });
 
-      const tempTaskId = `${Date.now()}`;
+      const tempNodeId = `${crypto.randomUUID()}`;
       const factory = new TaskFactory();
 
       // @ts-ignore
@@ -365,11 +365,13 @@ export default function TaskMapGraphView({
       const sourcePosition = isVertical ? Position.Bottom : Position.Right;
       const targetPosition = isVertical ? Position.Top : Position.Left;
 
+      setTasks((tks) => [...tks, newTask]);
+
       skipFitViewRef.current = true;
       setNodes((nds) => [
         ...nds,
         {
-          id: tempTaskId,
+          id: tempNodeId,
           type: "task",
           position: position,
           data: {
