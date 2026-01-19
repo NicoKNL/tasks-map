@@ -23,7 +23,7 @@ export interface TasksMapSettings {
 export const DEFAULT_SETTINGS: TasksMapSettings = {
   showPriorities: true,
   showTags: true,
-  
+
   taskInbox: "Task Inbox.md",
 
   layoutDirection: "Horizontal",
