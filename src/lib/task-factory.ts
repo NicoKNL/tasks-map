@@ -63,7 +63,7 @@ export class TaskFactory {
       return idMatch[1];
     }
 
-    // Try Dataview format: [[id:: abc123]]
+    // Try Dataview format: [id:: abc123]
     const dataviewMatch = text.match(DATAVIEW_ID_PATTERN);
 
     if (dataviewMatch) {
@@ -149,7 +149,7 @@ export class TaskFactory {
   }
 
   private parseDataviewStyleLinks(text: string): string[] {
-    // Parse Dataview format: [[dependsOn:: abc123,def456]]
+    // Parse Dataview format: [dependsOn:: abc123,def456]
     const dataviewMatches = Array.from(text.matchAll(DATAVIEW_DEPENDS_PATTERN));
     const ids: string[] = [];
 
@@ -166,10 +166,10 @@ export class TaskFactory {
       .replace(/^[-*]\s+\[[ xX-]\]\s*/, "") // Remove checkbox
       .replace(/(?:^|\s)#\S+/g, "")
       .replace(EMOJI_ID_PATTERN_GLOBAL, "") // Remove task IDs: 🆔 abc123
-      .replace(DATAVIEW_ID_PATTERN_GLOBAL, "") // Remove Dataview IDs: [[id:: abc123]]
+      .replace(DATAVIEW_ID_PATTERN_GLOBAL, "") // Remove Dataview IDs: [id:: abc123]
       .replace(CSV_LINKS_PATTERN, "") // Remove CSV links: ⛔ abc123,def456
       .replace(INDIVIDUAL_LINKS_PATTERN, "") // Remove individual links: ⛔ abc123
-      .replace(DATAVIEW_DEPENDS_PATTERN, "") // Remove Dataview dependencies: [[dependsOn:: abc123,def456]]
+      .replace(DATAVIEW_DEPENDS_PATTERN, "") // Remove Dataview dependencies: [dependsOn:: abc123,def456]
       .replace(STAR_PATTERN_GLOBAL, "") // Remove star emoji: ⭐
       .replace(/([\p{Extended_Pictographic}]+(\s*[#a-zA-Z0-9_-]+)?)/gu, "") // Remove other emojis
       .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis

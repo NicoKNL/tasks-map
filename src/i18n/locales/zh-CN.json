@@ -50,7 +50,7 @@
     "linking_individual_example": "- [ ] 我的任务 ⛔ abc123 ⛔ def456 ⛔ ghi789",
     "linking_dataview_title": "Dataview 样式：",
     "linking_dataview_desc": "使用 Dataview 内联字段语法的依赖项",
-    "linking_dataview_example": "- [ ] 我的任务 [[dependsOn:: abc123,def456,ghi789]]",
+    "linking_dataview_example": "- [ ] 我的任务 [dependsOn:: abc123,def456,ghi789]",
     "linking_csv_title": "CSV 样式（任务插件默认）：",
     "linking_csv_desc": "多个依赖项用逗号分隔",
     "linking_csv_example": "- [ ] 我的任务 ⛔ abc123,def456,ghi789",

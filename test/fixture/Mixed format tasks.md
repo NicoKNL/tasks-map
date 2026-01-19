@@ -9,14 +9,14 @@ This file demonstrates that the plugin supports both emoji and Dataview formats 
 
 ## Dataview Format (New)
 
-- [ ] Design architecture #dataview  [[id:: 7f3yaw]]
-- [ ] Implement feature #dataview  [[dependsOn:: 7f3yaw]] [[id:: jmhi6u]]
-- [ ] Write tests #dataview  [[dependsOn:: jmhi6u]] [[id:: i2a0b2]]
-- [ ] ⭐ Deploy to production #dataview  [[dependsOn:: jmhi6u, i2a0b2]]
+- [ ] Design architecture #dataview [id:: 7f3yaw]
+- [ ] Implement feature #dataview [dependsOn:: 7f3yaw] [id:: jmhi6u]
+- [ ] Write tests #dataview [dependsOn:: jmhi6u] [id:: i2a0b2]
+- [ ] ⭐ Deploy to production #dataview [dependsOn:: jmhi6u, i2a0b2]
 
 ## Mixed Format (Both Styles)
 
 You can even mix both styles in the same vault (though not recommended in the same task):
 
 - [ ] Task with emoji ID #mixed 🆔 mno345
-- [ ] Task with dataview dependency #mixed [[dependsOn:: mno345]]
+- [ ] Task with dataview dependency #mixed [dependsOn:: mno345]
