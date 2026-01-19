@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
-import { App } from "obsidian";
-import { BaseTask } from "src/types/task";
+import { App, Notice } from "obsidian";
+import { BaseTask, RawTask } from "src/types/task";
 import { CirclePlus, SquarePen } from "lucide-react";
 import {
   addTaskLineToVault,
@@ -13,9 +13,15 @@ interface TaskMenuProps {
   task: BaseTask;
   app: App;
   onTaskDeleted?: () => void;
+  onCreateTasked?: (taskLine: string) => void;
 }
 
-const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
+const TaskMenu = ({
+  task,
+  app,
+  onTaskDeleted,
+  onCreateTasked,
+}: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +71,8 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
     // It's just a string containing the Markdown for the task.
     // console.log(taskLine);
     await addTaskLineToVault(task, taskLine, app);
+
+    onCreateTasked?.(taskLine);
   };
 
   const handleEdit = async (e: React.MouseEvent) => {

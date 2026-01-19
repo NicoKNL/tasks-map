@@ -36,6 +36,7 @@ interface TaskNodeData {
   tagStaticColor?: string;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
+  onCreateTasked?: (taskLine: string) => void;
 }
 
 export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
@@ -49,6 +50,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
     onDeleteTask,
+    onCreateTasked,
   } = data;
 
   const { allTags, updateTaskTags } = useContext(TagsContext);
@@ -181,6 +183,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           task={task}
           app={app}
           onTaskDeleted={() => onDeleteTask?.(task.id)}
+          onCreateTasked={onCreateTasked}
         />
       </div>
 

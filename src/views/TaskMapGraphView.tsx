@@ -214,6 +214,21 @@ export default function TaskMapGraphView({
     });
   }, []);
 
+  const handleCreateTask = useCallback((taskLine: string) => {
+    const rawTask: RawTask = {
+      status: "todo",
+      text: taskLine,
+      link: {
+        path: settings.taskInbox,
+      },
+    };
+    const factory = new TaskFactory();
+    const newTask = factory.parse(rawTask, "dataview");
+
+    skipFitViewRef.current = true;
+    setTasks((prev) => [...prev, newTask]);
+  }, []);
+
   useEffect(() => {
     // Get the Dataview plugin to check index status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -303,6 +318,7 @@ export default function TaskMapGraphView({
     setNodes,
     setEdges,
     handleDeleteTask,
+    handleCreateTask,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
