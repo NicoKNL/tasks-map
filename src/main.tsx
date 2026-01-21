@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, Plugin } from "obsidian";
+import { WorkspaceLeaf, Plugin, Notice } from "obsidian";
 
 import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
 import { TasksMapSettings, DEFAULT_SETTINGS } from "./types/settings";
@@ -39,14 +39,21 @@ export default class TasksMapPlugin extends Plugin {
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 
-    const taskInboxPath = this.settings.taskInbox;
+    setTimeout(() => {
+      const taskInboxPath = this.settings.taskInbox.trim();
 
-    const vault = this.app.vault;
-    const existingFile = vault.getAbstractFileByPath(taskInboxPath);
+      const vault = this.app.vault;
+      const existingFile = vault.getAbstractFileByPath(taskInboxPath);
 
-    if (!existingFile) {
-      await vault.create(taskInboxPath, "");
-    }
+      if (!existingFile) {
+        new Notice(taskInboxPath + " is not found. Create a new file.");
+        try {
+          vault.create(taskInboxPath, "");
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }, 1000);
   }
 
   async saveSettings() {
