@@ -48,7 +48,7 @@
         "typescript": "5.9.3"
     },
     "dependencies": {
-        "@dagrejs/dagre": "^1.1.5",
+        "@dagrejs/dagre": "^2.0.0",
         "i18next": "^25.7.4",
         "lucide-react": "^0.563.0",
         "react": "^19.1.0",
