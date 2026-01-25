@@ -14,7 +14,8 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
+  issues: write
 
 jobs:
   version:
@@ -29,7 +30,9 @@ jobs:
 
       - name: Determine version
         id: semver
-        uses: ronaldphilipsen/semVersie@v2.0.2
+        uses: ronaldphilipsen/semVersie@v2.1.0
+        with:
+          add-pr-label: "true"
 
   release:
     if: needs.version.outputs.release == 'true'
