@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
   issues: write
 
 jobs:
