@@ -18,6 +18,11 @@
 		{
 			"matchDepTypes": ["dependencies"],
 			"labels": ["semver-patch"]
+		},
+		{
+			"matchPackageNames": ["@dagrejs/dagre"],
+			"allowedVersions": "<2.0.0",
+			"description": "Pin dagre to v1.x - v2 has bundling issues with external graphlib dependency"
 		}
 	]
 }
