@@ -163,6 +163,7 @@ export class TaskFactory {
 
   private makeSummary(text: string): string {
     return text
+      .replace(/^[-*]\s+\[[ xX-]\]\s*/, "") // Remove checkbox
       .replace(/(?:^|\s)#\S+/g, "")
       .replace(EMOJI_ID_PATTERN_GLOBAL, "") // Remove task IDs: 🆔 abc123
       .replace(DATAVIEW_ID_PATTERN_GLOBAL, "") // Remove Dataview IDs: [id:: abc123]
