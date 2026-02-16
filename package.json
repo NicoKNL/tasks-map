@@ -1,6 +1,6 @@
 {
     "name": "tasks-map",
-    "version": "0.18.14",
+    "version": "0.18.15",
     "description": "A graph view of your tasks.",
     "main": "main.js",
     "engines": {
