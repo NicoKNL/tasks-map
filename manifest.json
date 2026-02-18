@@ -1,7 +1,7 @@
 {
     "id": "tasks-map",
     "name": "Tasks Map",
-    "version": "0.18.15",
+    "version": "0.18.16",
     "minAppVersion": "1.8.0",
     "description": "A graph view of your tasks.",
     "author": "NicoKNL",
