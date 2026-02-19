@@ -1,8 +1,10 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting, TFolder } from "obsidian";
 import TasksMapPlugin from "../main";
 import { getTagColor } from "../lib/utils";
 import { t } from "../i18n";
 import { SUPPORTED_LANGUAGES } from "../i18n";
+
+let debounceTimer: number | null = null;
 
 export class TasksMapSettingTab extends PluginSettingTab {
   plugin: TasksMapPlugin;
@@ -94,6 +96,57 @@ export class TasksMapSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.showTags = value;
             await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl).setHeading().setName("Task");
+
+    new Setting(containerEl)
+      .setName("Task inbox")
+      .setDesc(
+        "Select an .md file as the inbox. When you double-click the panel to create a task, the task will be added to the inbox."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Task Inbox.md")
+          .setValue(this.plugin.settings.taskInbox)
+          .onChange(async (value) => {
+            if (debounceTimer) {
+              window.clearTimeout(debounceTimer);
+            }
+
+            debounceTimer = window.setTimeout(async () => {
+              const vault = this.plugin.app.vault;
+              const normalizedPath = value.trim();
+
+              if (!normalizedPath) {
+                new Notice("The path is invalid.");
+                return;
+              }
+
+              if (!normalizedPath.endsWith(".md")) {
+                new Notice("Task inbox must be a .md file");
+                return;
+              }
+
+              try {
+                const existingFile =
+                  vault.getAbstractFileByPath(normalizedPath);
+
+                if (!existingFile) {
+                  await vault.create(normalizedPath, "");
+                } else if (existingFile instanceof TFolder) {
+                  new Notice("Task inbox path points to a folder, not a file");
+                  return;
+                }
+
+                this.plugin.settings.taskInbox = normalizedPath;
+                await this.plugin.saveSettings();
+              } catch (error) {
+                console.error("Failed to set task inbox:", error);
+                new Notice("Failed to create or access the task inbox file");
+              }
+            }, 2000);
           })
       );
 
