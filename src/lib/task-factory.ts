@@ -23,7 +23,7 @@ import {
 const ID_MATCH_PATTERNS = [
   EMOJI_ID_PATTERN,
   DATAVIEW_BRACKET_ID_PATTERN,
-  DATAVIEW_PARENTHESES_ID_PATTERN
+  DATAVIEW_PARENTHESES_ID_PATTERN,
 ];
 
 export class TaskFactory {
@@ -152,7 +152,10 @@ export class TaskFactory {
 
   private parseDataviewStyleLinks(text: string): string[] {
     // Parse Dataview format: [dependsOn:: abc123,def456] or (dependsOn:: abc123,def456)
-    const dataviewMatches = [...text.matchAll(DATAVIEW_BRACKET_DEPENDS_PATTERN), ...text.matchAll(DATAVIEW_PARENTHESES_DEPENDS_PATTERN)];
+    const dataviewMatches = [
+      ...text.matchAll(DATAVIEW_BRACKET_DEPENDS_PATTERN),
+      ...text.matchAll(DATAVIEW_PARENTHESES_DEPENDS_PATTERN),
+    ];
     const ids: string[] = [];
 
     for (const match of dataviewMatches) {

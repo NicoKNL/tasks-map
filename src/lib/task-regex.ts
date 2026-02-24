@@ -3,24 +3,25 @@
  */
 
 // ID patterns - for matching and capturing IDs (no 'g' flag for .match())
-export const EMOJI_ID_PATTERN = /🆔\s*([a-zA-Z0-9_\-]+)/i;
-export const DATAVIEW_BRACKET_ID_PATTERN = /\[id::\s*([a-zA-Z0-9_\-]+)\]/i;
-export const DATAVIEW_PARENTHESES_ID_PATTERN = /\(id::\s*([a-zA-Z0-9_\-]+)\)/i;
-
+export const EMOJI_ID_PATTERN = /🆔\s*([a-zA-Z0-9_-]+)/i;
+export const DATAVIEW_BRACKET_ID_PATTERN = /\[id::\s*([a-zA-Z0-9_-]+)\]/i;
+export const DATAVIEW_PARENTHESES_ID_PATTERN = /\(id::\s*([a-zA-Z0-9_-]+)\)/i;
 
 // ID patterns for removal/global replacement (with 'g' flag)
-export const EMOJI_ID_PATTERN_GLOBAL = /🆔\s*[a-zA-Z0-9_\-]+/gi;
-export const DATAVIEW_BRACKET_ID_PATTERN_GLOBAL = /\[id::\s*[a-zA-Z0-9_\-]+\]/gi;
-export const DATAVIEW_PARENTHESES_ID_PATTERN_GLOBAL = /\(id::\s*[a-zA-Z0-9_\-]+\)/gi;
+export const EMOJI_ID_PATTERN_GLOBAL = /🆔\s*[a-zA-Z0-9_-]+/gi;
+export const DATAVIEW_BRACKET_ID_PATTERN_GLOBAL =
+  /\[id::\s*[a-zA-Z0-9_-]+\]/gi;
+export const DATAVIEW_PARENTHESES_ID_PATTERN_GLOBAL =
+  /\(id::\s*[a-zA-Z0-9_-]+\)/gi;
 
 // Dependency/link patterns - for matching and capturing dependencies
-export const CSV_LINKS_PATTERN = /⛔\s*([a-zA-Z0-9_\-]+(?:,[a-zA-Z0-9_\-]+)*)/g;
+export const CSV_LINKS_PATTERN = /⛔\s*([a-zA-Z0-9_-]+(?:,[a-zA-Z0-9_-]+)*)/g;
 export const INDIVIDUAL_LINKS_PATTERN =
-  /⛔\s*([a-zA-Z0-9_\-]+)(?!,[a-zA-Z0-9_\-]+)/g;
+  /⛔\s*([a-zA-Z0-9_-]+)(?!,[a-zA-Z0-9_-]+)/g;
 export const DATAVIEW_BRACKET_DEPENDS_PATTERN =
-  /\[dependsOn::\s*([a-zA-Z0-9_\-]+(?:,\s*[a-zA-Z0-9_\-]+)*)\]/g;
+  /\[dependsOn::\s*([a-zA-Z0-9_-]+(?:,\s*[a-zA-Z0-9_-]+)*)\]/g;
 export const DATAVIEW_PARENTHESES_DEPENDS_PATTERN =
-  /\(dependsOn::\s*([a-zA-Z0-9_\-]+(?:,\s*[a-zA-Z0-9_\-]+)*)\)/g;
+  /\(dependsOn::\s*([a-zA-Z0-9_-]+(?:,\s*[a-zA-Z0-9_-]+)*)\)/g;
 
 // Cleaning patterns - for removing metadata (no capture groups)
 export const EMOJI_ID_REMOVAL = /🆔\s+\S+/g;
