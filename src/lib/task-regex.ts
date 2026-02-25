@@ -9,8 +9,7 @@ export const DATAVIEW_PARENTHESES_ID_PATTERN = /\(id::\s*([a-zA-Z0-9_-]+)\)/i;
 
 // ID patterns for removal/global replacement (with 'g' flag)
 export const EMOJI_ID_PATTERN_GLOBAL = /🆔\s*[a-zA-Z0-9_-]+/gi;
-export const DATAVIEW_BRACKET_ID_PATTERN_GLOBAL =
-  /\[id::\s*[a-zA-Z0-9_-]+\]/gi;
+export const DATAVIEW_BRACKET_ID_PATTERN_GLOBAL = /\[id::\s*[a-zA-Z0-9_-]+\]/gi;
 export const DATAVIEW_PARENTHESES_ID_PATTERN_GLOBAL =
   /\(id::\s*[a-zA-Z0-9_-]+\)/gi;
 
