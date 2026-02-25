@@ -12,7 +12,8 @@ import {
 } from "../lib/utils";
 import {
   EMOJI_ID_REMOVAL,
-  DATAVIEW_ID_REMOVAL,
+  DATAVIEW_BRACKET_ID_REMOVAL,
+  DATAVIEW_PARENTHESES_ID_REMOVAL,
   TAG_REMOVAL,
   WHITESPACE_NORMALIZE,
 } from "../lib/task-regex";
@@ -176,7 +177,8 @@ export class DataviewTask extends BaseTask {
         // Fallback: try to find by matching core task text
         const coreTaskText = this.text
           .replace(EMOJI_ID_REMOVAL, "")
-          .replace(DATAVIEW_ID_REMOVAL, "")
+          .replace(DATAVIEW_BRACKET_ID_REMOVAL, "")
+          .replace(DATAVIEW_PARENTHESES_ID_REMOVAL, "")
           .replace(TAG_REMOVAL, "")
           .replace(WHITESPACE_NORMALIZE, " ")
           .trim();
@@ -184,7 +186,8 @@ export class DataviewTask extends BaseTask {
         taskLineIdx = lines.findIndex((line: string) => {
           const coreLineText = line
             .replace(EMOJI_ID_REMOVAL, "")
-            .replace(DATAVIEW_ID_REMOVAL, "")
+            .replace(DATAVIEW_BRACKET_ID_REMOVAL, "")
+            .replace(DATAVIEW_PARENTHESES_ID_REMOVAL, "")
             .replace(TAG_REMOVAL, "")
             .replace(WHITESPACE_NORMALIZE, " ")
             .trim();
@@ -231,7 +234,8 @@ export class DataviewTask extends BaseTask {
         // Fallback: try to find by matching core task text
         const coreTaskText = this.text
           .replace(EMOJI_ID_REMOVAL, "")
-          .replace(DATAVIEW_ID_REMOVAL, "")
+          .replace(DATAVIEW_BRACKET_ID_REMOVAL, "")
+          .replace(DATAVIEW_PARENTHESES_ID_REMOVAL, "")
           .replace(TAG_REMOVAL, "")
           .replace(WHITESPACE_NORMALIZE, " ")
           .trim();
@@ -239,7 +243,8 @@ export class DataviewTask extends BaseTask {
         taskLineIdx = lines.findIndex((line: string) => {
           const coreLineText = line
             .replace(EMOJI_ID_REMOVAL, "")
-            .replace(DATAVIEW_ID_REMOVAL, "")
+            .replace(DATAVIEW_BRACKET_ID_REMOVAL, "")
+            .replace(DATAVIEW_PARENTHESES_ID_REMOVAL, "")
             .replace(TAG_REMOVAL, "")
             .replace(WHITESPACE_NORMALIZE, " ")
             .trim();
