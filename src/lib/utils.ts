@@ -87,34 +87,64 @@ export function estimateNodeDimensions(
   showTags: boolean = true
 ): { width: number; height: number } {
   // Base dimensions
-  const baseWidth = NODEWIDTH; // 250px
+  const minWidth = NODEWIDTH; // 200px
+  const maxWidth = 500;
   const baseHeight = 60; // Minimum height for header (status, priority, buttons)
 
-  // Estimate height based on summary length
-  // Node inner width is ~226px (250 - 24px padding), average char width ~7px = ~32 chars per line
-  // But with icons and buttons taking space, effective is lower
-  const charsPerLine = 24;
+  // Estimate width based on summary length
+  // Average character width ~7px, but with icons and buttons taking space
+  const charWidth = 7;
+  const paddingHorizontal = 24; // 12px left + 12px right
+  const iconsWidth = 80; // Approximate width for status, priority, star, link, menu buttons
+
+  // Calculate required width for summary text
+  const summaryWidth = task.summary.length * charWidth;
+  // Calculate required width for tags (if shown)
+  let tagsWidth = 0;
+  if (showTags && task.tags.length > 0) {
+    // Estimate tag width: each tag ~ (tag.length * 6 + 20) pixels
+    const tagExtra = 20; // padding + remove button
+    const tagCharWidth = 6;
+    tagsWidth = task.tags.reduce((max, tag) => {
+      const width = tag.length * tagCharWidth + tagExtra;
+      return Math.max(max, width);
+    }, 0);
+    // Tags can wrap, so we don't need to sum all widths, just the widest tag
+  }
+
+  // Desired width is based on summary, tags, and icons
+  const desiredContentWidth = Math.max(summaryWidth, tagsWidth) + iconsWidth;
+  const desiredTotalWidth = desiredContentWidth + paddingHorizontal;
+
+  // Clamp width between min and max
+  const width = Math.min(maxWidth, Math.max(minWidth, desiredTotalWidth));
+
+  // Estimate height based on summary length with calculated width
+  const effectiveContentWidth = width - paddingHorizontal; // Content area width
+  const charsPerLine = Math.floor(effectiveContentWidth / charWidth);
   const lineHeight = 22; // Slightly more than font size for line spacing
-  const summaryLines = Math.ceil(task.summary.length / charsPerLine);
+  const summaryLines = charsPerLine > 0 ? Math.ceil(task.summary.length / charsPerLine) : 1;
   const summaryHeight = Math.max(1, summaryLines) * lineHeight;
 
-  // Estimate height for tags (each row of tags is ~28px, ~3 tags per row)
+  // Estimate height for tags (each row of tags is ~28px)
   let tagsHeight = 0;
   if (showTags && task.tags.length > 0) {
-    const tagsPerRow = 3;
+    // Estimate how many tags per row based on width
+    const tagMinWidth = 60; // Minimum width per tag
+    const tagsPerRow = Math.max(1, Math.floor(effectiveContentWidth / tagMinWidth));
     const tagRows = Math.ceil((task.tags.length + 1) / tagsPerRow); // +1 for "Add tag" button
     tagsHeight = tagRows * 28;
   }
 
   // Add padding and safety margin
-  const padding = 24; // 12px top + 12px bottom
+  const paddingVertical = 24; // 12px top + 12px bottom
   const safetyMargin = 16; // Extra buffer to prevent overlap
 
   const totalHeight =
-    baseHeight + summaryHeight + tagsHeight + padding + safetyMargin;
+    baseHeight + summaryHeight + tagsHeight + paddingVertical + safetyMargin;
 
   return {
-    width: baseWidth,
+    width,
     height: Math.max(NODEHEIGHT, totalHeight),
   };
 }
@@ -912,25 +942,32 @@ export function createNodesFromTasks(
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
   const targetPosition = isVertical ? Position.Top : Position.Left;
 
-  return tasks.map((task, idx) => ({
-    id: task.id,
-    position: { x: 0, y: idx * 80 },
-    data: {
-      task,
-      layoutDirection,
-      showPriorities,
-      showTags,
-      debugVisualization,
-      tagColorMode,
-      tagColorSeed,
-      tagStaticColor,
-      onDeleteTask,
-    },
-    type: "task" as const,
-    sourcePosition,
-    targetPosition,
-    draggable: true,
-  }));
+  return tasks.map((task, idx) => {
+    const dimensions = estimateNodeDimensions(task, showTags);
+    return {
+      id: task.id,
+      position: { x: 0, y: idx * 80 },
+      data: {
+        task,
+        layoutDirection,
+        showPriorities,
+        showTags,
+        debugVisualization,
+        tagColorMode,
+        tagColorSeed,
+        tagStaticColor,
+        onDeleteTask,
+        width: dimensions.width,
+        height: dimensions.height,
+      },
+      type: "task" as const,
+      sourcePosition,
+      targetPosition,
+      draggable: true,
+      width: dimensions.width,
+      height: dimensions.height,
+    };
+  });
 }
 
 export function createEdgesFromTasks(
