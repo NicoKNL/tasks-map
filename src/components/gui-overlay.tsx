@@ -1,5 +1,6 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
+import SaveFilterButton from "./save-filter-button";
 import { TaskStatus } from "src/types/task";
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -21,6 +22,9 @@ interface GuiOverlayProps {
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
+  layoutDirection?: "Horizontal" | "Vertical";
+  showPriorities?: boolean;
+  showTagsSetting?: boolean;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -40,6 +44,9 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     showTags = true,
     hideTags = false,
     setHideTags,
+    layoutDirection,
+    showPriorities,
+    showTagsSetting,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -132,7 +139,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
             )}
           </div>
 
-          {/* Reload Button */}
+          {/* Action Buttons */}
           <div className="tasks-map-filter-actions">
             <button
               onClick={reloadTasks}
@@ -140,6 +147,16 @@ export default function GuiOverlay(props: GuiOverlayProps) {
             >
               {t("filters.reload_tasks")}
             </button>
+            <SaveFilterButton
+              selectedTags={selectedTags}
+              excludedTags={excludedTags}
+              selectedStatuses={selectedStatuses}
+              selectedFiles={selectedFiles}
+              hideTags={hideTags}
+              layoutDirection={layoutDirection}
+              showPriorities={showPriorities}
+              showTags={showTagsSetting}
+            />
           </div>
         </>
       )}

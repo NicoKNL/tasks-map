@@ -974,3 +974,33 @@ If your plugin does not need CSS, delete this file.
     transform: rotate(360deg);
   }
 }
+
+/* Save Filter Button Styles */
+.tasks-map-save-filter-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.tasks-map-save-filter-button:hover {
+  opacity: 0.9;
+}
+
+.tasks-map-filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+}

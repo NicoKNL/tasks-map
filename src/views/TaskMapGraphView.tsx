@@ -8,6 +8,7 @@ import ReactFlow, {
 } from "reactflow";
 import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
+import TasksMapPlugin from "../main";
 import {
   addLinkSignsBetweenTasks,
   getAllTasks,
@@ -107,6 +108,15 @@ export default function TaskMapGraphView({
 }: TaskMapGraphViewProps) {
   const app = useApp();
   const vault = app.vault;
+
+  // 获取插件实例以更新过滤状态
+  const plugin = React.useMemo(() => {
+    return (
+      app as unknown as {
+        plugins: { plugins: Record<string, TasksMapPlugin> };
+      }
+    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
+  }, [app]);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [tasks, setTasks] = React.useState<BaseTask[]>([]);
@@ -305,6 +315,32 @@ export default function TaskMapGraphView({
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
   const edgeTypes = useMemo(() => ({ hash: HashEdge }), []);
 
+  // 更新插件中的当前过滤状态
+  useEffect(() => {
+    if (plugin?.updateCurrentFilterState) {
+      plugin.updateCurrentFilterState({
+        selectedTags,
+        excludedTags,
+        selectedStatuses,
+        selectedFiles,
+        hideTags,
+        layoutDirection: settings.layoutDirection,
+        showPriorities: settings.showPriorities,
+        showTags: settings.showTags,
+      });
+    }
+  }, [
+    plugin,
+    selectedTags,
+    excludedTags,
+    selectedStatuses,
+    selectedFiles,
+    hideTags,
+    settings.layoutDirection,
+    settings.showPriorities,
+    settings.showTags,
+  ]);
+
   const onEdgeClick = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (event: any, edge: any) => {
@@ -434,6 +470,9 @@ export default function TaskMapGraphView({
             showTags={settings.showTags}
             hideTags={hideTags}
             setHideTags={toggleHideTags}
+            layoutDirection={settings.layoutDirection}
+            showPriorities={settings.showPriorities}
+            showTagsSetting={settings.showTags}
           />
           <TaskMinimap />
           <Background />
