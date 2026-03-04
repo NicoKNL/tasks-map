@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import { ReactFlowProvider } from "reactflow";
@@ -13,13 +13,36 @@ import { t } from "../i18n";
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
 // Wrapper component that manages filter state and keys the ReactFlowProvider
-function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [excludedTags, setExcludedTags] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
-    ...ALL_STATUSES,
-  ]);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+function TaskMapGraphWrapper({
+  settings,
+  initialFilterSettings
+}: {
+  settings: TasksMapSettings;
+  initialFilterSettings?: any;
+}) {
+  // 使用初始过滤设置（如果有）
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    initialFilterSettings?.selectedTags || []
+  );
+  const [excludedTags, setExcludedTags] = useState<string[]>(
+    initialFilterSettings?.excludedTags || []
+  );
+  const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>(
+    initialFilterSettings?.selectedStatuses && initialFilterSettings.selectedStatuses.length > 0
+      ? initialFilterSettings.selectedStatuses
+      : [...ALL_STATUSES]
+  );
+  const [selectedFiles, setSelectedFiles] = useState<string[]>(
+    initialFilterSettings?.selectedFiles || []
+  );
+
+  // 应用其他视图设置
+  useEffect(() => {
+    if (initialFilterSettings) {
+      // 这里可以应用其他视图设置，如hideTags等
+      // 这些设置可能需要通过context或其他方式传递给子组件
+    }
+  }, [initialFilterSettings]);
 
   // Key the ReactFlowProvider on filter state to force complete remount
   const providerKey = useMemo(
@@ -73,12 +96,23 @@ export default class TaskMapGraphItemView extends ItemView {
     ).plugins.plugins["tasks-map"] as TasksMapPlugin;
     const settings = plugin?.settings;
 
+    // 获取初始过滤设置
+    const initialFilterSettings = plugin?.getActiveFilterSettings?.();
+
+    // 清除插件中的过滤设置，避免重复使用
+    if (plugin?.clearActiveFilterSettings) {
+      plugin.clearActiveFilterSettings();
+    }
+
     this.root = createRoot(this.containerEl.children[1]);
 
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
-          <TaskMapGraphWrapper settings={settings} />
+          <TaskMapGraphWrapper
+            settings={settings}
+            initialFilterSettings={initialFilterSettings}
+          />
         </AppContext.Provider>
       );
     } else {
