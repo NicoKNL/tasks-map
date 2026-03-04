@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
-import { BaseTask } from "src/types/task";
+import { BaseTask, TaskNodeData } from "src/types/task";
 import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
@@ -25,20 +25,6 @@ import { TagsContext } from "../contexts/context";
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
 
-interface TaskNodeData {
-  task: BaseTask;
-  layoutDirection?: "Horizontal" | "Vertical";
-  showPriorities?: boolean;
-  showTags?: boolean;
-  debugVisualization?: boolean;
-  tagColorMode?: "random" | "static";
-  tagColorSeed?: number;
-  tagStaticColor?: string;
-  // eslint-disable-next-line no-unused-vars
-  onDeleteTask?: (taskId: string) => void;
-  onCreateTasked?: (taskLine: string) => void;
-}
-
 export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const {
     task,
@@ -51,6 +37,8 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagStaticColor = "#3b82f6",
     onDeleteTask,
   } = data;
+  const width = data.width;
+  const height = data.height;
 
   const { allTags, updateTaskTags } = useContext(TagsContext);
   const [expanded, setExpanded] = useState(false);
@@ -164,6 +152,8 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
       expanded={expanded}
       debugVisualization={debugVisualization}
       selected={selected}
+      width={width}
+      height={height}
     >
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />

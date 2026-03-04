@@ -7,6 +7,8 @@ interface TaskBackgroundProps {
   expanded?: boolean;
   debugVisualization?: boolean;
   selected?: boolean;
+  width?: number;
+  height?: number;
   children: React.ReactNode;
 }
 
@@ -16,6 +18,8 @@ export function TaskBackground({
   expanded,
   debugVisualization,
   selected = false,
+  width,
+  height,
   children,
 }: TaskBackgroundProps) {
   const getStatusClass = () => {
@@ -42,5 +46,17 @@ export function TaskBackground({
     .filter(Boolean)
     .join(" ");
 
-  return <div className={className}>{children}</div>;
+  const style: React.CSSProperties = {};
+  if (width !== undefined) {
+    style.width = width;
+  }
+  if (height !== undefined) {
+    style.height = height;
+  }
+
+  return (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  );
 }
