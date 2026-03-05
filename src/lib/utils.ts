@@ -93,22 +93,33 @@ export function estimateNodeDimensions(
   // Estimate height based on summary length
   // Node inner width is ~226px (250 - 24px padding), average char width ~7px = ~32 chars per line
   // But with icons and buttons taking space, effective is lower
-  const charsPerLine = 24;
+  const charsPerLine = 20; // Reduced from 24 to account for variable character widths
   const lineHeight = 22; // Slightly more than font size for line spacing
-  const summaryLines = Math.ceil(task.summary.length / charsPerLine);
+
+  // Handle potential newlines in summary
+  const summaryLines = task.summary.split('\n').reduce((totalLines, line) => {
+    return totalLines + Math.ceil(line.length / charsPerLine);
+  }, 0);
+
   const summaryHeight = Math.max(1, summaryLines) * lineHeight;
 
   // Estimate height for tags (each row of tags is ~28px, ~3 tags per row)
   let tagsHeight = 0;
   if (showTags && task.tags.length > 0) {
     const tagsPerRow = 3;
-    const tagRows = Math.ceil((task.tags.length + 1) / tagsPerRow); // +1 for "Add tag" button
+    // +1 for "Add tag" button (only visible on hover, but we account for it)
+    const tagRows = Math.ceil((task.tags.length + 1) / tagsPerRow);
     tagsHeight = tagRows * 28;
   }
 
   // Add padding and safety margin
-  const padding = 24; // 12px top + 12px bottom
-  const safetyMargin = 16; // Extra buffer to prevent overlap
+  // Consider that nodes have:
+  // - padding: 12px (from .tasks-map-task-background)
+  // - border: 1px
+  // - box-shadow: some visual spacing
+  // - internal spacing between elements
+  const padding = 30; // 12px top + 12px bottom + extra for visual elements
+  const safetyMargin = 20; // Extra buffer for spacing between nodes
 
   const totalHeight =
     baseHeight + summaryHeight + tagsHeight + padding + safetyMargin;
@@ -345,10 +356,11 @@ export function getLayoutedElements(
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
-  dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
 
-  // Store calculated dimensions for each node
+  // Store calculated dimensions for each node and compute max dimensions
   const nodeDimensions = new Map<string, { width: number; height: number }>();
+  let maxWidth = NODEWIDTH;
+  let maxHeight = NODEHEIGHT;
 
   nodes.forEach((node) => {
     // Get task from node data to estimate dimensions
@@ -359,7 +371,54 @@ export function getLayoutedElements(
 
     nodeDimensions.set(node.id, dimensions);
     dagreGraph.setNode(node.id, dimensions);
+
+    // Update max dimensions
+    maxWidth = Math.max(maxWidth, dimensions.width);
+    maxHeight = Math.max(maxHeight, dimensions.height);
   });
+
+  // Calculate spacing based on node dimensions and layout direction
+  // We want compact layout but still prevent node overlap
+  // Use percentage-based padding instead of fixed values
+  const NODE_PADDING_FACTOR = 0.05; // 5% of node size - more compact
+  const RANK_PADDING_FACTOR = 0.08; // 8% of node size - more compact
+  const MIN_PADDING = 3; // Minimum padding to ensure some separation
+
+  // For TB (Top-to-Bottom) layout:
+  // - ranksep: vertical distance between ranks (should accommodate node height)
+  // - nodesep: horizontal distance between nodes in same rank (should accommodate node width)
+  // For LR (Left-to-Right) layout:
+  // - ranksep: horizontal distance between ranks (should accommodate node width)
+  // - nodesep: vertical distance between nodes in same rank (should accommodate node height)
+
+  let nodesep, ranksep;
+  if (rankdir === "TB") {
+    // Vertical layout: nodes flow top to bottom
+    ranksep = maxHeight + Math.max(maxHeight * RANK_PADDING_FACTOR, MIN_PADDING);
+    nodesep = maxWidth + Math.max(maxWidth * NODE_PADDING_FACTOR, MIN_PADDING);
+  } else { // LR
+    // Horizontal layout: nodes flow left to right
+    ranksep = maxWidth + Math.max(maxWidth * RANK_PADDING_FACTOR, MIN_PADDING);
+    nodesep = maxHeight + Math.max(maxHeight * NODE_PADDING_FACTOR, MIN_PADDING);
+  }
+
+  // Ensure we have at least some spacing even for small nodes
+  nodesep = Math.max(nodesep, NODEWIDTH * 0.5);
+  ranksep = Math.max(ranksep, NODEHEIGHT * 0.5);
+
+  // Set graph layout options
+  // Use tighter layout parameters for more compact arrangement
+  dagreGraph.setGraph({
+    rankdir,
+    nodesep,
+    ranksep,
+    edgesep: 5, // reduced from 10 for tighter edge spacing
+    ranker: "tight-tree", // try to minimize edge lengths and crossings
+    align: "UL", // align nodes to upper left
+    marginx: 10, // reduced margins
+    marginy: 10,
+  });
+
   edges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
