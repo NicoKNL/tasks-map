@@ -1,6 +1,6 @@
 {
     "name": "tasks-map",
-    "version": "0.18.22",
+    "version": "0.18.23",
     "description": "A graph view of your tasks.",
     "main": "main.js",
     "engines": {
@@ -50,7 +50,7 @@
     "dependencies": {
         "@dagrejs/dagre": "^1.1.5",
         "i18next": "^25.7.4",
-        "lucide-react": "^0.576.0",
+        "lucide-react": "^0.577.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "react-select": "^5.10.2",
