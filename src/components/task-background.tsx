@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { TaskStatus } from "src/types/task";
 
 interface TaskBackgroundProps {
@@ -11,9 +11,11 @@ interface TaskBackgroundProps {
   height?: number;
   children: React.ReactNode;
   backgroundColor?: string;
+  onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-export function TaskBackground({
+export const TaskBackground = forwardRef<HTMLDivElement, TaskBackgroundProps>(({
   status,
   starred = false,
   expanded,
@@ -23,7 +25,9 @@ export function TaskBackground({
   height,
   children,
   backgroundColor,
-}: TaskBackgroundProps) {
+  onMouseEnter,
+  onMouseLeave,
+}: TaskBackgroundProps, ref) => {
   const getStatusClass = () => {
     switch (status) {
       case "done":
@@ -60,8 +64,16 @@ export function TaskBackground({
   }
 
   return (
-    <div className={className} style={style}>
+    <div
+      ref={ref}
+      className={className}
+      style={style}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {children}
     </div>
   );
-}
+});
+
+TaskBackground.displayName = 'TaskBackground';

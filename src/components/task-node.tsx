@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
@@ -20,6 +20,7 @@ import {
   addStarToTaskInVault,
   removeStarFromTaskInVault,
 } from "../lib/utils";
+import DateTooltip from "./date-tooltip";
 import { TagsContext } from "../contexts/context";
 import { extractDateFromTaskText, calculateProximityColor, daysRemainingFromToday } from "../lib/utils";
 
@@ -55,6 +56,21 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const [tagError, setTagError] = useState(false);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
+
+  // Hover state for date tooltip
+  const [isHovered, setIsHovered] = useState(false);
+  const nodeRef = useRef<HTMLDivElement>(null);
+
+  // Tooltip settings with defaults
+  const {
+    showDateTooltips = true,
+    tooltipMaxWidth = 250,
+    tooltipSpacing = 6,
+    tooltipFontSize = 11,
+    tooltipCapsulePadding = 4,
+    tooltipLineHeight = 1.5,
+    tooltipVerticalOffset = 8,
+  } = data;
 
   // Calculate background color based on proximity to due/scheduled dates
   const backgroundColor = React.useMemo(() => {
@@ -202,17 +218,53 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     }
   };
 
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   return (
-    <TaskBackground
-      status={status}
-      starred={starred}
-      expanded={expanded}
-      debugVisualization={debugVisualization}
-      selected={selected}
-      width={width}
-      height={height}
-      backgroundColor={backgroundColor}
-    >
+    <>
+      {/* Date tooltip rendered above the node */}
+      {showDateTooltips && isHovered && (
+        <div
+          className="tasks-map-date-tooltip-container"
+          style={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: `calc(100% + ${tooltipVerticalOffset}px)`,
+            zIndex: 1000,
+            pointerEvents: 'none',
+          }}
+        >
+          <DateTooltip
+            task={task}
+            maxWidth={tooltipMaxWidth}
+            spacing={tooltipSpacing}
+            fontSize={tooltipFontSize}
+            capsulePadding={tooltipCapsulePadding}
+            lineHeight={tooltipLineHeight}
+          />
+        </div>
+      )}
+
+      <TaskBackground
+        ref={nodeRef}
+        status={status}
+        starred={starred}
+        expanded={expanded}
+        debugVisualization={debugVisualization}
+        selected={selected}
+        width={width}
+        height={height}
+        backgroundColor={backgroundColor}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
 
@@ -285,5 +337,6 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
         <TaskDetails task={task} status={status} />
       )}
     </TaskBackground>
+    </>
   );
 }

@@ -290,7 +290,15 @@ export default function TaskMapGraphView({
       settings.dueProximityDays,
       settings.dueProximityColor,
       settings.scheduleProximityDays,
-      settings.scheduleProximityColor
+      settings.scheduleProximityColor,
+      // Date tooltip settings
+      settings.showDateTooltips,
+      settings.tooltipMaxWidth,
+      settings.tooltipSpacing,
+      settings.tooltipFontSize,
+      settings.tooltipCapsulePadding,
+      settings.tooltipLineHeight,
+      settings.tooltipVerticalOffset
     );
     let newEdges = createEdgesFromTasks(
       tasks,

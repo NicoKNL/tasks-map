@@ -24,6 +24,15 @@ export interface TasksMapSettings {
   dueProximityColor: string;
   scheduleProximityDays: number;
   scheduleProximityColor: string;
+
+  // Date tooltip settings
+  showDateTooltips: boolean;
+  tooltipMaxWidth: number;
+  tooltipSpacing: number;
+  tooltipFontSize: number;
+  tooltipCapsulePadding: number;
+  tooltipLineHeight: number;
+  tooltipVerticalOffset: number;
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -50,4 +59,13 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
   dueProximityColor: "#ef4444", // red-500
   scheduleProximityDays: 7,
   scheduleProximityColor: "#f59e0b", // amber-500
+
+  // Date tooltip defaults
+  showDateTooltips: true,
+  tooltipMaxWidth: 250,
+  tooltipSpacing: 6,
+  tooltipFontSize: 11,
+  tooltipCapsulePadding: 4,
+  tooltipLineHeight: 1.5,
+  tooltipVerticalOffset: 8,
 };

@@ -67,7 +67,22 @@
     "schedule_proximity_days": "计划日期临近天数",
     "schedule_proximity_days_desc": "距离计划日期多少天时开始颜色渐变（默认：7）",
     "schedule_proximity_color": "计划日期临近颜色",
-    "schedule_proximity_color_desc": "计划日期临近时的颜色（默认：#f59e0b）"
+    "schedule_proximity_color_desc": "计划日期临近时的颜色（默认：#f59e0b）",
+    "date_tooltips": "日期悬浮提示",
+    "show_date_tooltips": "显示日期悬浮提示",
+    "show_date_tooltips_desc": "鼠标悬停在任务节点上时显示日期信息悬浮提示",
+    "tooltip_max_width": "提示最大宽度",
+    "tooltip_max_width_desc": "悬浮提示的最大宽度（像素，默认：250）",
+    "tooltip_spacing": "提示间距",
+    "tooltip_spacing_desc": "胶囊之间的间距（像素，默认：6）",
+    "tooltip_font_size": "提示字体大小",
+    "tooltip_font_size_desc": "悬浮提示文字的字体大小（像素，默认：11）",
+    "tooltip_capsule_padding": "胶囊内边距",
+    "tooltip_capsule_padding_desc": "日期胶囊内部的内边距（像素，默认：4）",
+    "tooltip_line_height": "行高",
+    "tooltip_line_height_desc": "悬浮提示的行高倍数（默认：1.5）",
+    "tooltip_vertical_offset": "垂直偏移",
+    "tooltip_vertical_offset_desc": "节点上方的垂直偏移量（像素，默认：8）"
   },
   "filters": {
     "status": "状态",

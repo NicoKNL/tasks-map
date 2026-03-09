@@ -1005,3 +1005,53 @@ If your plugin does not need CSS, delete this file.
   padding-top: 12px;
   border-top: 1px solid var(--background-modifier-border);
 }
+
+/* Date Tooltip Styles */
+.tasks-map-date-tooltip {
+  /* Transparent container, no background or border */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tasks-map-date-tooltip-capsule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px; /* Capsule shape: rounded ends */
+  background: var(--background-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasks-map-date-tooltip-capsule + .tasks-map-date-tooltip-capsule {
+  margin-top: 6px;
+}
+
+.tasks-map-date-tooltip-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.tasks-map-date-tooltip-label {
+  font-weight: 500;
+  color: var(--text-normal);
+  flex-shrink: 0;
+}
+
+.tasks-map-date-tooltip-value {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasks-map-date-tooltip-no-dates {
+  padding: 4px 8px;
+  color: var(--text-muted);
+  font-style: italic;
+}

@@ -67,7 +67,22 @@
     "schedule_proximity_days": "Schedule proximity days",
     "schedule_proximity_days_desc": "Number of days before scheduled date when color gradient starts (default: 7)",
     "schedule_proximity_color": "Schedule proximity color",
-    "schedule_proximity_color_desc": "Color when scheduled date is approaching (default: #f59e0b)"
+    "schedule_proximity_color_desc": "Color when scheduled date is approaching (default: #f59e0b)",
+    "date_tooltips": "Date Tooltips",
+    "show_date_tooltips": "Show date tooltips",
+    "show_date_tooltips_desc": "Display date information in tooltips when hovering over task nodes",
+    "tooltip_max_width": "Tooltip max width",
+    "tooltip_max_width_desc": "Maximum width of tooltip in pixels (default: 250)",
+    "tooltip_spacing": "Tooltip spacing",
+    "tooltip_spacing_desc": "Spacing between capsules in pixels (default: 6)",
+    "tooltip_font_size": "Tooltip font size",
+    "tooltip_font_size_desc": "Font size for tooltip text in pixels (default: 11)",
+    "tooltip_capsule_padding": "Capsule padding",
+    "tooltip_capsule_padding_desc": "Padding inside date capsules in pixels (default: 4)",
+    "tooltip_line_height": "Line height",
+    "tooltip_line_height_desc": "Line height multiplier for tooltip (default: 1.5)",
+    "tooltip_vertical_offset": "Vertical offset",
+    "tooltip_vertical_offset_desc": "Vertical offset above node in pixels (default: 8)"
   },
   "filters": {
     "status": "Status",

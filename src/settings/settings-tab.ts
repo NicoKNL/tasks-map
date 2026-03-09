@@ -323,6 +323,106 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setHeading()
+      .setName(t("settings.date_tooltips"));
+
+    new Setting(containerEl)
+      .setName(t("settings.show_date_tooltips"))
+      .setDesc(t("settings.show_date_tooltips_desc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showDateTooltips)
+          .onChange(async (value) => {
+            this.plugin.settings.showDateTooltips = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.tooltip_max_width"))
+      .setDesc(t("settings.tooltip_max_width_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("250")
+          .setValue(this.plugin.settings.tooltipMaxWidth.toString())
+          .onChange(async (value) => {
+            const width = parseInt(value) || 250;
+            this.plugin.settings.tooltipMaxWidth = width;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.tooltip_spacing"))
+      .setDesc(t("settings.tooltip_spacing_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("6")
+          .setValue(this.plugin.settings.tooltipSpacing.toString())
+          .onChange(async (value) => {
+            const spacing = parseInt(value) || 6;
+            this.plugin.settings.tooltipSpacing = spacing;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.tooltip_font_size"))
+      .setDesc(t("settings.tooltip_font_size_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("11")
+          .setValue(this.plugin.settings.tooltipFontSize.toString())
+          .onChange(async (value) => {
+            const size = parseInt(value) || 11;
+            this.plugin.settings.tooltipFontSize = size;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.tooltip_capsule_padding"))
+      .setDesc(t("settings.tooltip_capsule_padding_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("4")
+          .setValue(this.plugin.settings.tooltipCapsulePadding.toString())
+          .onChange(async (value) => {
+            const padding = parseInt(value) || 4;
+            this.plugin.settings.tooltipCapsulePadding = padding;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.tooltip_line_height"))
+      .setDesc(t("settings.tooltip_line_height_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("1.5")
+          .setValue(this.plugin.settings.tooltipLineHeight.toString())
+          .onChange(async (value) => {
+            const lineHeight = parseFloat(value) || 1.5;
+            this.plugin.settings.tooltipLineHeight = lineHeight;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.tooltip_vertical_offset"))
+      .setDesc(t("settings.tooltip_vertical_offset_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("8")
+          .setValue(this.plugin.settings.tooltipVerticalOffset.toString())
+          .onChange(async (value) => {
+            const offset = parseInt(value) || 8;
+            this.plugin.settings.tooltipVerticalOffset = offset;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setHeading()
       .setName(t("settings.simple_task_relations"));
 
     new Setting(containerEl)

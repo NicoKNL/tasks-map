@@ -32,6 +32,14 @@ export interface TaskNodeData {
   dueProximityColor?: string;
   scheduleProximityDays?: number;
   scheduleProximityColor?: string;
+  // Date tooltip settings
+  showDateTooltips?: boolean;
+  tooltipMaxWidth?: number;
+  tooltipSpacing?: number;
+  tooltipFontSize?: number;
+  tooltipCapsulePadding?: number;
+  tooltipLineHeight?: number;
+  tooltipVerticalOffset?: number;
 }
 
 export interface TaskEdgeData {

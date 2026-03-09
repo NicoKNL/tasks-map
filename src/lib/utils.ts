@@ -1092,7 +1092,15 @@ export function createNodesFromTasks(
   dueProximityDays: number = 7,
   dueProximityColor: string = "#ef4444",
   scheduleProximityDays: number = 7,
-  scheduleProximityColor: string = "#f59e0b"
+  scheduleProximityColor: string = "#f59e0b",
+  // Date tooltip settings
+  showDateTooltips: boolean = true,
+  tooltipMaxWidth: number = 250,
+  tooltipSpacing: number = 6,
+  tooltipFontSize: number = 11,
+  tooltipCapsulePadding: number = 4,
+  tooltipLineHeight: number = 1.5,
+  tooltipVerticalOffset: number = 8
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1120,6 +1128,14 @@ export function createNodesFromTasks(
         dueProximityColor,
         scheduleProximityDays,
         scheduleProximityColor,
+        // Date tooltip settings
+        showDateTooltips,
+        tooltipMaxWidth,
+        tooltipSpacing,
+        tooltipFontSize,
+        tooltipCapsulePadding,
+        tooltipLineHeight,
+        tooltipVerticalOffset,
       },
       type: "task" as const,
       sourcePosition,
