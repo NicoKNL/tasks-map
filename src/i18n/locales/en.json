@@ -82,7 +82,20 @@
     "tooltip_line_height": "Line height",
     "tooltip_line_height_desc": "Line height multiplier for tooltip (default: 1.5)",
     "tooltip_vertical_offset": "Vertical offset",
-    "tooltip_vertical_offset_desc": "Vertical offset above node in pixels (default: 8)"
+    "tooltip_vertical_offset_desc": "Vertical offset above node in pixels (default: 8)",
+    "ai_integration": "AI Integration",
+    "enable_ai": "Enable AI integration",
+    "enable_ai_desc": "Enable AI features for predicting next tasks",
+    "ai_provider": "AI Provider",
+    "ai_provider_desc": "Select AI provider",
+    "ai_model": "Model",
+    "ai_model_desc": "Model name (e.g., gpt-4o-mini, claude-3-5-sonnet, gemini-2.0-flash)",
+    "ai_api_key": "API Key",
+    "ai_api_key_desc": "Your API key for the selected provider",
+    "ai_base_url": "Base URL",
+    "ai_base_url_desc": "Optional custom base URL for API (default: provider-specific)",
+    "ai_prompt": "Prompt",
+    "ai_prompt_desc": "Prompt template for predicting next tasks. Use {currentTask} and {relatedTasks} placeholders."
   },
   "filters": {
     "status": "Status",

@@ -1088,6 +1088,8 @@ export function createNodesFromTasks(
   tagStaticColor: string = "#3b82f6",
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void,
+  // eslint-disable-next-line no-unused-vars
+  onAiNext?: (taskId: string) => Promise<void>,
   // Proximity color settings
   dueProximityDays: number = 7,
   dueProximityColor: string = "#ef4444",
@@ -1121,6 +1123,7 @@ export function createNodesFromTasks(
         tagColorSeed,
         tagStaticColor,
         onDeleteTask,
+        onAiNext,
         width: dimensions.width,
         height: dimensions.height,
         // Proximity color settings

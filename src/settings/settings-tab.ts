@@ -502,6 +502,94 @@ export class TasksMapSettingTab extends PluginSettingTab {
     // Initialize preview
     updatePreview(this.plugin.settings.linkingStyle);
 
+    // AI Integration settings
+    new Setting(containerEl)
+      .setHeading()
+      .setName(t("settings.ai_integration"));
+
+    new Setting(containerEl)
+      .setName(t("settings.enable_ai"))
+      .setDesc(t("settings.enable_ai_desc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.aiEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.aiEnabled = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.ai_provider"))
+      .setDesc(t("settings.ai_provider_desc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("openai", "OpenAI")
+          .addOption("anthropic", "Anthropic")
+          .addOption("gemini", "Google Gemini")
+          .addOption("custom", "Custom")
+          .setValue(this.plugin.settings.aiProvider)
+          .onChange(async (value) => {
+            this.plugin.settings.aiProvider = value;
+            await this.plugin.saveSettings();
+            // Optionally update model dropdown based on provider
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.ai_model"))
+      .setDesc(t("settings.ai_model_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("gpt-4o-mini")
+          .setValue(this.plugin.settings.aiModel)
+          .onChange(async (value) => {
+            this.plugin.settings.aiModel = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.ai_api_key"))
+      .setDesc(t("settings.ai_api_key_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("sk-...")
+          .setValue(this.plugin.settings.aiApiKey)
+          .onChange(async (value) => {
+            this.plugin.settings.aiApiKey = value;
+            await this.plugin.saveSettings();
+          })
+          // @ts-ignore
+          .inputEl.type = "password"
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.ai_base_url"))
+      .setDesc(t("settings.ai_base_url_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("https://api.openai.com/v1")
+          .setValue(this.plugin.settings.aiBaseUrl)
+          .onChange(async (value) => {
+            this.plugin.settings.aiBaseUrl = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.ai_prompt"))
+      .setDesc(t("settings.ai_prompt_desc"))
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("Given the following task and its related tasks, predict the next logical task...")
+          .setValue(this.plugin.settings.aiPrompt)
+          .onChange(async (value) => {
+            this.plugin.settings.aiPrompt = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
     new Setting(containerEl)
       .setHeading()
       .setName(t("settings.advanced_options"));

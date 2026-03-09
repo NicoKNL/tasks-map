@@ -82,7 +82,20 @@
     "tooltip_line_height": "行高",
     "tooltip_line_height_desc": "悬浮提示的行高倍数（默认：1.5）",
     "tooltip_vertical_offset": "垂直偏移",
-    "tooltip_vertical_offset_desc": "节点上方的垂直偏移量（像素，默认：8）"
+    "tooltip_vertical_offset_desc": "节点上方的垂直偏移量（像素，默认：8）",
+    "ai_integration": "AI 集成",
+    "enable_ai": "启用 AI 集成",
+    "enable_ai_desc": "启用 AI 功能以预测下一个任务",
+    "ai_provider": "AI 提供商",
+    "ai_provider_desc": "选择 AI 提供商",
+    "ai_model": "模型",
+    "ai_model_desc": "模型名称（例如：gpt-4o-mini, claude-3-5-sonnet, gemini-2.0-flash）",
+    "ai_api_key": "API 密钥",
+    "ai_api_key_desc": "所选提供商的 API 密钥",
+    "ai_base_url": "基础 URL",
+    "ai_base_url_desc": "可自定义的 API 基础 URL（默认：提供商特定）",
+    "ai_prompt": "提示词",
+    "ai_prompt_desc": "预测下一个任务的提示词模板。使用 {currentTask} 和 {relatedTasks} 占位符。"
   },
   "filters": {
     "status": "状态",
