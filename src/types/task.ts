@@ -27,6 +27,11 @@ export interface TaskNodeData {
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
   onCreateTasked?: (taskLine: string) => void;
+  // Proximity color settings
+  dueProximityDays?: number;
+  dueProximityColor?: string;
+  scheduleProximityDays?: number;
+  scheduleProximityColor?: string;
 }
 
 export interface TaskEdgeData {

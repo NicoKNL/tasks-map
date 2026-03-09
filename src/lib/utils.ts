@@ -1087,7 +1087,12 @@ export function createNodesFromTasks(
   tagColorSeed: number = 42,
   tagStaticColor: string = "#3b82f6",
   // eslint-disable-next-line no-unused-vars
-  onDeleteTask?: (taskId: string) => void
+  onDeleteTask?: (taskId: string) => void,
+  // Proximity color settings
+  dueProximityDays: number = 7,
+  dueProximityColor: string = "#ef4444",
+  scheduleProximityDays: number = 7,
+  scheduleProximityColor: string = "#f59e0b"
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1110,6 +1115,11 @@ export function createNodesFromTasks(
         onDeleteTask,
         width: dimensions.width,
         height: dimensions.height,
+        // Proximity color settings
+        dueProximityDays,
+        dueProximityColor,
+        scheduleProximityDays,
+        scheduleProximityColor,
       },
       type: "task" as const,
       sourcePosition,
@@ -1284,4 +1294,150 @@ export function getTagColor(
   const lightness = 45; // Dark enough for white text
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+/**
+ * Extract a date of specific type from task text
+ * @param taskText The full task text
+ * @param dateType Type of date to extract ('due', 'scheduled', 'start', 'done', 'created', 'canceled')
+ * @returns Date string in YYYY-MM-DD format, or null if not found
+ */
+export function extractDateFromTaskText(
+  taskText: string,
+  dateType: string
+): string | null {
+  if (!validDateTypes.includes(dateType)) {
+    return null;
+  }
+
+  const patterns = formatPatterns[dateType];
+  if (!patterns) {
+    return null;
+  }
+
+  // Try emoji format first
+  const emojiPattern = patterns.emoji;
+  const emojiMatch = taskText.match(emojiPattern);
+  if (emojiMatch) {
+    // Extract date part after emoji
+    const parts = emojiMatch[0].split(/\s+/);
+    if (parts.length >= 2) {
+      // Return the date part (remove emoji)
+      return parts[1];
+    }
+  }
+
+  // Try dataview format
+  const dataviewPattern = patterns.dataview;
+  const dataviewMatch = taskText.match(dataviewPattern);
+  if (dataviewMatch) {
+    // Extract date from [[type::date]] format
+    const match = dataviewMatch[0];
+    const dateMatch = match.match(/::([^\]]+)\]\]/);
+    if (dateMatch && dateMatch[1]) {
+      return dateMatch[1];
+    }
+  }
+
+  // Try CSV format (due:2023-10-05)
+  const csvPattern = new RegExp(`\\s+${dateType}:([^\\s,]+)`, "g");
+  const csvMatch = taskText.match(csvPattern);
+  if (csvMatch) {
+    // Get first match
+    const match = csvMatch[0];
+    const dateMatch = match.match(new RegExp(`${dateType}:([^\\s,]+)`));
+    if (dateMatch && dateMatch[1]) {
+      return dateMatch[1];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Calculate color based on proximity to target date
+ * @param baseColor Original node color (CSS color value)
+ * @param targetColor Target proximity color (CSS color value)
+ * @param daysRemaining Days remaining until target date (positive = future, negative = past)
+ * @param proximityDays Number of days when gradient starts (e.g., 7 means color starts changing 7 days before)
+ * @returns CSS color string interpolated between baseColor and targetColor
+ */
+export function calculateProximityColor(
+  baseColor: string,
+  targetColor: string,
+  daysRemaining: number,
+  proximityDays: number
+): string {
+  // If daysRemaining is greater than proximityDays, use base color
+  if (daysRemaining > proximityDays) {
+    return baseColor;
+  }
+
+  // If daysRemaining is 0 or negative, use target color
+  if (daysRemaining <= 0) {
+    return targetColor;
+  }
+
+  // Linear interpolation between baseColor and targetColor
+  // Ratio = 1 - (daysRemaining / proximityDays)
+  // As daysRemaining decreases from proximityDays to 0, ratio increases from 0 to 1
+  const ratio = 1 - (daysRemaining / proximityDays);
+
+  // Simple color interpolation - assumes colors are in hex format
+  // For simplicity, we'll use CSS rgba() for interpolation
+  // Convert hex colors to RGB
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+  };
+
+  const rgb1 = hexToRgb(baseColor);
+  const rgb2 = hexToRgb(targetColor);
+
+  const r = Math.round(rgb1.r + (rgb2.r - rgb1.r) * ratio);
+  const g = Math.round(rgb1.g + (rgb2.g - rgb1.g) * ratio);
+  const b = Math.round(rgb1.b + (rgb2.b - rgb1.b) * ratio);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+/**
+ * Calculate days remaining between a date string and today
+ * @param dateStr Date string in YYYY-MM-DD format (or relative date like 'today', 'tomorrow')
+ * @returns Number of days remaining (positive = future, negative = past)
+ */
+export function daysRemainingFromToday(dateStr: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let targetDate: Date;
+
+  // Handle relative dates
+  if (dateStr.toLowerCase() === 'today') {
+    targetDate = new Date(today);
+  } else if (dateStr.toLowerCase() === 'tomorrow') {
+    targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + 1);
+  } else if (dateStr.toLowerCase() === 'yesterday') {
+    targetDate = new Date(today);
+    targetDate.setDate(today.getDate() - 1);
+  } else {
+    // Try parsing as YYYY-MM-DD
+    targetDate = new Date(dateStr);
+    if (isNaN(targetDate.getTime())) {
+      // Invalid date, return a large number so color doesn't change
+      return 999;
+    }
+  }
+
+  targetDate.setHours(0, 0, 0, 0);
+
+  const diffMs = targetDate.getTime() - today.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  return diffDays;
 }

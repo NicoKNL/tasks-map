@@ -18,6 +18,12 @@ export interface TasksMapSettings {
 
   // Language setting
   language: Language;
+
+  // Proximity color settings
+  dueProximityDays: number;
+  dueProximityColor: string;
+  scheduleProximityDays: number;
+  scheduleProximityColor: string;
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -38,4 +44,10 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
 
   // Language default
   language: "en",
+
+  // Proximity color defaults
+  dueProximityDays: 7,
+  dueProximityColor: "#ef4444", // red-500
+  scheduleProximityDays: 7,
+  scheduleProximityColor: "#f59e0b", // amber-500
 };

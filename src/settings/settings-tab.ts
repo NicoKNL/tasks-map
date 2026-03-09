@@ -267,6 +267,62 @@ export class TasksMapSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setHeading()
+      .setName(t("settings.proximity_colors"));
+
+    new Setting(containerEl)
+      .setName(t("settings.due_proximity_days"))
+      .setDesc(t("settings.due_proximity_days_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("7")
+          .setValue(this.plugin.settings.dueProximityDays.toString())
+          .onChange(async (value) => {
+            const days = parseInt(value) || 7;
+            this.plugin.settings.dueProximityDays = days;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.due_proximity_color"))
+      .setDesc(t("settings.due_proximity_color_desc"))
+      .addColorPicker((colorPicker) =>
+        colorPicker
+          .setValue(this.plugin.settings.dueProximityColor)
+          .onChange(async (value) => {
+            this.plugin.settings.dueProximityColor = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.schedule_proximity_days"))
+      .setDesc(t("settings.schedule_proximity_days_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("7")
+          .setValue(this.plugin.settings.scheduleProximityDays.toString())
+          .onChange(async (value) => {
+            const days = parseInt(value) || 7;
+            this.plugin.settings.scheduleProximityDays = days;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.schedule_proximity_color"))
+      .setDesc(t("settings.schedule_proximity_color_desc"))
+      .addColorPicker((colorPicker) =>
+        colorPicker
+          .setValue(this.plugin.settings.scheduleProximityColor)
+          .onChange(async (value) => {
+            this.plugin.settings.scheduleProximityColor = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setHeading()
       .setName(t("settings.simple_task_relations"));
 
     new Setting(containerEl)

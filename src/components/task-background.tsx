@@ -10,6 +10,7 @@ interface TaskBackgroundProps {
   width?: number;
   height?: number;
   children: React.ReactNode;
+  backgroundColor?: string;
 }
 
 export function TaskBackground({
@@ -21,6 +22,7 @@ export function TaskBackground({
   width,
   height,
   children,
+  backgroundColor,
 }: TaskBackgroundProps) {
   const getStatusClass = () => {
     switch (status) {
@@ -52,6 +54,9 @@ export function TaskBackground({
   }
   if (height !== undefined) {
     style.height = height;
+  }
+  if (backgroundColor !== undefined) {
+    style.backgroundColor = backgroundColor;
   }
 
   return (

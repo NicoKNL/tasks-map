@@ -21,6 +21,7 @@ import {
   removeStarFromTaskInVault,
 } from "../lib/utils";
 import { TagsContext } from "../contexts/context";
+import { extractDateFromTaskText, calculateProximityColor, daysRemainingFromToday } from "../lib/utils";
 
 export const NODEWIDTH = 250;
 export const NODEHEIGHT = 120;
@@ -36,6 +37,11 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
     onDeleteTask,
+    // Proximity color settings
+    dueProximityDays = 7,
+    dueProximityColor = "#ef4444",
+    scheduleProximityDays = 7,
+    scheduleProximityColor = "#f59e0b",
   } = data;
   const width = data.width;
   const height = data.height;
@@ -49,6 +55,57 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const [tagError, setTagError] = useState(false);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary);
+
+  // Calculate background color based on proximity to due/scheduled dates
+  const backgroundColor = React.useMemo(() => {
+    // Detect theme
+    const isDarkTheme = typeof document !== 'undefined' &&
+      document.documentElement.classList.contains('theme-dark');
+
+    // Base colors for each status (approximating CSS variables)
+    const baseColors = {
+      todo: isDarkTheme ? "#2a2a2a" : "#f5f5f5",
+      in_progress: isDarkTheme ? "#1c5e8e" : "#77b4d3",
+      done: isDarkTheme ? "#1e3821" : "#6de27b",
+      canceled: isDarkTheme ? "#5c1a1a" : "#ff6b6b",
+    };
+
+    const baseColor = baseColors[status];
+
+    // Determine which date to check based on status
+    if (status === "todo") {
+      // Check scheduled date
+      const scheduledDate = extractDateFromTaskText(task.text, "scheduled");
+      if (scheduledDate) {
+        const daysRemaining = daysRemainingFromToday(scheduledDate);
+        if (daysRemaining <= scheduleProximityDays) {
+          return calculateProximityColor(
+            baseColor,
+            scheduleProximityColor,
+            daysRemaining,
+            scheduleProximityDays
+          );
+        }
+      }
+    } else if (status === "in_progress") {
+      // Check due date
+      const dueDate = extractDateFromTaskText(task.text, "due");
+      if (dueDate) {
+        const daysRemaining = daysRemainingFromToday(dueDate);
+        if (daysRemaining <= dueProximityDays) {
+          return calculateProximityColor(
+            baseColor,
+            dueProximityColor,
+            daysRemaining,
+            dueProximityDays
+          );
+        }
+      }
+    }
+
+    // Return base color if no date proximity effect applies
+    return baseColor;
+  }, [status, task.text, dueProximityDays, dueProximityColor, scheduleProximityDays, scheduleProximityColor]);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
@@ -154,6 +211,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
       selected={selected}
       width={width}
       height={height}
+      backgroundColor={backgroundColor}
     >
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />

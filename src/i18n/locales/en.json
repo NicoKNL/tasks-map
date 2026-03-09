@@ -58,7 +58,16 @@
     "debug_visualization": "Debug visualization",
     "debug_visualization_desc": "Show additional debug information in the graph view",
     "language": "Language",
-    "language_desc": "Select the language for the plugin interface"
+    "language_desc": "Select the language for the plugin interface",
+    "proximity_colors": "Proximity Colors",
+    "due_proximity_days": "Due proximity days",
+    "due_proximity_days_desc": "Number of days before due date when color gradient starts (default: 7)",
+    "due_proximity_color": "Due proximity color",
+    "due_proximity_color_desc": "Color when due date is approaching (default: #ef4444)",
+    "schedule_proximity_days": "Schedule proximity days",
+    "schedule_proximity_days_desc": "Number of days before scheduled date when color gradient starts (default: 7)",
+    "schedule_proximity_color": "Schedule proximity color",
+    "schedule_proximity_color_desc": "Color when scheduled date is approaching (default: #f59e0b)"
   },
   "filters": {
     "status": "Status",

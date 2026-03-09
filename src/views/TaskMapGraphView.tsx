@@ -285,7 +285,12 @@ export default function TaskMapGraphView({
       settings.tagColorMode,
       settings.tagColorSeed,
       settings.tagStaticColor,
-      handleDeleteTask
+      handleDeleteTask,
+      // Proximity color settings
+      settings.dueProximityDays,
+      settings.dueProximityColor,
+      settings.scheduleProximityDays,
+      settings.scheduleProximityColor
     );
     let newEdges = createEdgesFromTasks(
       tasks,
