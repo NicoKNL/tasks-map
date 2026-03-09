@@ -417,10 +417,10 @@ export function getLayoutedElements(
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
 
-  // Store calculated dimensions for each node and compute max dimensions
+  // Store calculated dimensions for each node
   const nodeDimensions = new Map<string, { width: number; height: number }>();
-  let maxWidth = NODEWIDTH;
-  let maxHeight = NODEHEIGHT;
+  const allWidths: number[] = [];
+  const allHeights: number[] = [];
 
   nodes.forEach((node) => {
     // Get task from node data to estimate dimensions
@@ -432,51 +432,81 @@ export function getLayoutedElements(
     nodeDimensions.set(node.id, dimensions);
     dagreGraph.setNode(node.id, dimensions);
 
-    // Update max dimensions
-    maxWidth = Math.max(maxWidth, dimensions.width);
-    maxHeight = Math.max(maxHeight, dimensions.height);
+    // Collect dimensions for statistical analysis
+    allWidths.push(dimensions.width);
+    allHeights.push(dimensions.height);
   });
 
-  // Calculate spacing based on node dimensions and layout direction
-  // We want compact layout but still prevent node overlap
-  // Use percentage-based padding instead of fixed values
-  const NODE_PADDING_FACTOR = 0.05; // 5% of node size - more compact
-  const RANK_PADDING_FACTOR = 0.08; // 8% of node size - more compact
-  const MIN_PADDING = 3; // Minimum padding to ensure some separation
+  // Use fixed small spacing for compact layout
+  // This prevents large nodes from causing sparse layouts
 
-  // For TB (Top-to-Bottom) layout:
-  // - ranksep: vertical distance between ranks (should accommodate node height)
-  // - nodesep: horizontal distance between nodes in same rank (should accommodate node width)
-  // For LR (Left-to-Right) layout:
-  // - ranksep: horizontal distance between ranks (should accommodate node width)
-  // - nodesep: vertical distance between nodes in same rank (should accommodate node height)
+  // Calculate statistical measures to avoid over-spacing due to outliers
+  // Sort dimensions to calculate percentiles
+  allWidths.sort((a, b) => a - b);
+  allHeights.sort((a, b) => a - b);
+
+  // Helper function to calculate robust representative dimension
+  const getRobustRepresentative = (sortedValues: number[], defaultValue: number): number => {
+    if (sortedValues.length === 0) return defaultValue;
+
+    const n = sortedValues.length;
+
+    // Calculate median
+    const median = n % 2 === 0
+      ? (sortedValues[n / 2 - 1] + sortedValues[n / 2]) / 2
+      : sortedValues[Math.floor(n / 2)];
+
+    // Calculate first and third quartiles
+    const q1Index = Math.floor(n * 0.25);
+    const q3Index = Math.floor(n * 0.75);
+    const q1 = sortedValues[q1Index];
+    const q3 = sortedValues[q3Index];
+
+    // Interquartile range (IQR)
+    const iqr = q3 - q1;
+
+    // Upper bound for outliers: Q3 + 1.5 * IQR
+    const upperBound = q3 + 1.5 * iqr;
+
+    // Find the maximum value that's not an outlier
+    let robustMax = median;
+    for (let i = n - 1; i >= 0; i--) {
+      if (sortedValues[i] <= upperBound) {
+        robustMax = sortedValues[i];
+        break;
+      }
+    }
+
+    // For layout spacing, use median only (ignore larger nodes for spacing calculation)
+    // This prevents a single large node from making the entire layout sparse
+    return median;
+  };
+
+  // Use fixed small spacing for compact grid layout
+  const FIXED_NODESEP = 80; // Fixed horizontal spacing between nodes in same rank (reduced for tighter grid)
+  const FIXED_RANKSEP = 30; // Fixed vertical spacing between ranks (reduced for tighter grid)
 
   let nodesep, ranksep;
   if (rankdir === "TB") {
     // Vertical layout: nodes flow top to bottom
-    ranksep = maxHeight + Math.max(maxHeight * RANK_PADDING_FACTOR, MIN_PADDING);
-    nodesep = maxWidth + Math.max(maxWidth * NODE_PADDING_FACTOR, MIN_PADDING);
+    ranksep = FIXED_RANKSEP;
+    nodesep = FIXED_NODESEP;
   } else { // LR
     // Horizontal layout: nodes flow left to right
-    ranksep = maxWidth + Math.max(maxWidth * RANK_PADDING_FACTOR, MIN_PADDING);
-    nodesep = maxHeight + Math.max(maxHeight * NODE_PADDING_FACTOR, MIN_PADDING);
+    ranksep = FIXED_NODESEP;
+    nodesep = FIXED_RANKSEP;
   }
 
-  // Ensure we have at least some spacing even for small nodes
-  nodesep = Math.max(nodesep, NODEWIDTH * 0.5);
-  ranksep = Math.max(ranksep, NODEHEIGHT * 0.5);
-
-  // Set graph layout options
-  // Use tighter layout parameters for more compact arrangement
+  // Set graph layout options for compact grid layout
   dagreGraph.setGraph({
     rankdir,
     nodesep,
     ranksep,
-    edgesep: 5, // reduced from 10 for tighter edge spacing
-    ranker: "tight-tree", // try to minimize edge lengths and crossings
-    align: "UL", // align nodes to upper left
-    marginx: 10, // reduced margins
-    marginy: 10,
+    edgesep: 10, // further reduced for tighter edge spacing
+    ranker: "tight-tree", // minimize edge lengths and crossings
+    align: "UL", // align nodes to upper left (grid alignment)
+    marginx: 15, // minimal margins
+    marginy: 15,
   });
 
   edges.forEach((edge) => {
@@ -484,7 +514,8 @@ export function getLayoutedElements(
   });
   dagre.layout(dagreGraph);
 
-  return nodes.map((node) => {
+  // Get initial layouted positions with their dimensions
+  const nodesWithDimensions = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     const dimensions = nodeDimensions.get(node.id) || {
       width: NODEWIDTH,
@@ -493,20 +524,30 @@ export function getLayoutedElements(
 
     if (!nodeWithPosition) {
       return {
-        ...node,
-        position: { x: 0, y: 0 },
+        node: {
+          ...node,
+          position: { x: 0, y: 0 },
+        },
+        dimensions,
       };
     } else {
       return {
-        ...node,
-        position: {
-          // Center the node at the position dagre calculated
-          x: nodeWithPosition.x - dimensions.width / 2,
-          y: nodeWithPosition.y - dimensions.height / 2,
+        node: {
+          ...node,
+          position: {
+            // Center the node at the position dagre calculated
+            x: nodeWithPosition.x - dimensions.width / 2,
+            y: nodeWithPosition.y - dimensions.height / 2,
+          },
         },
+        dimensions,
       };
     }
   });
+
+  // Minimal post-processing to resolve overlaps while maintaining grid alignment
+  const compactedNodes = compactLayout(nodesWithDimensions, rankdir);
+  return compactedNodes;
 }
 
 /**
@@ -1149,6 +1190,73 @@ export function checkDataviewPlugin(app: any) {
     isReady: isInstalled && isEnabled && isLoaded,
     getMessage,
   };
+}
+
+/**
+ * Post-process layout to make it more compact while preventing node overlap
+ */
+function compactLayout(
+  nodesWithDimensions: { node: Node; dimensions: { width: number; height: number } }[],
+  rankdir: "TB" | "LR"
+): Node[] {
+  if (nodesWithDimensions.length <= 1) {
+    return nodesWithDimensions.map(({ node }) => node);
+  }
+
+  // For now, return nodes without compaction to preserve grid alignment
+  // We'll only do minimal overlap resolution if needed
+  const adjustedNodes = nodesWithDimensions.map(({ node }) => ({ ...node }));
+
+  // Only resolve overlaps if they exist, but try to maintain grid structure
+  // We'll do a single pass and only move nodes minimally
+  for (let i = 0; i < adjustedNodes.length; i++) {
+    const nodeA = adjustedNodes[i];
+    const dimsA = nodesWithDimensions[i].dimensions;
+
+    for (let j = i + 1; j < adjustedNodes.length; j++) {
+      const nodeB = adjustedNodes[j];
+      const dimsB = nodesWithDimensions[j].dimensions;
+
+      // Check for overlap
+      const overlapX = Math.max(0,
+        Math.min(nodeA.position.x + dimsA.width, nodeB.position.x + dimsB.width) -
+        Math.max(nodeA.position.x, nodeB.position.x)
+      );
+
+      const overlapY = Math.max(0,
+        Math.min(nodeA.position.y + dimsA.height, nodeB.position.y + dimsB.height) -
+        Math.max(nodeA.position.y, nodeB.position.y)
+      );
+
+      if (overlapX > 0 && overlapY > 0) {
+        // Nodes overlap, push them apart minimally
+        // Try to maintain original grid alignment by moving along primary axis
+        if (rankdir === "TB") {
+          // Vertical layout: move vertically to resolve overlap
+          if (nodeA.position.y < nodeB.position.y) {
+            // Move A up, B down
+            nodeA.position.y -= overlapY / 2;
+            nodeB.position.y += overlapY / 2;
+          } else {
+            nodeA.position.y += overlapY / 2;
+            nodeB.position.y -= overlapY / 2;
+          }
+        } else {
+          // Horizontal layout: move horizontally to resolve overlap
+          if (nodeA.position.x < nodeB.position.x) {
+            // Move A left, B right
+            nodeA.position.x -= overlapX / 2;
+            nodeB.position.x += overlapX / 2;
+          } else {
+            nodeA.position.x += overlapX / 2;
+            nodeB.position.x -= overlapX / 2;
+          }
+        }
+      }
+    }
+  }
+
+  return adjustedNodes;
 }
 
 /**
