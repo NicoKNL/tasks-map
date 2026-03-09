@@ -29,6 +29,8 @@ export interface TaskNodeData {
   onCreateTasked?: (taskLine: string) => void;
   // eslint-disable-next-line no-unused-vars
   onAiNext?: (taskId: string) => Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  onAiBefore?: (taskId: string) => Promise<void>;
   // Proximity color settings
   dueProximityDays?: number;
   dueProximityColor?: string;

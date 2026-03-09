@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MoreVertical, Trash2, Brain } from "lucide-react";
+import { MoreVertical, Trash2, Brain, ChevronUp } from "lucide-react";
 import { App } from "obsidian";
 import { BaseTask } from "src/types/task";
 import { SquarePen } from "lucide-react";
@@ -13,6 +13,7 @@ interface TaskMenuProps {
   app: App;
   onTaskDeleted?: () => void;
   onAiNext?: () => Promise<void>;
+  onAiBefore?: () => Promise<void>;
 }
 
 const TaskMenu = ({
@@ -20,6 +21,7 @@ const TaskMenu = ({
   app,
   onTaskDeleted,
   onAiNext,
+  onAiBefore,
 }: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -126,6 +128,23 @@ const TaskMenu = ({
     }
   };
 
+  const handleAiBefore = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsOpen(false);
+
+    if (!onAiBefore) {
+      return;
+    }
+
+    try {
+      await onAiBefore();
+    } catch (error) {
+      console.error("AI Before failed:", error);
+    }
+  };
+
   return (
     <div className="tasks-map-task-menu nodrag" ref={menuRef}>
       <button
@@ -141,6 +160,10 @@ const TaskMenu = ({
           <button className="tasks-map-task-menu-item" onClick={handleEdit}>
             <SquarePen size={12} />
             <span>Edit task</span>
+          </button>
+          <button className="tasks-map-task-menu-item" onClick={handleAiBefore}>
+            <Brain size={12} />
+            <span>AI Before</span>
           </button>
           <button className="tasks-map-task-menu-item" onClick={handleAiNext}>
             <Brain size={12} />

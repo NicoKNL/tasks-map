@@ -1090,6 +1090,8 @@ export function createNodesFromTasks(
   onDeleteTask?: (taskId: string) => void,
   // eslint-disable-next-line no-unused-vars
   onAiNext?: (taskId: string) => Promise<void>,
+  // eslint-disable-next-line no-unused-vars
+  onAiBefore?: (taskId: string) => Promise<void>,
   // Proximity color settings
   dueProximityDays: number = 7,
   dueProximityColor: string = "#ef4444",
@@ -1124,6 +1126,7 @@ export function createNodesFromTasks(
         tagStaticColor,
         onDeleteTask,
         onAiNext,
+        onAiBefore,
         width: dimensions.width,
         height: dimensions.height,
         // Proximity color settings
@@ -1459,4 +1462,49 @@ export function daysRemainingFromToday(dateStr: string): number {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   return diffDays;
+}
+
+/**
+ * Find all related task IDs (connected via dependencies) for a given task ID.
+ * Uses the tasks array to build adjacency list from incomingLinks.
+ * Returns a Set of task IDs including the given task ID.
+ */
+export function findRelatedTaskIds(tasks: BaseTask[], taskId: string): Set<string> {
+  // Build adjacency list: map from task ID to list of neighbor IDs (both parents and children)
+  const adjacency = new Map<string, string[]>();
+
+  // Initialize adjacency for all tasks
+  tasks.forEach(task => {
+    adjacency.set(task.id, []);
+  });
+
+  // Add edges based on incomingLinks (parent -> child)
+  tasks.forEach(task => {
+    task.incomingLinks.forEach(parentId => {
+      // parentId may not exist in tasks (if filtered out), but we still add edge if parent exists
+      if (adjacency.has(parentId)) {
+        adjacency.get(parentId)!.push(task.id);
+        adjacency.get(task.id)!.push(parentId); // undirected, so add reverse
+      }
+    });
+  });
+
+  // BFS to find all connected tasks
+  const visited = new Set<string>();
+  const queue = [taskId];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    if (visited.has(currentId)) continue;
+    visited.add(currentId);
+
+    const neighbors = adjacency.get(currentId) || [];
+    for (const neighborId of neighbors) {
+      if (!visited.has(neighborId)) {
+        queue.push(neighborId);
+      }
+    }
+  }
+
+  return visited;
 }

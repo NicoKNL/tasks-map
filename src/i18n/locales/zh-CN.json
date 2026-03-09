@@ -94,8 +94,10 @@
     "ai_api_key_desc": "所选提供商的 API 密钥",
     "ai_base_url": "基础 URL",
     "ai_base_url_desc": "可自定义的 API 基础 URL（默认：提供商特定）",
-    "ai_prompt": "提示词",
-    "ai_prompt_desc": "预测下一个任务的提示词模板。使用 {currentTask} 和 {relatedTasks} 占位符。"
+    "ai_prompt": "下一个任务提示词",
+    "ai_prompt_desc": "预测下一个任务的提示词模板。使用 {currentTask} 和 {relatedTasks} 占位符。",
+    "ai_before_prompt": "上一个任务提示词",
+    "ai_before_prompt_desc": "预测上一个任务的提示词模板。使用 {currentTask} 和 {relatedTasks} 占位符。"
   },
   "filters": {
     "status": "状态",

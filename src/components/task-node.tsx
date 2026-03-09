@@ -39,6 +39,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagStaticColor = "#3b82f6",
     onDeleteTask,
     onAiNext,
+    onAiBefore,
     // Proximity color settings
     dueProximityDays = 7,
     dueProximityColor = "#ef4444",
@@ -284,6 +285,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           app={app}
           onTaskDeleted={() => onDeleteTask?.(task.id)}
           {...(onAiNext ? { onAiNext: () => onAiNext(task.id) } : {})}
+          {...(onAiBefore ? { onAiBefore: () => onAiBefore(task.id) } : {})}
         />
       </div>
 

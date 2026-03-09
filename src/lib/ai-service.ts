@@ -23,7 +23,12 @@ export class AIService {
     }
     
     // Construct prompt from template
-    const prompt = this.constructPrompt(currentTask, relatedTasks, settings.aiPrompt);
+    const prompt = this.constructPrompt(
+      currentTask,
+      relatedTasks,
+      "用任务相应的语言回复，仅需提供任务描述和标签，不包含其他tasks属性" +
+        settings.aiPrompt
+    );
     
     try {
       let result: string;
@@ -50,8 +55,56 @@ export class AIService {
       console.error("AI prediction failed:", error);
       throw error;
     }
+    }
+
+  /**
+   * Predict the previous task based on current task and related tasks
+   */
+  static async predictPreviousTask(request: AIPredictionRequest): Promise<string> {
+    const { currentTask, relatedTasks, settings } = request;
+
+    if (!settings.aiEnabled) {
+      throw new Error("AI integration is not enabled");
+    }
+
+    if (!settings.aiApiKey.trim()) {
+      throw new Error("API key is required");
+    }
+
+    // Construct prompt from before template
+    const prompt = this.constructPrompt(
+      currentTask,
+      relatedTasks,
+      "用任务相应的语言回复，仅需提供任务描述和标签，不包含其他tasks属性" + settings.aiBeforePrompt
+    );
+
+    try {
+      let result: string;
+      switch (settings.aiProvider) {
+        case "openai":
+          result = await this.callOpenAI(prompt, settings);
+          break;
+        case "anthropic":
+          result = await this.callAnthropic(prompt, settings);
+          break;
+        case "gemini":
+          result = await this.callGemini(prompt, settings);
+          break;
+        case "custom":
+          result = await this.callCustomAPI(prompt, settings);
+          break;
+        default:
+          throw new Error(`Unsupported AI provider: ${settings.aiProvider}`);
+      }
+
+      // Clean up the response
+      return this.cleanResponse(result);
+    } catch (error) {
+      console.error("AI prediction failed:", error);
+      throw error;
+    }
   }
-  
+
   private static constructPrompt(currentTask: string, relatedTasks: string[], template: string): string {
     // Replace placeholders in the template
     let prompt = template.replace(/{currentTask}/g, currentTask);

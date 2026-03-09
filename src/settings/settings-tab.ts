@@ -591,6 +591,19 @@ export class TasksMapSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName(t("settings.ai_before_prompt"))
+      .setDesc(t("settings.ai_before_prompt_desc"))
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("Given the following task and its related tasks, predict what task likely came before this one...")
+          .setValue(this.plugin.settings.aiBeforePrompt)
+          .onChange(async (value) => {
+            this.plugin.settings.aiBeforePrompt = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setHeading()
       .setName(t("settings.advanced_options"));
 

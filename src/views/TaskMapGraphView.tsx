@@ -18,6 +18,7 @@ import {
   createNodesFromTasks,
   createEdgesFromTasks,
   addIsolatedTaskLineToVault,
+  findRelatedTaskIds,
 } from "src/lib/utils";
 import { BaseTask, RawTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
@@ -231,33 +232,11 @@ export default function TaskMapGraphView({
   }, []);
 
   const handleAiNext = useCallback(async (taskId: string) => {
-    // Find all related tasks (recursively through edges)
-    const relatedTaskIds = new Set<string>();
-    const visited = new Set<string>();
-    const queue = [taskId];
-
-    while (queue.length > 0) {
-      const currentId = queue.shift()!;
-      if (visited.has(currentId)) continue;
-      visited.add(currentId);
-      relatedTaskIds.add(currentId);
-
-      // Find all edges connected to this node
-      const connectedEdges = edges.filter(
-        edge => edge.source === currentId || edge.target === currentId
-      );
-
-      for (const edge of connectedEdges) {
-        const neighborId = edge.source === currentId ? edge.target : edge.source;
-        if (!visited.has(neighborId)) {
-          queue.push(neighborId);
-        }
-      }
-    }
-
+    // Find all related tasks (recursively through dependencies)
+    const relatedTaskIds = findRelatedTaskIds(tasks, taskId);
     // Remove the current task from related tasks (we'll treat it separately)
     relatedTaskIds.delete(taskId);
-
+    console.info('Related task IDs:', Array.from(relatedTaskIds));
     // Get the current task
     const currentTask = tasks.find(t => t.id === taskId);
     if (!currentTask) {
@@ -271,6 +250,8 @@ export default function TaskMapGraphView({
       .filter((task): task is BaseTask => task !== undefined)
       .map(task => task.text);
 
+    console.info(relatedTasks);
+
     // Check if AI is enabled and configured
     if (!settings.aiEnabled) {
       new Notice("AI integration is not enabled. Please enable it in settings.");
@@ -283,16 +264,21 @@ export default function TaskMapGraphView({
     }
 
     try {
-      new Notice("Asking AI for next task prediction...");
-
       const nextTaskText = await AIService.predictNextTask({
         currentTask: currentTask.text,
         relatedTasks,
         settings,
       });
 
+      new Notice(nextTaskText);
+
       if (!nextTaskText.trim()) {
         new Notice("AI returned empty response");
+        return;
+      }
+
+      if (nextTaskText == currentTask.summary) {
+        new Notice("AI predict failure");
         return;
       }
 
@@ -342,7 +328,108 @@ export default function TaskMapGraphView({
       const message = error instanceof Error ? error.message : String(error);
       new Notice(`Failed to create next task: ${message}`);
     }
-  }, [tasks, edges, settings, app, vault, reloadTasks]);
+    }, [tasks, settings, app, vault, reloadTasks]);
+
+  const handleAiBefore = useCallback(async (taskId: string) => {
+    // Find all related tasks (recursively through dependencies)
+    const relatedTaskIds = findRelatedTaskIds(tasks, taskId);
+    // Remove the current task from related tasks (we'll treat it separately)
+    relatedTaskIds.delete(taskId);
+    console.info('Related task IDs:', Array.from(relatedTaskIds));
+    // Get the current task
+    const currentTask = tasks.find(t => t.id === taskId);
+    if (!currentTask) {
+      new Notice("Current task not found");
+      return;
+    }
+
+    // Get related tasks
+    const relatedTasks = Array.from(relatedTaskIds)
+      .map(id => tasks.find(t => t.id === id))
+      .filter((task): task is BaseTask => task !== undefined)
+      .map(task => task.text);
+
+    console.info(relatedTasks);
+
+    // Check if AI is enabled and configured
+    if (!settings.aiEnabled) {
+      new Notice(
+        "AI integration is not enabled. Please enable it in settings."
+      );
+      return;
+    }
+
+    if (!settings.aiApiKey.trim()) {
+      new Notice("API key is required for AI integration.");
+      return;
+    }
+
+    try {
+      const previousTaskText = await AIService.predictPreviousTask({
+        currentTask: currentTask.text,
+        relatedTasks,
+        settings,
+      });
+
+      new Notice(previousTaskText);
+
+      if (!previousTaskText.trim()) {
+        new Notice("AI returned empty response");
+        return;
+      }
+
+      if (previousTaskText == currentTask.summary) {
+        new Notice("AI predict failure");
+        return;
+      }
+
+      // Create a new task line using the Tasks plugin API
+      // @ts-ignore
+      const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
+      if (!tasksPlugin?.apiV1) {
+        new Notice("Tasks plugin not found");
+        return;
+      }
+      const tasksApi = tasksPlugin.apiV1;
+
+      // Create a task line with the predicted text
+      const taskLine = `- [ ] ${previousTaskText}`;
+
+      // Add to inbox
+      await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
+
+      // Create edge between new task and current task (new task -> current task)
+      const factory = new TaskFactory();
+      const rawTask: RawTask = {
+        status: "todo",
+        text: taskLine,
+        link: {
+          path: settings.taskInbox,
+        },
+      };
+      const newTask = factory.parse(rawTask, "dataview");
+
+      // Add link from new task to current task (new task -> current task)
+      await addLinkSignsBetweenTasks(
+        vault,
+        newTask,
+        currentTask,
+        settings.linkingStyle
+      );
+
+      new Notice("Previous task created successfully!");
+
+      // Reload tasks to refresh the graph
+      setTimeout(() => {
+        reloadTasks();
+      }, 200);
+
+    } catch (error) {
+      console.error("AI previous task prediction failed:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      new Notice(`Failed to create previous task: ${message}`);
+    }
+      }, [tasks, settings, app, vault, reloadTasks]);
 
   const handleCreateTask = useCallback((taskLine: string) => {
     const rawTask: RawTask = {
@@ -402,6 +489,7 @@ export default function TaskMapGraphView({
       settings.tagStaticColor,
               handleDeleteTask,
         handleAiNext,
+        handleAiBefore,
         // Proximity color settings
       settings.dueProximityDays,
       settings.dueProximityColor,

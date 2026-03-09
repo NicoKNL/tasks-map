@@ -94,8 +94,10 @@
     "ai_api_key_desc": "Your API key for the selected provider",
     "ai_base_url": "Base URL",
     "ai_base_url_desc": "Optional custom base URL for API (default: provider-specific)",
-    "ai_prompt": "Prompt",
-    "ai_prompt_desc": "Prompt template for predicting next tasks. Use {currentTask} and {relatedTasks} placeholders."
+    "ai_prompt": "Next task prompt",
+    "ai_prompt_desc": "Prompt template for predicting next tasks. Use {currentTask} and {relatedTasks} placeholders.",
+    "ai_before_prompt": "Previous task prompt",
+    "ai_before_prompt_desc": "Prompt template for predicting previous tasks. Use {currentTask} and {relatedTasks} placeholders."
   },
   "filters": {
     "status": "Status",
