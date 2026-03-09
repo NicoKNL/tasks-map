@@ -21,7 +21,7 @@ import {
 } from "src/lib/utils";
 import { BaseTask, RawTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
-import TaskNode from "src/components/task-node";
+import TaskNode, { NODEWIDTH, NODEHEIGHT } from "src/components/task-node";
 import { NO_TAGS_VALUE } from "src/components/tag-select";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
@@ -503,17 +503,121 @@ export default function TaskMapGraphView({
 
   const onConnectEnd = useCallback(
     async (event: MouseEvent | TouchEvent) => {
-      const targetIsPane = !(event.target as HTMLElement)?.closest(
-        ".react-flow__node"
-      );
+      // Get mouse position at the end of connection
+      let clientX = 0;
+      let clientY = 0;
+
+      if (event instanceof MouseEvent) {
+        clientX = event.clientX;
+        clientY = event.clientY;
+      } else if (event instanceof TouchEvent && event.changedTouches.length > 0) {
+        clientX = event.changedTouches[0].clientX;
+        clientY = event.changedTouches[0].clientY;
+      }
+
+      // Convert screen coordinates to flow coordinates
+      const flowPosition = reactFlowInstance.screenToFlowPosition({
+        x: clientX,
+        y: clientY,
+      });
+
+      const x = flowPosition.x;
+      const y = flowPosition.y;
+
+      // Find node at the drop position
+      let targetNode = null;
+      let targetHandleType: 'source' | 'target' | null = null;
+
+      // Check all nodes to see if the drop position is within any node
+      for (const node of nodes) {
+        const nodeRect = {
+          x: node.position.x,
+          y: node.position.y,
+          width: node.width || NODEHEIGHT,
+          height: node.height || NODEWIDTH,
+        };
+
+        // Check if the drop position is within the node bounds
+        if (
+          x >= nodeRect.x &&
+          x <= nodeRect.x + nodeRect.width &&
+          y >= nodeRect.y &&
+          y <= nodeRect.y + nodeRect.height
+        ) {
+          targetNode = node;
+
+          // Determine which half of the node the drop is in
+          // For vertical layout: top half -> target (incoming), bottom half -> source (outgoing)
+          // For horizontal layout: left half -> target (incoming), right half -> source (outgoing)
+          const relativeX = x - nodeRect.x;
+          const relativeY = y - nodeRect.y;
+
+          if (settings.layoutDirection === "Vertical") {
+            // Vertical layout
+            if (relativeY < nodeRect.height / 2) {
+              // Top half - connect to target (incoming)
+              targetHandleType = 'target';
+            } else {
+              // Bottom half - connect to source (outgoing)
+              targetHandleType = 'source';
+            }
+          } else {
+            // Horizontal layout
+            if (relativeX < nodeRect.width / 2) {
+              // Left half - connect to target (incoming)
+              targetHandleType = 'target';
+            } else {
+              // Right half - connect to source (outgoing)
+              targetHandleType = 'source';
+            }
+          }
+          break;
+        }
+      }
 
       const connectionStartHandle = connectionStartHandleRef.current;
 
-      if (
-        targetIsPane &&
-        connectionStartHandle &&
-        connectionStartHandle.nodeId
-      ) {
+      if (targetNode && connectionStartHandle && connectionStartHandle.nodeId) {
+        // Connect to existing node
+        const {
+          nodeId: sourceNodeId,
+          handleType: sourceHandleType,
+        } = connectionStartHandle;
+
+        // Prevent connecting a node to itself
+        if (sourceNodeId === targetNode.id) {
+          connectionStartHandleRef.current = null;
+          return;
+        }
+
+        // Determine connection parameters based on handle types
+        let params;
+        if (sourceHandleType === 'source' && targetHandleType === 'target') {
+          // Normal connection: source -> target
+          params = {
+            source: sourceNodeId,
+            sourceHandle: connectionStartHandle.handleId,
+            target: targetNode.id,
+            targetHandle: targetHandleType,
+          };
+        } else if (sourceHandleType === 'target' && targetHandleType === 'source') {
+          // Reverse connection: target -> source (should be source -> target)
+          params = {
+            source: targetNode.id,
+            sourceHandle: targetHandleType,
+            target: sourceNodeId,
+            targetHandle: connectionStartHandle.handleId,
+          };
+        } else {
+          // Invalid combination (source->source or target->target)
+          connectionStartHandleRef.current = null;
+          return;
+        }
+
+        // Trigger the connection
+        onConnect(params);
+      } else if (!targetNode && connectionStartHandle && connectionStartHandle.nodeId) {
+        // Create new node only when dropped on empty space
         const {
           nodeId: sourceNodeId,
           handleType: sourceHandleType,
@@ -595,6 +699,9 @@ export default function TaskMapGraphView({
       onConnect,
       tasks,
       containerRef,
+      nodes,
+      vault,
+      reloadTasks,
     ]
   );
 
