@@ -94,10 +94,12 @@
     "ai_api_key_desc": "Your API key for the selected provider",
     "ai_base_url": "Base URL",
     "ai_base_url_desc": "Optional custom base URL for API (default: provider-specific)",
-    "ai_prompt": "Next task prompt",
-    "ai_prompt_desc": "Prompt template for predicting next tasks. Use {currentTask} and {relatedTasks} placeholders.",
-    "ai_before_prompt": "Previous task prompt",
-    "ai_before_prompt_desc": "Prompt template for predicting previous tasks. Use {currentTask} and {relatedTasks} placeholders."
+    "ai_prompt": "Custom additional requirements",
+    "ai_prompt_desc": "Optional custom requirements to add to the AI prompt. The system prompt will be automatically generated based on your language setting.",
+    "ai_before_prompt": "Custom previous task requirements",
+    "ai_before_prompt_desc": "Optional custom requirements for predicting previous tasks. The system prompt will be automatically generated based on your language setting.",
+    "ai_max_generated_tasks": "Max tasks to generate",
+    "ai_max_generated_tasks_desc": "Maximum number of tasks to generate in batch operations"
   },
   "filters": {
     "status": "Status",

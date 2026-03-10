@@ -604,6 +604,20 @@ export class TasksMapSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName(t("settings.ai_max_generated_tasks"))
+      .setDesc(t("settings.ai_max_generated_tasks_desc"))
+      .addText((text) =>
+        text
+          .setPlaceholder("1")
+          .setValue(this.plugin.settings.aiMaxGeneratedTasks.toString())
+          .onChange(async (value) => {
+            const count = parseInt(value) || 1;
+            this.plugin.settings.aiMaxGeneratedTasks = count;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setHeading()
       .setName(t("settings.advanced_options"));
 

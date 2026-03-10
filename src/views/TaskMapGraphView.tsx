@@ -34,6 +34,7 @@ import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
 import { TaskFactory } from "../lib/task-factory";
 import { AIService } from "../lib/ai-service";
+import { BatchAIService } from "../lib/batch-ai-service";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -264,25 +265,23 @@ export default function TaskMapGraphView({
     }
 
     try {
-      const nextTaskText = await AIService.predictNextTask({
+      const maxTasks = settings.aiMaxGeneratedTasks || 1;
+      let results = await BatchAIService.predictBatchTasks({
         currentTask: currentTask.text,
         relatedTasks,
         settings,
+        count: maxTasks,
       });
 
-      new Notice(nextTaskText);
+      // Filter out tasks that already exist in related tasks (including current task)
+      const existingTaskTexts = new Set([currentTask.text, ...relatedTasks]);
+      results = results.filter(result => !existingTaskTexts.has(result));
 
-      if (!nextTaskText.trim()) {
-        new Notice("AI returned empty response");
+      if (results.length === 0) {
+        new Notice("AI generated tasks already exist among related tasks. No new tasks created.");
         return;
       }
 
-      if (nextTaskText == currentTask.summary) {
-        new Notice("AI predict failure");
-        return;
-      }
-
-      // Create a new task line using the Tasks plugin API
       // @ts-ignore
       const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
       if (!tasksPlugin?.apiV1) {
@@ -292,31 +291,38 @@ export default function TaskMapGraphView({
       const tasksApi = tasksPlugin.apiV1;
 
       // Create a task line with the predicted text
-      const taskLine = `- [ ] ${nextTaskText}`;
+      const taskLines = results.map(result => `- [ ] ${result}`);
 
-      // Add to inbox
-      await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
+      let previousNewTask = currentTask;
+      for (let i = 0; i < taskLines.length; i++) {
+        const taskLine = taskLines[i];
 
-      // Create edge between current task and new task
-      const factory = new TaskFactory();
-      const rawTask: RawTask = {
-        status: "todo",
-        text: taskLine,
-        link: {
-          path: settings.taskInbox,
-        },
-      };
-      const newTask = factory.parse(rawTask, "dataview");
+        // Add to inbox
+        await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
 
-      // Add link between current task and new task
-      await addLinkSignsBetweenTasks(
-        vault,
-        currentTask,
-        newTask,
-        settings.linkingStyle
-      );
+        // Create edge between previous task and new task
+        const factory = new TaskFactory();
+        const rawTask: RawTask = {
+          status: "todo",
+          text: taskLine,
+          link: {
+            path: settings.taskInbox,
+          },
+        };
+        const newTask = factory.parse(rawTask, "dataview");
 
-      new Notice("Next task created successfully!");
+        // Add link between previous task and new task
+        await addLinkSignsBetweenTasks(
+          vault,
+          previousNewTask,
+          newTask,
+          settings.linkingStyle
+        );
+
+        previousNewTask = newTask;
+      }
+
+      new Notice(`Created ${results.length} next task(s) successfully!`);
 
       // Reload tasks to refresh the graph
       setTimeout(() => {
@@ -365,25 +371,23 @@ export default function TaskMapGraphView({
     }
 
     try {
-      const previousTaskText = await AIService.predictPreviousTask({
+      const maxTasks = settings.aiMaxGeneratedTasks || 1;
+      let results = await BatchAIService.predictBatchPreviousTasks({
         currentTask: currentTask.text,
         relatedTasks,
         settings,
+        count: maxTasks,
       });
 
-      new Notice(previousTaskText);
+      // Filter out tasks that already exist in related tasks (including current task)
+      const existingTaskTexts = new Set([currentTask.text, ...relatedTasks]);
+      results = results.filter(result => !existingTaskTexts.has(result));
 
-      if (!previousTaskText.trim()) {
-        new Notice("AI returned empty response");
+      if (results.length === 0) {
+        new Notice("AI generated tasks already exist among related tasks. No new tasks created.");
         return;
       }
 
-      if (previousTaskText == currentTask.summary) {
-        new Notice("AI predict failure");
-        return;
-      }
-
-      // Create a new task line using the Tasks plugin API
       // @ts-ignore
       const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
       if (!tasksPlugin?.apiV1) {
@@ -393,31 +397,40 @@ export default function TaskMapGraphView({
       const tasksApi = tasksPlugin.apiV1;
 
       // Create a task line with the predicted text
-      const taskLine = `- [ ] ${previousTaskText}`;
+      const taskLines = results.map(result => `- [ ] ${result}`);
 
-      // Add to inbox
-      await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
+      // Process previous tasks in reverse order
+      // so that the earliest task is created first
+      let nextNewTask = currentTask;
+      for (let i = taskLines.length - 1; i >= 0; i--) {
+        const taskLine = taskLines[i];
 
-      // Create edge between new task and current task (new task -> current task)
-      const factory = new TaskFactory();
-      const rawTask: RawTask = {
-        status: "todo",
-        text: taskLine,
-        link: {
-          path: settings.taskInbox,
-        },
-      };
-      const newTask = factory.parse(rawTask, "dataview");
+        // Add to inbox
+        await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
 
-      // Add link from new task to current task (new task -> current task)
-      await addLinkSignsBetweenTasks(
-        vault,
-        newTask,
-        currentTask,
-        settings.linkingStyle
-      );
+        // Create edge between new task and next task
+        const factory = new TaskFactory();
+        const rawTask: RawTask = {
+          status: "todo",
+          text: taskLine,
+          link: {
+            path: settings.taskInbox,
+          },
+        };
+        const newTask = factory.parse(rawTask, "dataview");
 
-      new Notice("Previous task created successfully!");
+        // Add link from new task to next task (new task -> next task)
+        await addLinkSignsBetweenTasks(
+          vault,
+          newTask,
+          nextNewTask,
+          settings.linkingStyle
+        );
+
+        nextNewTask = newTask;
+      }
+
+      new Notice(`Created ${results.length} previous task(s) successfully!`);
 
       // Reload tasks to refresh the graph
       setTimeout(() => {

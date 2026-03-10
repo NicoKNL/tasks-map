@@ -1,5 +1,7 @@
 import { Notice } from "obsidian";
 import { TasksMapSettings } from "../types/settings";
+import { PromptManager } from "./prompt-manager";
+import { Language } from "../i18n";
 
 export interface AIPredictionRequest {
   currentTask: string;
@@ -22,12 +24,14 @@ export class AIService {
       throw new Error("API key is required");
     }
     
-    // Construct prompt from template
-    const prompt = this.constructPrompt(
+    // Construct prompt using the new PromptManager
+    const language = settings.language as Language;
+    const userAdditionalReqs = PromptManager.getUserAdditionalReqs(settings);
+    const prompt = PromptManager.getNextTaskPrompt(
       currentTask,
       relatedTasks,
-      "用任务相应的语言回复，仅需提供任务描述和标签，不包含其他tasks属性" +
-        settings.aiPrompt
+      language,
+      userAdditionalReqs
     );
     
     try {
@@ -71,11 +75,14 @@ export class AIService {
       throw new Error("API key is required");
     }
 
-    // Construct prompt from before template
-    const prompt = this.constructPrompt(
+    // Construct prompt using the new PromptManager
+    const language = settings.language as Language;
+    const userAdditionalReqs = PromptManager.getUserPreviousAdditionalReqs(settings);
+    const prompt = PromptManager.getPreviousTaskPrompt(
       currentTask,
       relatedTasks,
-      "用任务相应的语言回复，仅需提供任务描述和标签，不包含其他tasks属性" + settings.aiBeforePrompt
+      language,
+      userAdditionalReqs
     );
 
     try {

@@ -42,6 +42,7 @@ export interface TasksMapSettings {
   aiBaseUrl: string;
   aiPrompt: string;
   aiBeforePrompt: string;
+  aiMaxGeneratedTasks: number;
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -84,6 +85,7 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
   aiModel: "gpt-4o-mini",
   aiApiKey: "",
   aiBaseUrl: "https://api.openai.com/v1",
-  aiPrompt: "Given the following task and its related tasks, predict the next logical task. Return only the task description in plain text, without any markdown formatting, numbering, or additional explanation.\n\nCurrent task: {currentTask}\n\nRelated tasks:\n{relatedTasks}\n\nNext task:",
-  aiBeforePrompt: "Given the following task and its related tasks, predict what task likely came before this one. Return only the task description in plain text, without any markdown formatting, numbering, or additional explanation.\n\nCurrent task: {currentTask}\n\nRelated tasks:\n{relatedTasks}\n\nPrevious task:",
+  aiPrompt: "",
+  aiBeforePrompt: "",
+  aiMaxGeneratedTasks: 1, // New setting for batch generation
 };
