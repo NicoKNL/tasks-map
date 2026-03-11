@@ -594,8 +594,11 @@ export async function addSignToTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
-    if (taskLineIdx === -1) return fileContent;
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+    if (taskLineIdx === -1) {
+      new Notice(`Failed to find task line for ${task.id}`);
+      return fileContent;
+    }
 
     const oldLine = lines[taskLineIdx];
 
@@ -738,8 +741,11 @@ export async function removeSignFromTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
-    if (taskLineIdx === -1) return fileContent;
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+    if (taskLineIdx === -1) {
+      new Notice(`Failed to find task line for ${task.id}`);
+      return fileContent;
+    }
 
     const oldLine = lines[taskLineIdx];
 

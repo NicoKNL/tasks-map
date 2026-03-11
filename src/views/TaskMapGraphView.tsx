@@ -210,7 +210,6 @@ export default function TaskMapGraphView({
       });
       setTaskTagsRegistry(newRegistry);
       setIsLoading(false);
-      new Notice("Tasks reloaded");
     }, 0);
   }, [app]);
 
@@ -662,6 +661,10 @@ export default function TaskMapGraphView({
     (event: any, edge: any) => {
       event.stopPropagation();
       setSelectedEdge(edge.id);
+      // Focus the container so keyboard events work
+      if (containerRef.current) {
+        containerRef.current.focus();
+      }
     },
     [setSelectedEdge]
   );
@@ -729,11 +732,21 @@ export default function TaskMapGraphView({
     if (!sourceTask || !targetTask) return;
 
     if (vault) {
-      await removeLinkSignsBetweenTasks(vault, targetTask, sourceTask.id);
-      setEdges((eds) => eds.filter((e) => e.id !== selectedEdge));
-      setSelectedEdge(null);
+      try {
+        await removeLinkSignsBetweenTasks(vault, targetTask, sourceTask.id);
+        setEdges((eds) => eds.filter((e) => e.id !== selectedEdge));
+        setSelectedEdge(null);
+        // Reload tasks after a short delay to sync with file changes
+        setTimeout(() => {
+          reloadTasks();
+        }, 200);
+      } catch (error) {
+        console.error("Failed to delete edge:", error);
+        const message = error instanceof Error ? error.message : String(error);
+        new Notice(`Failed to delete edge: ${message}`);
+      }
     }
-  }, [selectedEdge, edges, tasks, vault, setEdges]);
+  }, [selectedEdge, edges, tasks, vault, setEdges, reloadTasks]);
 
   const onConnectStart = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -760,27 +773,37 @@ export default function TaskMapGraphView({
         return;
       }
 
-      const hash = await addLinkSignsBetweenTasks(
-        vault,
-        sourceTask,
-        targetTask,
-        settings.linkingStyle
-      );
-      if (hash) {
-        setEdges((eds) =>
-          addEdge(
-            {
-              ...params,
-              type: "hash",
-              data: {
-                hash,
-                layoutDirection: settings.layoutDirection,
-                debugVisualization: settings.debugVisualization,
-              },
-            },
-            eds
-          )
+      try {
+        const hash = await addLinkSignsBetweenTasks(
+          vault,
+          sourceTask,
+          targetTask,
+          settings.linkingStyle
         );
+        if (hash) {
+          setEdges((eds) =>
+            addEdge(
+              {
+                ...params,
+                type: "hash",
+                data: {
+                  hash,
+                  layoutDirection: settings.layoutDirection,
+                  debugVisualization: settings.debugVisualization,
+                },
+              },
+              eds
+            )
+          );
+          // Reload tasks after a short delay to sync with file changes
+          setTimeout(() => {
+            reloadTasks();
+          }, 200);
+        }
+      } catch (error) {
+        console.error("Failed to create edge:", error);
+        const message = error instanceof Error ? error.message : String(error);
+        new Notice(`Failed to create edge: ${message}`);
       }
     },
     [
@@ -790,6 +813,7 @@ export default function TaskMapGraphView({
       settings.layoutDirection,
       settings.debugVisualization,
       settings.linkingStyle,
+      reloadTasks,
     ]
   );
 
@@ -997,6 +1021,36 @@ export default function TaskMapGraphView({
     ]
   );
 
+  // Handle keyboard events for deleting selected edge
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        if (selectedEdge) {
+          event.preventDefault();
+          event.stopPropagation();
+          onDeleteSelectedEdge();
+          return;
+        }
+      }
+    };
+
+    // Add event listener with capture phase to ensure we catch the event early
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+
+    // Also attach to container element to ensure we catch events when container is focused
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('keydown', handleKeyDown, { capture: true });
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+      if (container) {
+        container.removeEventListener('keydown', handleKeyDown, { capture: true });
+      }
+    };
+  }, [selectedEdge, onDeleteSelectedEdge]);
+
   const tagsContextValue = useMemo(
     () => ({
       allTags,
@@ -1008,7 +1062,18 @@ export default function TaskMapGraphView({
   return (
     <TagsContext.Provider value={tagsContextValue}>
       {}
-      <div className="tasks-map-graph-container" ref={containerRef}>
+      <div
+        className="tasks-map-graph-container"
+        ref={containerRef}
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEdge) {
+            e.preventDefault();
+            e.stopPropagation();
+            onDeleteSelectedEdge();
+          }
+        }}
+      >
         {isLoading && (
           <div className="tasks-map-loading-container">
             <div className="tasks-map-spinner" />
@@ -1030,6 +1095,13 @@ export default function TaskMapGraphView({
           onNodeClick={onNodeClick}
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
+          onKeyDown={(event) => {
+            if ((event.key === 'Delete' || event.key === 'Backspace') && selectedEdge) {
+              event.preventDefault();
+              event.stopPropagation();
+              onDeleteSelectedEdge();
+            }
+          }}
         >
           <GuiOverlay
             allTags={allTags}
