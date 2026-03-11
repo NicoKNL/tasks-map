@@ -135,10 +135,21 @@ export class DataviewTask extends BaseTask {
 
       if (taskLineIdx === -1) return fileContent;
 
-      // Add star emoji if not present
-      if (!lines[taskLineIdx].includes("⭐")) {
-        lines[taskLineIdx] = lines[taskLineIdx] + " ⭐";
+      const line = lines[taskLineIdx];
+
+      const tasksEmojiRegex = /([🆔⛔⏫🔺🔽⏬📅⏳🛫✅❌➕]|\.\.\.)/u;
+      const tasksEmojiMatch = line.match(tasksEmojiRegex);
+
+      if (tasksEmojiMatch) {
+        const emojiIndex = line.indexOf(tasksEmojiMatch[0]);
+        const hasSpaceBefore = emojiIndex > 0 && line[emojiIndex - 1] === " ";
+        const prefix = hasSpaceBefore ? "⭐ " : " ⭐ ";
+        lines[taskLineIdx] =
+          line.slice(0, emojiIndex) + prefix + line.slice(emojiIndex);
+      } else {
+        lines[taskLineIdx] = line + " ⭐";
       }
+
       return lines.join("\n");
     });
   }
