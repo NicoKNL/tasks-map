@@ -57,8 +57,15 @@
     "advanced_options": "高级选项",
     "debug_visualization": "调试可视化",
     "debug_visualization_desc": "在图形视图中显示附加调试信息",
-    "language": "语言",
+        "language": "语言",
     "language_desc": "选择插件界面的语言",
+
+    "theme_mode": "主题模式",
+    "theme_mode_desc": "选择任务地图的视觉主题",
+    "theme_light": "浅色",
+    "theme_dark": "深色",
+    "theme_system": "跟随系统",
+
     "proximity_colors": "临近颜色",
     "due_proximity_days": "截止日期临近天数",
     "due_proximity_days_desc": "距离截止日期多少天时开始颜色渐变（默认：7）",

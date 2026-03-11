@@ -69,7 +69,22 @@ export class TasksMapSettingTab extends PluginSettingTab {
             // Redraw the settings tab with new language
             this.display();
           });
-      });
+            });
+
+    new Setting(containerEl)
+      .setName(t("settings.theme_mode"))
+      .setDesc(t("settings.theme_mode_desc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("system", t("settings.theme_system"))
+          .addOption("light", t("settings.theme_light"))
+          .addOption("dark", t("settings.theme_dark"))
+          .setValue(this.plugin.settings.themeMode)
+          .onChange(async (value) => {
+            this.plugin.settings.themeMode = value as "light" | "dark" | "system";
+            await this.plugin.saveSettings();
+          })
+      );
 
     new Setting(containerEl)
       .setHeading()

@@ -34,10 +34,11 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     showPriorities = true,
     showTags = true,
     debugVisualization = false,
-    tagColorMode = "random",
-    tagColorSeed = 42,
-    tagStaticColor = "#3b82f6",
-    onDeleteTask,
+          tagColorMode = "random",
+      tagColorSeed = 42,
+      tagStaticColor = "#3b82f6",
+      themeMode = "system",
+      onDeleteTask,
     onAiNext,
     onAiBefore,
     // Proximity color settings
@@ -76,9 +77,16 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
 
   // Calculate background color based on proximity to due/scheduled dates
   const backgroundColor = React.useMemo(() => {
-    // Detect theme
-    const isDarkTheme = typeof document !== 'undefined' &&
-      document.documentElement.classList.contains('theme-dark');
+          // Detect theme based on themeMode setting
+      let isDarkTheme = false;
+      if (themeMode === "light") {
+        isDarkTheme = false;
+      } else if (themeMode === "dark") {
+        isDarkTheme = true;
+      } else { // system
+        isDarkTheme = typeof document !== 'undefined' &&
+          document.documentElement.classList.contains('theme-dark');
+      }
 
     // Base colors for each status (approximating CSS variables)
     const baseColors = {
@@ -123,7 +131,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
 
     // Return base color if no date proximity effect applies
     return baseColor;
-  }, [status, task.text, dueProximityDays, dueProximityColor, scheduleProximityDays, scheduleProximityColor]);
+      }, [status, task.text, dueProximityDays, dueProximityColor, scheduleProximityDays, scheduleProximityColor, themeMode]);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;

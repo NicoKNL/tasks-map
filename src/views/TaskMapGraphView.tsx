@@ -112,8 +112,18 @@ export default function TaskMapGraphView({
   selectedFiles,
   setSelectedFiles,
 }: TaskMapGraphViewProps) {
-  const app = useApp();
+    const app = useApp();
   const vault = app.vault;
+
+  const actualTheme = useMemo(() => {
+    if (settings.themeMode === "light") return "light";
+    if (settings.themeMode === "dark") return "dark";
+    // system detection
+    if (typeof document !== 'undefined' && document.documentElement.classList.contains('theme-dark')) {
+      return "dark";
+    }
+    return "light";
+  }, [settings.themeMode]);
 
   // 获取插件实例以更新过滤状态
   const plugin = React.useMemo(() => {
@@ -561,6 +571,7 @@ export default function TaskMapGraphView({
       settings.tagColorMode,
       settings.tagColorSeed,
       settings.tagStaticColor,
+        settings.themeMode,
               handleDeleteTask,
         handleAiNext,
         handleAiBefore,
@@ -1063,7 +1074,7 @@ export default function TaskMapGraphView({
     <TagsContext.Provider value={tagsContextValue}>
       {}
       <div
-        className="tasks-map-graph-container"
+                  className={`tasks-map-graph-container tasks-map-theme-${actualTheme}`}
         ref={containerRef}
         tabIndex={-1}
         onKeyDown={(e) => {

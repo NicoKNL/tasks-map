@@ -57,8 +57,15 @@
     "advanced_options": "Advanced Options",
     "debug_visualization": "Debug visualization",
     "debug_visualization_desc": "Show additional debug information in the graph view",
-    "language": "Language",
+        "language": "Language",
     "language_desc": "Select the language for the plugin interface",
+
+    "theme_mode": "Theme mode",
+    "theme_mode_desc": "Choose the visual theme for the task map",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "Follow system",
+
     "proximity_colors": "Proximity Colors",
     "due_proximity_days": "Due proximity days",
     "due_proximity_days_desc": "Number of days before due date when color gradient starts (default: 7)",

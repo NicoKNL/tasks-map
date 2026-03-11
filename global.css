@@ -26,6 +26,18 @@ If your plugin does not need CSS, delete this file.
   --tasks-map-task-canceled-red: #ff6b6b;
 }
 
+.tasks-map-theme-light {
+  --tasks-map-task-completed-green: #6de27b;
+  --tasks-map-task-in-progress-blue: #77b4d3;
+  --tasks-map-task-canceled-red: #ff6b6b;
+}
+
+.tasks-map-theme-dark {
+  --tasks-map-task-completed-green: #1e3821;
+  --tasks-map-task-in-progress-blue: #1c5e8e;
+  --tasks-map-task-canceled-red: #5c1a1a;
+}
+
 /* Expand Button Styles */
 .tasks-map-expand-button {
   position: absolute;

@@ -22,6 +22,7 @@ export interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  themeMode?: "light" | "dark" | "system";
   width?: number;
   height?: number;
   // eslint-disable-next-line no-unused-vars

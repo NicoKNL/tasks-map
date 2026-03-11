@@ -1089,9 +1089,10 @@ export function createNodesFromTasks(
   showPriorities: boolean = true,
   showTags: boolean = true,
   debugVisualization: boolean = false,
-  tagColorMode: "random" | "static" = "random",
+    tagColorMode: "random" | "static" = "random",
   tagColorSeed: number = 42,
   tagStaticColor: string = "#3b82f6",
+  themeMode: "light" | "dark" | "system" = "system",
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void,
   // eslint-disable-next-line no-unused-vars
@@ -1127,9 +1128,10 @@ export function createNodesFromTasks(
         showPriorities,
         showTags,
         debugVisualization,
-        tagColorMode,
+                tagColorMode,
         tagColorSeed,
         tagStaticColor,
+        themeMode,
         onDeleteTask,
         onAiNext,
         onAiBefore,

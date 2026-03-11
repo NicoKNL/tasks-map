@@ -19,6 +19,9 @@ export interface TasksMapSettings {
   // Language setting
   language: Language;
 
+  // Theme mode
+  themeMode: "light" | "dark" | "system";
+
   // Proximity color settings
   dueProximityDays: number;
   dueProximityColor: string;
@@ -63,6 +66,9 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
 
   // Language default
   language: "en",
+
+  // Theme mode default
+  themeMode: "system",
 
   // Proximity color defaults
   dueProximityDays: 7,
