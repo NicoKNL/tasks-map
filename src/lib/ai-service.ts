@@ -297,4 +297,141 @@ export class AIService {
     
     return cleaned;
   }
+
+  /**
+   * Predict multiple next tasks based on current task and related tasks
+   */
+  static async predictMultipleNextTasks(
+    request: AIPredictionRequest & { maxTasks?: number }
+  ): Promise<string[]> {
+    const { currentTask, relatedTasks, settings, maxTasks = 5 } = request;
+
+    if (!settings.aiEnabled) {
+      throw new Error("AI integration is not enabled");
+    }
+
+    if (!settings.aiApiKey.trim()) {
+      throw new Error("API key is required");
+    }
+
+    // Construct prompt using the new PromptManager
+    const language = settings.language as Language;
+    const userAdditionalReqs = PromptManager.getUserAdditionalReqs(settings);
+    const prompt = PromptManager.getMultipleNextTasksPrompt(
+      currentTask,
+      relatedTasks,
+      language,
+      userAdditionalReqs,
+      maxTasks
+    );
+
+    try {
+      let result: string;
+      switch (settings.aiProvider) {
+        case "openai":
+          result = await this.callOpenAI(prompt, settings);
+          break;
+        case "anthropic":
+          result = await this.callAnthropic(prompt, settings);
+          break;
+        case "gemini":
+          result = await this.callGemini(prompt, settings);
+          break;
+        case "custom":
+          result = await this.callCustomAPI(prompt, settings);
+          break;
+        default:
+          throw new Error(`Unsupported AI provider: ${settings.aiProvider}`);
+      }
+
+      // Split response into lines and clean each line
+      return this.cleanResponseList(result);
+    } catch (error) {
+      console.error("AI multiple next tasks prediction failed:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Predict multiple previous tasks based on current task and related tasks
+   */
+  static async predictMultiplePreviousTasks(
+    request: AIPredictionRequest & { maxTasks?: number }
+  ): Promise<string[]> {
+    const { currentTask, relatedTasks, settings, maxTasks = 5 } = request;
+
+    if (!settings.aiEnabled) {
+      throw new Error("AI integration is not enabled");
+    }
+
+    if (!settings.aiApiKey.trim()) {
+      throw new Error("API key is required");
+    }
+
+    // Construct prompt using the new PromptManager
+    const language = settings.language as Language;
+    const userAdditionalReqs = PromptManager.getUserPreviousAdditionalReqs(settings);
+    const prompt = PromptManager.getMultiplePreviousTasksPrompt(
+      currentTask,
+      relatedTasks,
+      language,
+      userAdditionalReqs,
+      maxTasks
+    );
+
+    try {
+      let result: string;
+      switch (settings.aiProvider) {
+        case "openai":
+          result = await this.callOpenAI(prompt, settings);
+          break;
+        case "anthropic":
+          result = await this.callAnthropic(prompt, settings);
+          break;
+        case "gemini":
+          result = await this.callGemini(prompt, settings);
+          break;
+        case "custom":
+          result = await this.callCustomAPI(prompt, settings);
+          break;
+        default:
+          throw new Error(`Unsupported AI provider: ${settings.aiProvider}`);
+      }
+
+      // Split response into lines and clean each line
+      return this.cleanResponseList(result);
+    } catch (error) {
+      console.error("AI multiple previous tasks prediction failed:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clean a response containing multiple task descriptions
+   */
+  private static cleanResponseList(response: string): string[] {
+    // First apply the standard cleaning
+    let cleaned = response.trim();
+
+    // Remove markdown code blocks
+    cleaned = cleaned.replace(/```[\s\S]*?```/g, "");
+
+    // Remove bullet points, numbering at start of each line
+    cleaned = cleaned.replace(/^[-*•]\s*/gm, "");
+    cleaned = cleaned.replace(/^\d+\.\s*/gm, "");
+
+    // Split by newlines
+    let lines = cleaned.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+    // Remove any remaining markdown formatting, extra spaces
+    lines = lines.map(line => line.replace(/\[.*?\]\(.*?\)/g, '').trim());
+
+    // Remove empty lines again
+    lines = lines.filter(line => line.length > 0);
+
+    // Limit each line length
+    lines = lines.map(line => line.length > 200 ? line.substring(0, 200) + '...' : line);
+
+    return lines;
+  }
 }

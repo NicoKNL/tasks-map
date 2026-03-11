@@ -290,17 +290,39 @@ export default function TaskMapGraphView({
       }
       const tasksApi = tasksPlugin.apiV1;
 
-      // Create a task line with the predicted text
-      const taskLines = results.map(result => `- [ ] ${result}`);
+      // Parse task types (S: sequential, P: parallel)
+      const parsedTasks = results.map(result => {
+        let type: 'sequential' | 'parallel' = 'parallel';
+        let text = result.trim();
+        if (text.startsWith('S:')) {
+          type = 'sequential';
+          text = text.substring(2).trim();
+        } else if (text.startsWith('P:')) {
+          type = 'parallel';
+          text = text.substring(2).trim();
+        }
+        // Remove any other potential prefixes like numbers, bullets
+        text = text.replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '');
+        return { text, type };
+      });
 
-      let previousNewTask = currentTask;
-      for (let i = 0; i < taskLines.length; i++) {
+      // Filter out empty texts
+      const validTasks = parsedTasks.filter(task => task.text.length > 0);
+
+      // Create task lines
+      const taskLines = validTasks.map(task => `- [ ] ${task.text}`);
+
+      // Track the last task for sequential chain
+      let lastSequentialTask = currentTask;
+
+      for (let i = 0; i < validTasks.length; i++) {
+        const task = validTasks[i];
         const taskLine = taskLines[i];
 
         // Add to inbox
         await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
 
-        // Create edge between previous task and new task
+        // Create edge based on task type
         const factory = new TaskFactory();
         const rawTask: RawTask = {
           status: "todo",
@@ -311,15 +333,25 @@ export default function TaskMapGraphView({
         };
         const newTask = factory.parse(rawTask, "dataview");
 
-        // Add link between previous task and new task
-        await addLinkSignsBetweenTasks(
-          vault,
-          previousNewTask,
-          newTask,
-          settings.linkingStyle
-        );
-
-        previousNewTask = newTask;
+        if (task.type === 'sequential') {
+          // Create edge from last sequential task to new task
+          await addLinkSignsBetweenTasks(
+            vault,
+            lastSequentialTask,
+            newTask,
+            settings.linkingStyle
+          );
+          // Update last sequential task
+          lastSequentialTask = newTask;
+        } else {
+          // Parallel: create edge from current task to new task
+          await addLinkSignsBetweenTasks(
+            vault,
+            currentTask,
+            newTask,
+            settings.linkingStyle
+          );
+        }
       }
 
       new Notice(`Created ${results.length} next task(s) successfully!`);
@@ -396,19 +428,39 @@ export default function TaskMapGraphView({
       }
       const tasksApi = tasksPlugin.apiV1;
 
-      // Create a task line with the predicted text
-      const taskLines = results.map(result => `- [ ] ${result}`);
+      // Parse task types (S: sequential, P: parallel)
+      const parsedTasks = results.map(result => {
+        let type: 'sequential' | 'parallel' = 'parallel';
+        let text = result.trim();
+        if (text.startsWith('S:')) {
+          type = 'sequential';
+          text = text.substring(2).trim();
+        } else if (text.startsWith('P:')) {
+          type = 'parallel';
+          text = text.substring(2).trim();
+        }
+        // Remove any other potential prefixes like numbers, bullets
+        text = text.replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '');
+        return { text, type };
+      });
 
-      // Process previous tasks in reverse order
-      // so that the earliest task is created first
-      let nextNewTask = currentTask;
-      for (let i = taskLines.length - 1; i >= 0; i--) {
+      // Filter out empty texts
+      const validTasks = parsedTasks.filter(task => task.text.length > 0);
+
+      // Create task lines
+      const taskLines = validTasks.map(task => `- [ ] ${task.text}`);
+
+      // Track the next task for sequential chain (closest to current task)
+      let nextSequentialTask = currentTask;
+
+      for (let i = validTasks.length - 1; i >= 0; i--) {
+        const task = validTasks[i];
         const taskLine = taskLines[i];
 
         // Add to inbox
         await addIsolatedTaskLineToVault(taskLine, settings.taskInbox, app);
 
-        // Create edge between new task and next task
+        // Create edge based on task type
         const factory = new TaskFactory();
         const rawTask: RawTask = {
           status: "todo",
@@ -419,15 +471,25 @@ export default function TaskMapGraphView({
         };
         const newTask = factory.parse(rawTask, "dataview");
 
-        // Add link from new task to next task (new task -> next task)
-        await addLinkSignsBetweenTasks(
-          vault,
-          newTask,
-          nextNewTask,
-          settings.linkingStyle
-        );
-
-        nextNewTask = newTask;
+        if (task.type === 'sequential') {
+          // Create edge from new task to next sequential task (new task -> next)
+          await addLinkSignsBetweenTasks(
+            vault,
+            newTask,
+            nextSequentialTask,
+            settings.linkingStyle
+          );
+          // Update next sequential task to be this new task (moving backward)
+          nextSequentialTask = newTask;
+        } else {
+          // Parallel: create edge from new task to current task
+          await addLinkSignsBetweenTasks(
+            vault,
+            newTask,
+            currentTask,
+            settings.linkingStyle
+          );
+        }
       }
 
       new Notice(`Created ${results.length} previous task(s) successfully!`);
