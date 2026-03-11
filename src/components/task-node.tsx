@@ -285,7 +285,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           onStatusChange={setStatus}
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
-        <span ref={summaryRef} className="tasks-map-task-node-summary" />
+        <span ref={summaryRef} className={`tasks-map-task-node-summary ${data.truncated ? 'truncated' : ''}`} />
         <StarButton starred={starred} onClick={handleStarToggle} />
         <LinkButton link={task.link} app={app} taskStatus={status} task={task} />
         <TaskMenu

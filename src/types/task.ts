@@ -25,6 +25,7 @@ export interface TaskNodeData {
   themeMode?: "light" | "dark" | "system";
   width?: number;
   height?: number;
+  truncated?: boolean;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
   onCreateTasked?: (taskLine: string) => void;

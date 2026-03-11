@@ -81,24 +81,42 @@ const formatPatterns: Record<string, Record<string, RegExp>> = {
 /**
  * Estimates the dimensions of a node based on its task content.
  * Takes into account summary length and number of tags.
+ * Returns dimensions and a flag indicating if text needs truncation.
  */
 export function estimateNodeDimensions(
   task: BaseTask,
   showTags: boolean = true
-): { width: number; height: number } {
+): { width: number; height: number; truncated: boolean } {
   // Base dimensions
-  const minWidth = NODEWIDTH; // 200px
+  const minWidth = NODEWIDTH; // 250px (default node width)
   const maxWidth = 500;
   const baseHeight = 60; // Minimum height for header (status, priority, buttons)
 
-  // Estimate width based on summary length
-  // Average character width ~7px, but with icons and buttons taking space
-  const charWidth = 7;
+  // Character width estimation for Chinese/English mixed text
+  // Chinese characters are wider than English characters
+  const chineseCharWidth = 14; // Approximate width for Chinese characters
+  const englishCharWidth = 7; // Width for English characters and numbers
+  
+  // Count Chinese characters vs non-Chinese characters
+  const chineseCharCount = (task.summary.match(/[\u4e00-\u9fff]/g) || []).length;
+  const otherCharCount = task.summary.length - chineseCharCount;
+  
+  // Calculate text width requirement
+  const textWidth = chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth;
+  
+  // Minimum and maximum width based on Chinese character count (7-15 chars)
+  const minChineseWidth = 7 * chineseCharWidth; // Minimum 7 Chinese characters width
+  const maxChineseWidth = 15 * chineseCharWidth; // Maximum 15 Chinese characters width
+  
+  // Determine if width is at max limit (Chinese characters exceed 15)
+  const widthAtMaxLimit = chineseCharCount > 15 || textWidth > maxChineseWidth;
+  
+  // Target width for text content (clamped between min and max Chinese width)
+  const targetTextWidth = Math.min(maxChineseWidth, Math.max(minChineseWidth, textWidth));
+  
   const paddingHorizontal = 24; // 12px left + 12px right
   const iconsWidth = 80; // Approximate width for status, priority, star, link, menu buttons
 
-  // Calculate required width for summary text
-  const summaryWidth = task.summary.length * charWidth;
   // Calculate required width for tags (if shown)
   let tagsWidth = 0;
   if (showTags && task.tags.length > 0) {
@@ -112,20 +130,28 @@ export function estimateNodeDimensions(
     // Tags can wrap, so we don't need to sum all widths, just the widest tag
   }
 
-  // Desired width is based on summary, tags, and icons
-  const desiredContentWidth = Math.max(summaryWidth, tagsWidth) + iconsWidth;
+  // Desired width is based on text, tags, and icons
+  const desiredContentWidth = Math.max(targetTextWidth, tagsWidth) + iconsWidth;
   const desiredTotalWidth = desiredContentWidth + paddingHorizontal;
 
   // Clamp width between min and max
   const width = Math.min(maxWidth, Math.max(minWidth, desiredTotalWidth));
 
-  // Estimate height based on summary length with calculated width
-  const effectiveContentWidth = width - paddingHorizontal; // Content area width
-  const charsPerLine = Math.floor(effectiveContentWidth / charWidth);
+  // Calculate effective content area for text wrapping (subtract padding and icons)
+  const effectiveContentWidth = width - paddingHorizontal - iconsWidth;
+  
+  // Estimate text wrapping based on average character width
+  // Use weighted average based on character composition
+  const avgCharWidth = chineseCharCount > 0 ? 
+    (chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth) / task.summary.length :
+    englishCharWidth;
+  
+  const avgCharsPerLine = Math.max(1, Math.floor(effectiveContentWidth / avgCharWidth));
   const lineHeight = 22; // Slightly more than font size for line spacing
-  const summaryLines =
-    charsPerLine > 0 ? Math.ceil(task.summary.length / charsPerLine) : 1;
-  const summaryHeight = Math.max(1, summaryLines) * lineHeight;
+  
+  // Calculate lines needed for summary
+  const summaryLines = Math.max(1, Math.ceil(task.summary.length / avgCharsPerLine));
+  const summaryHeight = summaryLines * lineHeight;
 
   // Estimate height for tags (each row of tags is ~28px)
   let tagsHeight = 0;
@@ -151,10 +177,39 @@ export function estimateNodeDimensions(
 
   const totalHeight =
     baseHeight + summaryHeight + tagsHeight + padding + safetyMargin;
+    
+  // Try to maintain aspect ratio of 3:2 (width:height) as much as possible
+  const targetAspectRatio = 3 / 2;
+  const currentAspectRatio = width / Math.max(NODEHEIGHT, totalHeight);
+  
+  // Determine if height is at max limit (aspect ratio adjusted)
+  let heightAtMaxLimit = false;
+  
+  // If aspect ratio is too far from target (more than 30% difference), adjust height
+  let finalHeight = Math.max(NODEHEIGHT, totalHeight);
+  if (Math.abs(currentAspectRatio - targetAspectRatio) > 0.3) {
+    // Adjust height to get closer to target aspect ratio, but within reasonable bounds
+    const targetHeight = width / targetAspectRatio;
+    finalHeight = Math.max(NODEHEIGHT, Math.min(targetHeight, totalHeight * 1.5));
+    // If height was limited by target aspect ratio, it's at max limit
+    if (finalHeight === targetHeight && targetHeight < totalHeight) {
+      heightAtMaxLimit = true;
+    }
+  } else {
+    // Check if height would exceed target aspect ratio without adjustment
+    const targetHeight = width / targetAspectRatio;
+    if (totalHeight > targetHeight) {
+      heightAtMaxLimit = true;
+    }
+  }
+
+  // Text needs truncation if both width and height are at their limits
+  const truncated = widthAtMaxLimit && heightAtMaxLimit;
 
   return {
     width,
-    height: Math.max(NODEHEIGHT, totalHeight),
+    height: finalHeight,
+    truncated,
   };
 }
 
@@ -1137,6 +1192,7 @@ export function createNodesFromTasks(
         onAiBefore,
         width: dimensions.width,
         height: dimensions.height,
+        truncated: dimensions.truncated,
         // Proximity color settings
         dueProximityDays,
         dueProximityColor,
@@ -1417,7 +1473,7 @@ export function calculateProximityColor(
   // For simplicity, we'll use CSS rgba() for interpolation
   // Convert hex colors to RGB
   const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2])$/i.exec(hex);
     return result ? {
       r: parseInt(result[1], 16),
       g: parseInt(result[2], 16),

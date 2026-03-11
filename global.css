@@ -496,6 +496,16 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-task-node-summary {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasks-map-task-node-summary.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
 }
 
 /* Inline code styling for task summaries */
