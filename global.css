@@ -843,8 +843,11 @@
 }
 
 .tasks-map-task-background--selected {
-  outline: 2px solid rgba(var(--tasks-map-color-black-rgb), 0.15);
-  outline-offset: -2px;
+  outline: 3px solid #ffd700 !important; /* 黄色边框 */
+  outline-offset: -3px;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.4);
+  z-index: 10;
+  position: relative;
 }
 
 .theme-dark .tasks-map-task-background:hover {
@@ -852,7 +855,7 @@
 }
 
 .theme-dark .tasks-map-task-background--selected {
-  outline-color: rgba(255, 255, 255, 0.2);
+  outline-color: #ffd700 !important; /* 黄色边框，深色主题下保持不变 */
 }
 
 .tasks-map-task-background--starred {

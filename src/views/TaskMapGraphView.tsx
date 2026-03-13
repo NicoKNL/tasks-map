@@ -1212,13 +1212,21 @@ export default function TaskMapGraphView({
     const node = nodes.find(n => n.id === taskId);
     if (!node) return;
     
+    // Update all nodes: set selected to true only for the target node
+    setNodes(prevNodes => 
+      prevNodes.map(n => ({
+        ...n,
+        selected: n.id === taskId
+      }))
+    );
+    
     // Center the view on the node
     reactFlowInstance.setCenter(
       node.position.x + (node.width || NODEHEIGHT) / 2,
       node.position.y + (node.height || NODEWIDTH) / 2,
       { zoom: 1, duration: 400 }
     );
-  }, [nodes, reactFlowInstance]);
+  }, [nodes, reactFlowInstance, setNodes]);
 
   // Handle Ctrl+F keyboard shortcut
   useEffect(() => {
