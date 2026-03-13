@@ -1,7 +1,8 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
+import SaveFilterButton from "./save-filter-button";
 import { TaskStatus } from "src/types/task";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { t } from "../i18n";
 
@@ -14,6 +15,7 @@ interface GuiOverlayProps {
   allFiles: string[];
   selectedFiles: string[];
   setSelectedFiles: (files: string[]) => void; // eslint-disable-line no-unused-vars
+  createTasks: () => void;
   reloadTasks: () => void;
   allStatuses: TaskStatus[];
   selectedStatuses: TaskStatus[];
@@ -21,6 +23,11 @@ interface GuiOverlayProps {
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
+  layoutDirection?: "Horizontal" | "Vertical";
+  showPriorities?: boolean;
+  showTagsSetting?: boolean;
+  searchPanelOpen?: boolean;
+  searchResultsCount?: number;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -33,6 +40,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     allFiles,
     selectedFiles,
     setSelectedFiles,
+    createTasks,
     reloadTasks,
     allStatuses,
     selectedStatuses,
@@ -40,6 +48,11 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     showTags = true,
     hideTags = false,
     setHideTags,
+    layoutDirection,
+    showPriorities,
+    showTagsSetting,
+    searchPanelOpen = false,
+    searchResultsCount = 0,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -52,8 +65,37 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     setIsMinimized((prev) => !prev);
   };
 
+  // Calculate dynamic top position based on search panel state
+  const dynamicTop = useMemo(() => {
+    const baseTop = 16; // Base top position
+
+    if (!searchPanelOpen) {
+      // Search panel is minimized (just a button)
+      // Button height is approximately 34px (from CSS .tasks-map-search-panel-toggle)
+      const minimizedSearchPanelHeight = 34;
+      return baseTop + minimizedSearchPanelHeight + 8; // Add spacing
+    }
+
+    // Search panel is open, use fixed height
+    // Fixed height for search panel (including input, results count, and scrollable results list)
+    const searchPanelHeight = 400; // px - fixed height
+
+    // Return top position: search panel height + spacing
+    // Add 8px spacing between search panel and filter panel
+    return baseTop + searchPanelHeight + 8;
+  }, [searchPanelOpen]);
+
+  const panelStyle = useMemo(() => {
+    return {
+      top: `${dynamicTop}px`,
+    };
+  }, [dynamicTop]);
+
   return (
-    <div className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}>
+    <div 
+      className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}
+      style={panelStyle}
+    >
       <button
         className="tasks-map-filter-panel-toggle"
         onClick={toggleMinimized}
@@ -132,7 +174,17 @@ export default function GuiOverlay(props: GuiOverlayProps) {
             )}
           </div>
 
-          {/* Reload Button */}
+          {/* Create Button */}
+          <div className="tasks-map-filter-actions">
+            <button
+              onClick={createTasks}
+              className="tasks-map-gui-overlay-reload-button"
+            >
+              {t("filters.create_tasks")}
+            </button>
+          </div>
+
+          {/* Action Buttons */}
           <div className="tasks-map-filter-actions">
             <button
               onClick={reloadTasks}
@@ -140,6 +192,16 @@ export default function GuiOverlay(props: GuiOverlayProps) {
             >
               {t("filters.reload_tasks")}
             </button>
+            <SaveFilterButton
+              selectedTags={selectedTags}
+              excludedTags={excludedTags}
+              selectedStatuses={selectedStatuses}
+              selectedFiles={selectedFiles}
+              hideTags={hideTags}
+              layoutDirection={layoutDirection}
+              showPriorities={showPriorities}
+              showTags={showTagsSetting}
+            />
           </div>
         </>
       )}
