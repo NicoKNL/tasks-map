@@ -148,7 +148,8 @@ export default function SearchPanel({
 
   return (
     <div className="tasks-map-search-panel" style={panelStyle}>
-      <div className="tasks-map-search-input-header">
+      <div className="tasks-map-search-panel-content">
+        <div className="tasks-map-search-input-header"></div>
         <button
           className="tasks-map-search-panel-close"
           onClick={onClose}
@@ -156,9 +157,6 @@ export default function SearchPanel({
         >
           <ChevronRight size={12} />
         </button>
-      </div>
-
-      <div className="tasks-map-search-panel-content">
         <div className="tasks-map-search-input-container">
           <input
             ref={searchInputRef}
@@ -178,7 +176,6 @@ export default function SearchPanel({
             </button>
           )}
         </div>
-
         {searchQuery && (
           <div className="tasks-map-search-results-row">
             <div className="tasks-map-search-results-count">

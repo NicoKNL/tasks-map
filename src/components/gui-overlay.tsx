@@ -68,30 +68,22 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   // Calculate dynamic top position based on search panel state
   const dynamicTop = useMemo(() => {
     const baseTop = 16; // Base top position
-    
+
     if (!searchPanelOpen) {
       // Search panel is minimized (just a button)
       // Button height is approximately 34px (from CSS .tasks-map-search-panel-toggle)
       const minimizedSearchPanelHeight = 34;
       return baseTop + minimizedSearchPanelHeight + 8; // Add spacing
     }
-    
-    // Search panel is open, calculate its estimated height
-    // Base height for search panel (header + input + padding)
-    const baseHeight = 120; // px (header + input + padding)
-    // Height per search result item
-    const itemHeight = 45; // px per result item
-    // Maximum height for search panel
-    const maxHeight = 400; // px
-    
-    // Calculate total height needed based on search results count
-    const calculatedHeight = baseHeight + (searchResultsCount * itemHeight);
-    const searchPanelHeight = Math.min(calculatedHeight, maxHeight);
-    
+
+    // Search panel is open, use fixed height
+    // Fixed height for search panel (including input, results count, and scrollable results list)
+    const searchPanelHeight = 400; // px - fixed height
+
     // Return top position: search panel height + spacing
     // Add 8px spacing between search panel and filter panel
     return baseTop + searchPanelHeight + 8;
-  }, [searchPanelOpen, searchResultsCount]);
+  }, [searchPanelOpen]);
 
   const panelStyle = useMemo(() => {
     return {

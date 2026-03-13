@@ -1082,8 +1082,8 @@ If your plugin does not need CSS, delete this file.
 /* Status Bar Styles */
 .tasks-map-status-bar {
   position: absolute;
-  left: 16px;
-  bottom: 16px;
+  left: 22px;
+  bottom: 22px;
   z-index: 30;
   pointer-events: auto;
   background: var(--background-secondary);
@@ -1199,23 +1199,25 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-search-panel-close {
-  display: flex;
+  display: inline;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--text-normal);
+  padding: 3px;
   transition: background-color 0.2s ease;
   position: absolute;
-  right: 0px;
-  z-index: 2;
+	top: 8px;
+	right: 8px;
+  width: 20px;
+  height: 20px;
 }
 
 .tasks-map-search-panel-close:hover {
   background: var(--background-primary-alt);
-  color: var(--text-normal);
 }
 
 .tasks-map-search-panel-toggle {
@@ -1241,14 +1243,16 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-search-input-header {
-  position: absolute;
+	position: relative;
   display: flex;
+	align-items: center;
 }
 
 .tasks-map-search-panel-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+	padding-top: 16px;
+  height: calc(100% - 32px); /* Account for top/bottom padding */
 }
 
 .tasks-map-search-input-container {
@@ -1259,14 +1263,15 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-search-input {
   width: 100%;
-  padding-right: 36px;
+  padding: 8px 36px 8px 12px;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   font-size: 13px;
   color: var(--text-normal);
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
 }
 
 .tasks-map-search-input:focus {
@@ -1274,18 +1279,25 @@ If your plugin does not need CSS, delete this file.
   box-shadow: 0 0 0 1px var(--interactive-accent);
 }
 
+.tasks-map-search-input:hover {
+  border-color: var(--interactive-accent);
+}
+
 .tasks-map-search-clear-button {
   position: absolute;
-  right: 12px;
+  right: 0px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: 4px;
+	padding: 3px;
+  border-radius: 8px;
   cursor: pointer;
   color: var(--text-muted);
   transition: background-color 0.2s ease;
+	width: 20px;
+	height: 20px;
 }
 
 .tasks-map-search-clear-button:hover {
@@ -1322,6 +1334,9 @@ If your plugin does not need CSS, delete this file.
   cursor: pointer;
   color: var(--text-normal);
   transition: background-color 0.2s ease;
+	padding: 3px;
+	width: 24px;
+	height: 24px;
 }
 
 .tasks-map-search-nav-button:hover {
@@ -1378,6 +1393,12 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-normal);
   margin-bottom: 6px;
   line-height: 1.4;
+  max-height: 3.6em; /* Approximately 3 lines (1.4 * 3) */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .tasks-map-search-result-tags {

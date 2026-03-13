@@ -1313,23 +1313,23 @@ export default function TaskMapGraphView({
             searchPanelOpen={isSearchPanelOpen}
             searchResultsCount={searchResultsCount}
           />
+          <StatusBar 
+            totalTasks={taskStatistics.totalTasks}
+            tasksByStatus={taskStatistics.tasksByStatus}
+            selectedStatuses={selectedStatuses}
+          />
+          <SearchPanel
+            isOpen={isSearchPanelOpen}
+            onClose={() => setIsSearchPanelOpen(false)}
+            tasks={tasks}
+            onJumpToNode={handleJumpToNode}
+            onSearchClick={() => setIsSearchPanelOpen(true)}
+            onSearchResultsChange={setSearchResultsCount}
+          />
           <TaskMinimap />
           <Background />
         </ReactFlow>
         {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
-        <StatusBar 
-          totalTasks={taskStatistics.totalTasks}
-          tasksByStatus={taskStatistics.tasksByStatus}
-          selectedStatuses={selectedStatuses}
-        />
-        <SearchPanel
-          isOpen={isSearchPanelOpen}
-          onClose={() => setIsSearchPanelOpen(false)}
-          tasks={tasks}
-          onJumpToNode={handleJumpToNode}
-          onSearchClick={() => setIsSearchPanelOpen(true)}
-          onSearchResultsChange={setSearchResultsCount}
-        />
       </div>
     </TagsContext.Provider>
   );
