@@ -57,7 +57,7 @@
     "advanced_options": "Geavanceerde Opties",
     "debug_visualization": "Debug visualisatie",
     "debug_visualization_desc": "Toon aanvullende debug-informatie in de grafiekweergave",
-        "language": "Taal",
+    "language": "Taal",
     "language_desc": "Selecteer de taal voor de plugin-interface",
 
     "theme_mode": "Themamodus",
@@ -102,5 +102,24 @@
   },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
+  },
+  "status_bar": {
+    "todo": "Te doen",
+    "in_progress": "Bezig",
+    "done": "Voltooid",
+    "canceled": "Geannuleerd",
+    "total": "Totaal"
+  },
+  "search_panel": {
+    "search_tasks": "Taken Zoeken",
+    "minimize": "Sluiten",
+    "search_placeholder": "Zoek taken of tags...",
+    "clear": "Zoekopdracht wissen",
+    "no_results": "Geen resultaten gevonden",
+    "results": "resultaten",
+    "previous_result": "Vorig resultaat (Ctrl+Omhoog)",
+    "next_result": "Volgend resultaat (Ctrl+Omlaag)",
+    "collapse_results": "Resultaten inklappen",
+    "expand_results": "Resultaten uitklappen"
   }
 }

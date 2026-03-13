@@ -57,7 +57,7 @@
     "advanced_options": "Advanced Options",
     "debug_visualization": "Debug visualization",
     "debug_visualization_desc": "Show additional debug information in the graph view",
-        "language": "Language",
+    "language": "Language",
     "language_desc": "Select the language for the plugin interface",
 
     "theme_mode": "Theme mode",
@@ -129,12 +129,15 @@
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
   },
   "status_bar": {
-    "search": "Search",
-    "search_tasks": "Search tasks (Ctrl+F)"
+    "todo": "todo",
+    "in_progress": "in_progress",
+    "done": "done",
+    "canceled": "canceled",
+    "total": "total"
   },
   "search_panel": {
     "search_tasks": "Search Tasks",
-    "close": "Close",
+    "minimize": "Close",
     "search_placeholder": "Search tasks or tags...",
     "clear": "Clear search",
     "no_results": "No results found",

@@ -1,5 +1,6 @@
 import React from "react";
 import { TaskStatus } from "src/types/task";
+import {t} from "../i18n";
 
 interface StatusBarProps {
   totalTasks: number;
@@ -20,10 +21,10 @@ export default function StatusBar({
   // Format the status display
   const getStatusDisplay = (status: TaskStatus): string => {
     const statusMap: Record<TaskStatus, string> = {
-      todo: "待办",
-      in_progress: "进行中",
-      done: "已完成",
-      canceled: "已取消",
+      todo: t("status_bar.todo"),
+      in_progress: t("status_bar.in_progress"),
+      done: t("status_bar.done"),
+      canceled: t("status_bar.canceled"),
     };
     return statusMap[status] || status;
   };
@@ -45,13 +46,13 @@ export default function StatusBar({
                 </div>
               ))}
             <div className="tasks-map-total-tasks">
-              总计: {totalTasks}
+              {t("status_bar.total")}: {totalTasks}
             </div>
           </div>
         ) : (
           // Show only total count
           <div className="tasks-map-total-tasks">
-            任务总数: {totalTasks}
+            {t("status_bar.total")}: {totalTasks}
           </div>
         )}
       </div>
