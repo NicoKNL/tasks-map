@@ -1,12 +1,3 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
-
 @import "reactflow/dist/style.css";
 
 :root {
@@ -1093,7 +1084,7 @@ If your plugin does not need CSS, delete this file.
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
   backdrop-filter: blur(8px);
   min-width: 120px;
-  max-width: 400px;
+  max-width: 1200px;
   white-space: nowrap;
   overflow: hidden;
   transition: width 0.2s ease;
@@ -1186,8 +1177,11 @@ If your plugin does not need CSS, delete this file.
   padding: 16px;
   width: 320px;
   max-width: calc(100vw - 80px);
+  max-height: 400px; /* Fixed height */
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.2);
   backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
 }
 
 .tasks-map-search-panel-minimized {
