@@ -127,5 +127,21 @@
   },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
+  },
+  "status_bar": {
+    "search": "Search",
+    "search_tasks": "Search tasks (Ctrl+F)"
+  },
+  "search_panel": {
+    "search_tasks": "Search Tasks",
+    "close": "Close",
+    "search_placeholder": "Search tasks or tags...",
+    "clear": "Clear search",
+    "no_results": "No results found",
+    "results": "results",
+    "previous_result": "Previous result (Ctrl+Up)",
+    "next_result": "Next result (Ctrl+Down)",
+    "collapse_results": "Collapse results",
+    "expand_results": "Expand results"
   }
 }

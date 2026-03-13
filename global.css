@@ -553,7 +553,6 @@ If your plugin does not need CSS, delete this file.
 /* Filter Panel Styles */
 .tasks-map-filter-panel {
   position: absolute;
-  top: 16px;
   right: 16px;
   z-index: 35;
   pointer-events: auto;
@@ -573,6 +572,7 @@ If your plugin does not need CSS, delete this file.
   height: fit-content;
 }
 
+
 .tasks-map-filter-panel-toggle {
   background: transparent;
   border: none;
@@ -586,7 +586,7 @@ If your plugin does not need CSS, delete this file.
   position: absolute;
   top: 8px;
   right: 8px;
-  z-index: 1;
+  z-index: 2;
   width: 20px;
   height: 20px;
 }
@@ -718,9 +718,9 @@ If your plugin does not need CSS, delete this file.
 /* Legacy styles - kept for backward compatibility */
 .tasks-map-gui-overlay-tag-select {
   position: absolute;
-  top: 24px;
+  top: 30px;
   right: 32px;
-  z-index: 35;
+  z-index: 32;
   min-width: 220px;
 }
 
@@ -791,6 +791,7 @@ If your plugin does not need CSS, delete this file.
 
 /* Task Map Graph View Styles */
 .tasks-map-graph-container {
+  position: relative;
   width: 100%;
   height: 100%;
 }
@@ -1076,4 +1077,319 @@ If your plugin does not need CSS, delete this file.
   padding: 4px 8px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* Status Bar Styles */
+.tasks-map-status-bar {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 30;
+  pointer-events: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
+  backdrop-filter: blur(8px);
+  min-width: 120px;
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+.tasks-map-status-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tasks-map-status-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tasks-map-status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 0;
+}
+
+.tasks-map-status-label {
+  font-weight: 500;
+  color: var(--text-normal);
+  white-space: nowrap;
+}
+
+.tasks-map-status-count {
+  font-weight: 600;
+  color: var(--text-accent);
+  background: var(--background-primary-alt);
+  padding: 1px 6px;
+  border-radius: 8px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.tasks-map-total-tasks {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-normal);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.tasks-map-status-bar-search-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.tasks-map-status-bar-search-button:hover {
+  opacity: 0.9;
+}
+
+.tasks-map-status-bar-search-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Search Panel Styles */
+.tasks-map-search-panel {
+  position: absolute;
+  right: 16px;
+  z-index: 40;
+  pointer-events: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+  width: 320px;
+  max-width: calc(100vw - 80px);
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.tasks-map-search-panel-minimized {
+  z-index: 39;
+  min-width: unset;
+  padding: 0;
+  width: fit-content;
+  height: fit-content;
+}
+
+.tasks-map-search-panel-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background-color 0.2s ease;
+  position: absolute;
+  right: 0px;
+  z-index: 2;
+}
+
+.tasks-map-search-panel-close:hover {
+  background: var(--background-primary-alt);
+  color: var(--text-normal);
+}
+
+.tasks-map-search-panel-toggle {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-normal);
+  padding: 8px;
+  border-radius: 4px;
+  width: 34px;
+  height: 34px;
+}
+
+.tasks-map-search-panel-toggle:hover {
+  background: var(--background-primary-alt);
+}
+
+.tasks-map-search-panel.minimized .tasks-map-search-panel-close {
+  display: none;
+}
+
+.tasks-map-search-input-header {
+  position: absolute;
+  display: flex;
+}
+
+.tasks-map-search-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tasks-map-search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tasks-map-search-input {
+  width: 100%;
+  padding-right: 36px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-normal);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.tasks-map-search-input:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.tasks-map-search-clear-button {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background-color 0.2s ease;
+}
+
+.tasks-map-search-clear-button:hover {
+  background: var(--background-primary-alt);
+  color: var(--text-normal);
+}
+
+.tasks-map-search-results-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tasks-map-search-results-count {
+  flex: 1;
+}
+
+.tasks-map-search-navigation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tasks-map-search-nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-normal);
+  transition: background-color 0.2s ease;
+}
+
+.tasks-map-search-nav-button:hover {
+  background: var(--background-primary-alt);
+}
+
+.tasks-map-search-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tasks-map-search-nav-button:disabled:hover {
+  background: var(--background-primary);
+}
+
+.tasks-map-search-current-index {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-normal);
+  min-width: 40px;
+  text-align: center;
+}
+
+.tasks-map-search-results-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+}
+
+.tasks-map-search-result-item {
+  padding: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tasks-map-search-result-item:last-child {
+  border-bottom: none;
+}
+
+.tasks-map-search-result-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.tasks-map-search-result-active {
+  background: var(--background-modifier-hover);
+  border-left: 3px solid var(--interactive-accent);
+}
+
+.tasks-map-search-result-text {
+  font-size: 13px;
+  color: var(--text-normal);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.tasks-map-search-result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tasks-map-search-result-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: var(--background-secondary-alt);
+  color: var(--text-muted);
+  border-radius: 10px;
 }

@@ -1154,6 +1154,8 @@ export function createNodesFromTasks(
   onAiNext?: (taskId: string) => Promise<void>,
   // eslint-disable-next-line no-unused-vars
   onAiBefore?: (taskId: string) => Promise<void>,
+  // eslint-disable-next-line no-unused-vars
+  onStatusChange?: (taskId: string, newStatus: TaskStatus) => void,
   // Proximity color settings
   dueProximityDays: number = 7,
   dueProximityColor: string = "#ef4444",
@@ -1190,6 +1192,7 @@ export function createNodesFromTasks(
         onDeleteTask,
         onAiNext,
         onAiBefore,
+        onStatusChange,
         width: dimensions.width,
         height: dimensions.height,
         truncated: dimensions.truncated,

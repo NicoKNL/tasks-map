@@ -24,6 +24,7 @@ function TaskMapGraphWrapper({
   const [selectedTags, setSelectedTags] = useState<string[]>(
     initialFilterSettings?.selectedTags || []
   );
+  const [, setIsSearchPanelOpen] = React.useState(false);
   const [excludedTags, setExcludedTags] = useState<string[]>(
     initialFilterSettings?.excludedTags || []
   );
@@ -63,6 +64,7 @@ function TaskMapGraphWrapper({
         setSelectedStatuses={setSelectedStatuses}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
+        onSearchClick={() => setIsSearchPanelOpen(true)}
       />
     </ReactFlowProvider>
   );

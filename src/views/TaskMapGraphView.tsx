@@ -19,6 +19,7 @@ import {
   createEdgesFromTasks,
   addIsolatedTaskLineToVault,
   findRelatedTaskIds,
+  updateTaskStatusInVault,
 } from "src/lib/utils";
 import { BaseTask, RawTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
@@ -29,11 +30,12 @@ import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
 import { TagsContext } from "src/contexts/context";
 import { t } from "../i18n";
+import StatusBar from "../components/status-bar";
+import SearchPanel from "../components/search-panel";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
 import { TaskFactory } from "../lib/task-factory";
-import { AIService } from "../lib/ai-service";
 import { BatchAIService } from "../lib/batch-ai-service";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
@@ -48,6 +50,7 @@ interface TaskMapGraphViewProps {
   setSelectedStatuses: React.Dispatch<React.SetStateAction<TaskStatus[]>>;
   selectedFiles: string[];
   setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
+  onSearchClick: () => void;
 }
 
 // Helper function to filter tasks
@@ -101,6 +104,57 @@ const getFilteredNodeIds = (
   return filtered.map((task) => task.id);
 };
 
+// Helper function to filter tasks and return the filtered task objects
+const getFilteredTasks = (
+  tasks: BaseTask[],
+  selectedTags: string[],
+  selectedStatuses: TaskStatus[],
+  excludedTags: string[],
+  selectedFiles: string[]
+): BaseTask[] => {
+  let filtered = tasks;
+  if (selectedTags.length > 0) {
+    filtered = filtered.filter((task) => {
+      const noTagsSelected = selectedTags.includes(NO_TAGS_VALUE);
+      const regularTagsSelected = selectedTags.filter(
+        (tag) => tag !== NO_TAGS_VALUE
+      );
+      const matchesNoTags = noTagsSelected && task.tags.length === 0;
+      const matchesRegularTags =
+        regularTagsSelected.length > 0 &&
+        regularTagsSelected.some((tag) => task.tags.includes(tag));
+      return matchesNoTags || matchesRegularTags;
+    });
+  }
+  if (excludedTags.length > 0) {
+    filtered = filtered.filter((task) => {
+      // Exclude tasks that have any of the excluded tags
+      return !excludedTags.some((excludedTag) =>
+        task.tags.includes(excludedTag)
+      );
+    });
+  }
+  if (selectedStatuses.length > 0) {
+    filtered = filtered.filter((task) =>
+      selectedStatuses.includes(task.status)
+    );
+  }
+  if (selectedFiles.length > 0) {
+    filtered = filtered.filter((task) => {
+      // Check if task's file path matches any selected file/folder
+      return selectedFiles.some((selectedPath) => {
+        // If selectedPath ends with /, it's a folder filter
+        if (selectedPath.endsWith("/")) {
+          return task.link.startsWith(selectedPath);
+        }
+        // Otherwise it's an exact file match
+        return task.link === selectedPath;
+      });
+    });
+  }
+  return filtered;
+};
+
 export default function TaskMapGraphView({
   settings,
   selectedTags,
@@ -147,7 +201,42 @@ export default function TaskMapGraphView({
   const skipFitViewRef = React.useRef(false);
 
   const [hideTags, setHideTags] = React.useState(false);
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = React.useState(false);
+  const [searchResultsCount, setSearchResultsCount] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Calculate task statistics
+  const taskStatistics = useMemo(() => {
+    console.log("Calculating task statistics, tasks count:", tasks.length);
+    const filteredTasks = getFilteredTasks(
+      tasks,
+      selectedTags,
+      selectedStatuses,
+      excludedTags,
+      selectedFiles
+    );
+    
+    const totalTasks = filteredTasks.length;
+    
+    // Initialize counts for each status
+    const tasksByStatus: Record<TaskStatus, number> = {
+      todo: 0,
+      in_progress: 0,
+      done: 0,
+      canceled: 0
+    };
+    
+    // Count tasks by status
+    filteredTasks.forEach(task => {
+      tasksByStatus[task.status] = (tasksByStatus[task.status] || 0) + 1;
+    });
+    
+    console.log("Task statistics calculated:", { totalTasks, tasksByStatus });
+    return {
+      totalTasks,
+      tasksByStatus
+    };
+  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
@@ -297,7 +386,6 @@ export default function TaskMapGraphView({
         new Notice("Tasks plugin not found");
         return;
       }
-      const tasksApi = tasksPlugin.apiV1;
 
       // Parse task types (S: sequential, P: parallel)
       const parsedTasks = results.map(result => {
@@ -435,7 +523,6 @@ export default function TaskMapGraphView({
         new Notice("Tasks plugin not found");
         return;
       }
-      const tasksApi = tasksPlugin.apiV1;
 
       // Parse task types (S: sequential, P: parallel)
       const parsedTasks = results.map(result => {
@@ -515,6 +602,54 @@ export default function TaskMapGraphView({
     }
       }, [tasks, settings, app, vault, reloadTasks]);
 
+  const handleStatusChange = useCallback(async (taskId: string, newStatus: TaskStatus) => {
+    console.log("===== handleStatusChange START =====");
+    console.log("Parameters:", { taskId, newStatus });
+    
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) {
+      console.log("Task not found!");
+      return;
+    }
+    
+    console.log("Found task:", { id: task.id, currentStatus: task.status, text: task.text });
+    
+    // Update task status in vault
+    try {
+      console.log("Updating task status in vault...");
+      await updateTaskStatusInVault(task, newStatus, app);
+      console.log("Vault update successful");
+      
+      // Update local state - preserve task instance prototype
+      setTasks(prevTasks => {
+        console.log("setTasks callback executing, prevTasks length:", prevTasks.length);
+        const updatedTasks = prevTasks.map(t => {
+          if (t.id === taskId) {
+            // Create a new instance preserving the prototype chain
+            const newTask = Object.assign(Object.create(Object.getPrototypeOf(t)), t);
+            newTask.status = newStatus;
+            console.log("Created new task instance:", { id: newTask.id, status: newTask.status });
+            return newTask;
+          }
+          return t;
+        });
+        console.log("Updated tasks array length:", updatedTasks.length);
+        console.log("Updated tasks statuses:", updatedTasks.map(t => ({ id: t.id, status: t.status })));
+        return updatedTasks;
+      });
+      
+      console.log("Local state update triggered");
+      // No need to reload tasks, we've updated the local state
+      // Status bar will automatically refresh due to taskStatistics dependency
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      new Notice(`Failed to update task status: ${message}`);
+    }
+    
+    console.log("===== handleStatusChange END =====");
+  }, [tasks, app]);
+
   const handleCreateTask = useCallback((taskLine: string) => {
     const rawTask: RawTask = {
       status: "todo",
@@ -561,6 +696,12 @@ export default function TaskMapGraphView({
     setTaskTagsRegistry(newRegistry);
   }, [tasks]);
 
+  // Debug: log tasks changes
+  useEffect(() => {
+    console.log("Tasks array updated, length:", tasks.length);
+    console.log("Tasks statuses:", tasks.map(t => ({ id: t.id, status: t.status })));
+  }, [tasks]);
+
   useEffect(() => {
     let newNodes = createNodesFromTasks(
       tasks,
@@ -575,6 +716,7 @@ export default function TaskMapGraphView({
               handleDeleteTask,
         handleAiNext,
         handleAiBefore,
+        handleStatusChange,
         // Proximity color settings
       settings.dueProximityDays,
       settings.dueProximityColor,
@@ -635,6 +777,9 @@ export default function TaskMapGraphView({
     setNodes,
     setEdges,
     handleDeleteTask,
+    handleAiNext,
+    handleAiBefore,
+    handleStatusChange,
     handleCreateTask,
   ]);
 
@@ -1062,6 +1207,34 @@ export default function TaskMapGraphView({
     };
   }, [selectedEdge, onDeleteSelectedEdge]);
 
+  const handleJumpToNode = useCallback((taskId: string) => {
+    // Find the node in the nodes array
+    const node = nodes.find(n => n.id === taskId);
+    if (!node) return;
+    
+    // Center the view on the node
+    reactFlowInstance.setCenter(
+      node.position.x + (node.width || NODEHEIGHT) / 2,
+      node.position.y + (node.height || NODEWIDTH) / 2,
+      { zoom: 1, duration: 400 }
+    );
+  }, [nodes, reactFlowInstance]);
+
+  // Handle Ctrl+F keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+F or Cmd+F to open search panel
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsSearchPanelOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const tagsContextValue = useMemo(
     () => ({
       allTags,
@@ -1074,11 +1247,11 @@ export default function TaskMapGraphView({
     <TagsContext.Provider value={tagsContextValue}>
       {}
       <div
-                  className={`tasks-map-graph-container tasks-map-theme-${actualTheme}`}
+        className={`tasks-map-graph-container tasks-map-theme-${actualTheme}`}
         ref={containerRef}
         tabIndex={-1}
         onKeyDown={(e) => {
-          if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEdge) {
+          if ((e.key === "Delete" || e.key === "Backspace") && selectedEdge) {
             e.preventDefault();
             e.stopPropagation();
             onDeleteSelectedEdge();
@@ -1107,7 +1280,10 @@ export default function TaskMapGraphView({
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
           onKeyDown={(event) => {
-            if ((event.key === 'Delete' || event.key === 'Backspace') && selectedEdge) {
+            if (
+              (event.key === "Delete" || event.key === "Backspace") &&
+              selectedEdge
+            ) {
               event.preventDefault();
               event.stopPropagation();
               onDeleteSelectedEdge();
@@ -1134,11 +1310,26 @@ export default function TaskMapGraphView({
             layoutDirection={settings.layoutDirection}
             showPriorities={settings.showPriorities}
             showTagsSetting={settings.showTags}
+            searchPanelOpen={isSearchPanelOpen}
+            searchResultsCount={searchResultsCount}
           />
           <TaskMinimap />
           <Background />
         </ReactFlow>
         {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
+        <StatusBar 
+          totalTasks={taskStatistics.totalTasks}
+          tasksByStatus={taskStatistics.tasksByStatus}
+          selectedStatuses={selectedStatuses}
+        />
+        <SearchPanel
+          isOpen={isSearchPanelOpen}
+          onClose={() => setIsSearchPanelOpen(false)}
+          tasks={tasks}
+          onJumpToNode={handleJumpToNode}
+          onSearchClick={() => setIsSearchPanelOpen(true)}
+          onSearchResultsChange={setSearchResultsCount}
+        />
       </div>
     </TagsContext.Provider>
   );

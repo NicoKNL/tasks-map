@@ -2,7 +2,7 @@ import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import SaveFilterButton from "./save-filter-button";
 import { TaskStatus } from "src/types/task";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { t } from "../i18n";
 
@@ -26,6 +26,8 @@ interface GuiOverlayProps {
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTagsSetting?: boolean;
+  searchPanelOpen?: boolean;
+  searchResultsCount?: number;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -49,6 +51,8 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     layoutDirection,
     showPriorities,
     showTagsSetting,
+    searchPanelOpen = false,
+    searchResultsCount = 0,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -61,8 +65,45 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     setIsMinimized((prev) => !prev);
   };
 
+  // Calculate dynamic top position based on search panel state
+  const dynamicTop = useMemo(() => {
+    const baseTop = 16; // Base top position
+    
+    if (!searchPanelOpen) {
+      // Search panel is minimized (just a button)
+      // Button height is approximately 34px (from CSS .tasks-map-search-panel-toggle)
+      const minimizedSearchPanelHeight = 34;
+      return baseTop + minimizedSearchPanelHeight + 8; // Add spacing
+    }
+    
+    // Search panel is open, calculate its estimated height
+    // Base height for search panel (header + input + padding)
+    const baseHeight = 120; // px (header + input + padding)
+    // Height per search result item
+    const itemHeight = 45; // px per result item
+    // Maximum height for search panel
+    const maxHeight = 400; // px
+    
+    // Calculate total height needed based on search results count
+    const calculatedHeight = baseHeight + (searchResultsCount * itemHeight);
+    const searchPanelHeight = Math.min(calculatedHeight, maxHeight);
+    
+    // Return top position: search panel height + spacing
+    // Add 8px spacing between search panel and filter panel
+    return baseTop + searchPanelHeight + 8;
+  }, [searchPanelOpen, searchResultsCount]);
+
+  const panelStyle = useMemo(() => {
+    return {
+      top: `${dynamicTop}px`,
+    };
+  }, [dynamicTop]);
+
   return (
-    <div className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}>
+    <div 
+      className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}
+      style={panelStyle}
+    >
       <button
         className="tasks-map-filter-panel-toggle"
         onClick={toggleMinimized}

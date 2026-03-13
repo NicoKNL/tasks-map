@@ -30,8 +30,23 @@ export function TaskStatusToggle({
     const statusCycle: TaskStatus[] = ["todo", "in_progress", "done"];
     const currentIndex = statusCycle.indexOf(status);
     const newStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-    await updateTaskStatusInVault(task, newStatus, app);
-    onStatusChange(newStatus);
+    
+    console.log("TaskStatusToggle: updating status", { 
+      taskId: task.id, 
+      oldStatus: status, 
+      newStatus 
+    });
+    
+    try {
+      await updateTaskStatusInVault(task, newStatus, app);
+      console.log("TaskStatusToggle: vault update successful, calling onStatusChange");
+      onStatusChange(newStatus);
+    } catch (error) {
+      console.error("TaskStatusToggle: failed to update status in vault", error);
+      // Still call onStatusChange to update UI?
+      // Maybe we should still update the UI even if vault fails
+      onStatusChange(newStatus);
+    }
   };
 
   return (

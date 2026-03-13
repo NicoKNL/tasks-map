@@ -2,7 +2,7 @@ import React, { useState, useContext, useRef } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
-import { BaseTask, TaskNodeData } from "src/types/task";
+import { BaseTask, TaskNodeData, TaskStatus } from "src/types/task";
 import { TaskDetails } from "./task-details";
 import { ExpandButton } from "./expand-button";
 import { LinkButton } from "./link-button";
@@ -41,6 +41,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
       onDeleteTask,
     onAiNext,
     onAiBefore,
+    onStatusChange,
     // Proximity color settings
     dueProximityDays = 7,
     dueProximityColor = "#ef4444",
@@ -136,6 +137,22 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
+
+  const handleStatusChange = (newStatus: TaskStatus) => {
+    console.log("TaskNode handleStatusChange called:", { 
+      taskId: task.id, 
+      newStatus, 
+      hasOnStatusChangeCallback: !!onStatusChange 
+    });
+    setStatus(newStatus);
+    // Call parent callback if provided
+    if (onStatusChange) {
+      console.log("TaskNode: calling parent onStatusChange");
+      onStatusChange(task.id, newStatus);
+    } else {
+      console.log("TaskNode: onStatusChange callback not provided!");
+    }
+  };
 
   const handleTagRemove = async (tagToRemove: string) => {
     // Immediately update the visual state
@@ -282,7 +299,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
         <TaskStatusToggle
           status={status}
           task={task}
-          onStatusChange={setStatus}
+          onStatusChange={handleStatusChange}
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
         <span ref={summaryRef} className={`tasks-map-task-node-summary ${data.truncated ? 'truncated' : ''}`} />
