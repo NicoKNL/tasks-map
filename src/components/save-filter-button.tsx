@@ -45,11 +45,11 @@ const SaveFilterButton: React.FC<SaveFilterButtonProps> = ({
 
       // 获取当前活动文件
       const activeFile = app.workspace.getActiveFile();
-      let defaultPath = "tasks-map-filter.md";
+      let defaultPath = "tasks-map-filter.map.md";
 
       if (activeFile && activeFile.extension === "md") {
         const parentPath = activeFile.parent?.path || "";
-        defaultPath = `${parentPath}/${activeFile.basename}-filter.md`;
+        defaultPath = `${parentPath}/${activeFile.basename}-filter.map.md`;
       }
 
       // 使用新的保存函数，将配置存储在正文JSON代码块中

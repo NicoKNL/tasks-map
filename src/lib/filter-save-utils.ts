@@ -78,14 +78,14 @@ export function createSaveFilterCommand(
         return;
       }
       
-      // 使用当前活动文件或提示用户输入文件名
-      const activeFile = app.workspace.getActiveFile();
-      let defaultPath = "tasks-map-filter.md";
-      
-      if (activeFile && activeFile.extension === "md") {
-        const parentPath = activeFile.parent?.path || "";
-        defaultPath = `${parentPath}/${activeFile.basename}-filter.md`;
-      }
+    // 使用当前活动文件或提示用户输入文件名
+    const activeFile = app.workspace.getActiveFile();
+    let defaultPath = "tasks-map-filter.map.md";
+    
+    if (activeFile && activeFile.extension === "md") {
+      const parentPath = activeFile.parent?.path || "";
+      defaultPath = `${parentPath}/${activeFile.basename}-filter.map.md`;
+    }
       
       // 在实际应用中，这里应该弹出一个对话框让用户输入文件名
       // 为了简化，我们直接使用默认路径
