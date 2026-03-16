@@ -96,24 +96,24 @@ export function estimateNodeDimensions(
   // Chinese characters are wider than English characters
   const chineseCharWidth = 14; // Approximate width for Chinese characters
   const englishCharWidth = 7; // Width for English characters and numbers
-  
+
   // Count Chinese characters vs non-Chinese characters
   const chineseCharCount = (task.summary.match(/[\u4e00-\u9fff]/g) || []).length;
   const otherCharCount = task.summary.length - chineseCharCount;
-  
+
   // Calculate text width requirement
   const textWidth = chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth;
-  
+
   // Minimum and maximum width based on Chinese character count (7-15 chars)
   const minChineseWidth = 7 * chineseCharWidth; // Minimum 7 Chinese characters width
   const maxChineseWidth = 15 * chineseCharWidth; // Maximum 15 Chinese characters width
-  
+
   // Determine if width is at max limit (Chinese characters exceed 15)
   const widthAtMaxLimit = chineseCharCount > 15 || textWidth > maxChineseWidth;
-  
+
   // Target width for text content (clamped between min and max Chinese width)
   const targetTextWidth = Math.min(maxChineseWidth, Math.max(minChineseWidth, textWidth));
-  
+
   const paddingHorizontal = 24; // 12px left + 12px right
   const iconsWidth = 80; // Approximate width for status, priority, star, link, menu buttons
 
@@ -139,16 +139,16 @@ export function estimateNodeDimensions(
 
   // Calculate effective content area for text wrapping (subtract padding and icons)
   const effectiveContentWidth = width - paddingHorizontal - iconsWidth;
-  
+
   // Estimate text wrapping based on average character width
   // Use weighted average based on character composition
-  const avgCharWidth = chineseCharCount > 0 ? 
+  const avgCharWidth = chineseCharCount > 0 ?
     (chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth) / task.summary.length :
     englishCharWidth;
-  
+
   const avgCharsPerLine = Math.max(1, Math.floor(effectiveContentWidth / avgCharWidth));
   const lineHeight = 22; // Slightly more than font size for line spacing
-  
+
   // Calculate lines needed for summary
   const summaryLines = Math.max(1, Math.ceil(task.summary.length / avgCharsPerLine));
   const summaryHeight = summaryLines * lineHeight;
@@ -158,33 +158,25 @@ export function estimateNodeDimensions(
   if (showTags && task.tags.length > 0) {
     // Estimate how many tags per row based on width
     const tagMinWidth = 60; // Minimum width per tag
-    const tagsPerRow = Math.max(
-      1,
-      Math.floor(effectiveContentWidth / tagMinWidth)
-    );
+    const tagsPerRow = Math.max(1, Math.floor(effectiveContentWidth / tagMinWidth));
     const tagRows = Math.ceil((task.tags.length + 1) / tagsPerRow); // +1 for "Add tag" button
     tagsHeight = tagRows * 28;
   }
 
   // Add padding and safety margin
-  // Consider that nodes have:
-  // - padding: 12px (from .tasks-map-task-background)
-  // - border: 1px
-  // - box-shadow: some visual spacing
-  // - internal spacing between elements
-  const padding = 30; // 12px top + 12px bottom + extra for visual elements
-  const safetyMargin = 20; // Extra buffer for spacing between nodes
+  const paddingVertical = 24; // 12px top + 12px bottom
+  const safetyMargin = 16; // Extra buffer to prevent overlap
 
   const totalHeight =
-    baseHeight + summaryHeight + tagsHeight + padding + safetyMargin;
-    
+    baseHeight + summaryHeight + tagsHeight + paddingVertical + safetyMargin;
+
   // Try to maintain aspect ratio of 3:2 (width:height) as much as possible
   const targetAspectRatio = 3 / 2;
   const currentAspectRatio = width / Math.max(NODEHEIGHT, totalHeight);
-  
+
   // Determine if height is at max limit (aspect ratio adjusted)
   let heightAtMaxLimit = false;
-  
+
   // If aspect ratio is too far from target (more than 30% difference), adjust height
   let finalHeight = Math.max(NODEHEIGHT, totalHeight);
   if (Math.abs(currentAspectRatio - targetAspectRatio) > 0.3) {
@@ -471,11 +463,10 @@ export function getLayoutedElements(
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
+  dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
 
-  // Store calculated dimensions for each node and compute max dimensions
+  // Store calculated dimensions for each node
   const nodeDimensions = new Map<string, { width: number; height: number }>();
-  let maxWidth = NODEWIDTH;
-  let maxHeight = NODEHEIGHT;
 
   nodes.forEach((node) => {
     // Get task from node data to estimate dimensions
@@ -486,54 +477,7 @@ export function getLayoutedElements(
 
     nodeDimensions.set(node.id, dimensions);
     dagreGraph.setNode(node.id, dimensions);
-
-    // Update max dimensions
-    maxWidth = Math.max(maxWidth, dimensions.width);
-    maxHeight = Math.max(maxHeight, dimensions.height);
   });
-
-  // Calculate spacing based on node dimensions and layout direction
-  // We want compact layout but still prevent node overlap
-  // Use percentage-based padding instead of fixed values
-  const NODE_PADDING_FACTOR = 0.05; // 5% of node size - more compact
-  const RANK_PADDING_FACTOR = 0.08; // 8% of node size - more compact
-  const MIN_PADDING = 3; // Minimum padding to ensure some separation
-
-  // For TB (Top-to-Bottom) layout:
-  // - ranksep: vertical distance between ranks (should accommodate node height)
-  // - nodesep: horizontal distance between nodes in same rank (should accommodate node width)
-  // For LR (Left-to-Right) layout:
-  // - ranksep: horizontal distance between ranks (should accommodate node width)
-  // - nodesep: vertical distance between nodes in same rank (should accommodate node height)
-
-  let nodesep, ranksep;
-  if (rankdir === "TB") {
-    // Vertical layout: nodes flow top to bottom
-    ranksep = maxHeight + Math.max(maxHeight * RANK_PADDING_FACTOR, MIN_PADDING);
-    nodesep = maxWidth + Math.max(maxWidth * NODE_PADDING_FACTOR, MIN_PADDING);
-  } else { // LR
-    // Horizontal layout: nodes flow left to right
-    ranksep = maxWidth + Math.max(maxWidth * RANK_PADDING_FACTOR, MIN_PADDING);
-    nodesep = maxHeight + Math.max(maxHeight * NODE_PADDING_FACTOR, MIN_PADDING);
-  }
-
-  // Ensure we have at least some spacing even for small nodes
-  nodesep = Math.max(nodesep, NODEWIDTH * 0.5);
-  ranksep = Math.max(ranksep, NODEHEIGHT * 0.5);
-
-  // Set graph layout options
-  // Use tighter layout parameters for more compact arrangement
-  dagreGraph.setGraph({
-    rankdir,
-    nodesep,
-    ranksep,
-    edgesep: 5, // reduced from 10 for tighter edge spacing
-    ranker: "tight-tree", // try to minimize edge lengths and crossings
-    align: "UL", // align nodes to upper left
-    marginx: 10, // reduced margins
-    marginy: 10,
-  });
-
   edges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
