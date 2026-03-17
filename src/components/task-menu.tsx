@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MoreVertical, Trash2, Brain, ChevronUp } from "lucide-react";
+import { MoreVertical, Trash2, Brain, ChevronUp, SquarePen, Plus } from "lucide-react";
 import { App } from "obsidian";
 import { BaseTask } from "src/types/task";
-import { SquarePen } from "lucide-react";
 import {
   deleteTaskFromVault,
   findTaskLineByIdOrText,
@@ -14,6 +13,7 @@ interface TaskMenuProps {
   onTaskDeleted?: () => void;
   onAiNext?: () => Promise<void>;
   onAiBefore?: () => Promise<void>;
+  onInsertAfter?: () => Promise<void>;
 }
 
 const TaskMenu = ({
@@ -22,6 +22,7 @@ const TaskMenu = ({
   onTaskDeleted,
   onAiNext,
   onAiBefore,
+  onInsertAfter,
 }: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -145,6 +146,23 @@ const TaskMenu = ({
     }
   };
 
+  const handleInsertAfter = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsOpen(false);
+
+    if (!onInsertAfter) {
+      return;
+    }
+
+    try {
+      await onInsertAfter();
+    } catch (error) {
+      console.error("Insert after failed:", error);
+    }
+  };
+
   return (
     <div className="tasks-map-task-menu nodrag" ref={menuRef}>
       <button
@@ -160,6 +178,10 @@ const TaskMenu = ({
           <button className="tasks-map-task-menu-item" onClick={handleEdit}>
             <SquarePen size={12} />
             <span>Edit task</span>
+          </button>
+          <button className="tasks-map-task-menu-item" onClick={handleInsertAfter}>
+            <Plus size={12} />
+            <span>Insert after</span>
           </button>
           <button className="tasks-map-task-menu-item" onClick={handleAiBefore}>
             <Brain size={12} />

@@ -650,6 +650,78 @@ export default function TaskMapGraphView({
     console.log("===== handleStatusChange END =====");
   }, [tasks, app]);
 
+  const handleInsertAfter = useCallback(async (taskId: string) => {
+    const currentTask = tasks.find(t => t.id === taskId);
+    if (!currentTask) {
+      new Notice("Current task not found");
+      return;
+    }
+
+    // @ts-ignore
+    const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
+    if (!tasksPlugin?.apiV1) {
+      new Notice("Tasks plugin not found");
+      return;
+    }
+    const tasksApi = tasksPlugin.apiV1;
+
+    // Get current task text to use as template
+    const currentTaskText = currentTask.text;
+    
+    // Create new task after current task
+    let newTaskLine = await tasksApi.createTaskLineModal();
+    if (!newTaskLine) {
+      new Notice("Task creation cancelled.");
+      return;
+    }
+
+    // Add to inbox
+    await addIsolatedTaskLineToVault(newTaskLine, settings.taskInbox, app);
+
+    // Parse new task
+    const factory = new TaskFactory();
+    const rawTask: RawTask = {
+      status: "todo",
+      text: newTaskLine,
+      link: {
+        path: settings.taskInbox,
+      },
+    };
+    const newTask = factory.parse(rawTask, "dataview");
+
+    // Find all outgoing connections (tasks that have currentTask.id in their incomingLinks)
+    const outgoingTasks = tasks.filter(t => t.incomingLinks.includes(currentTask.id));
+    
+    // Create connection from current task to new task
+    await addLinkSignsBetweenTasks(
+      vault,
+      currentTask,
+      newTask,
+      settings.linkingStyle
+    );
+
+    // Transfer outgoing connections from current task to new task
+    for (const outgoingTask of outgoingTasks) {
+      // Remove connection from current task to outgoing task
+      await removeLinkSignsBetweenTasks(vault, outgoingTask, currentTask.id);
+      
+      // Create connection from new task to outgoing task
+      await addLinkSignsBetweenTasks(
+        vault,
+        newTask,
+        outgoingTask,
+        settings.linkingStyle
+      );
+    }
+
+    new Notice("Task inserted after successfully!");
+
+    // Reload tasks to refresh the graph
+    setTimeout(() => {
+      reloadTasks();
+    }, 200);
+  }, [tasks, settings, app, vault, reloadTasks]);
+
   const handleCreateTask = useCallback((taskLine: string) => {
     const rawTask: RawTask = {
       status: "todo",
@@ -713,9 +785,10 @@ export default function TaskMapGraphView({
       settings.tagColorSeed,
       settings.tagStaticColor,
         settings.themeMode,
-              handleDeleteTask,
+        handleDeleteTask,
         handleAiNext,
         handleAiBefore,
+        handleInsertAfter,
         handleStatusChange,
         // Proximity color settings
       settings.dueProximityDays,

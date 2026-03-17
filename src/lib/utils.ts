@@ -454,42 +454,116 @@ export async function addTagToTaskInVault(
   await task.addTag(tagToAdd, app);
 }
 
-export function getLayoutedElements(
-  nodes: Node[],
-  edges: Edge[],
-  direction: "Horizontal" | "Vertical" = "Horizontal",
-  showTags: boolean = true
-) {
+/**
+ * Find all connected components in the graph
+ */
+function findConnectedComponents(nodes: Node[], edges: Edge[]): string[][] {
+  const nodeIds = new Set(nodes.map(node => node.id));
+  const adjacency = new Map<string, string[]>();
+  
+  // Initialize adjacency list
+  nodes.forEach(node => {
+    adjacency.set(node.id, []);
+  });
+  
+  // Build adjacency list from edges
+  edges.forEach(edge => {
+    if (nodeIds.has(edge.source) && nodeIds.has(edge.target)) {
+      adjacency.get(edge.source)?.push(edge.target);
+      adjacency.get(edge.target)?.push(edge.source);
+    }
+  });
+  
+  const visited = new Set<string>();
+  const components: string[][] = [];
+  
+  for (const nodeId of nodeIds) {
+    if (!visited.has(nodeId)) {
+      const component: string[] = [];
+      const queue: string[] = [nodeId];
+      
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        if (visited.has(current)) continue;
+        
+        visited.add(current);
+        component.push(current);
+        
+        const neighbors = adjacency.get(current) || [];
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            queue.push(neighbor);
+          }
+        }
+      }
+      
+      if (component.length > 0) {
+        components.push(component);
+      }
+    }
+  }
+  
+  return components;
+}
+
+/**
+ * Get bounding box of a set of nodes
+ */
+function getBoundingBox(positionedNodes: Node[]): { minX: number; minY: number; maxX: number; maxY: number } {
+  if (positionedNodes.length === 0) {
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  }
+  
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  
+  positionedNodes.forEach(node => {
+    const x = node.position.x;
+    const y = node.position.y;
+    const width = node.width || NODEWIDTH;
+    const height = node.height || NODEHEIGHT;
+    
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + width);
+    maxY = Math.max(maxY, y + height);
+  });
+  
+  return { minX, minY, maxX, maxY };
+}
+
+/**
+ * Layout individual connected component using dagre
+ */
+function layoutComponent(
+  componentNodes: Node[],
+  componentEdges: Edge[],
+  direction: "Horizontal" | "Vertical",
+  showTags: boolean,
+  nodeDimensions: Map<string, { width: number; height: number }>
+): Node[] {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
+  const rankdir = direction === "Horizontal" ? "LR" : "TB";
   dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
-
-  // Store calculated dimensions for each node
-  const nodeDimensions = new Map<string, { width: number; height: number }>();
-
-  nodes.forEach((node) => {
-    // Get task from node data to estimate dimensions
-    const task = node.data?.task as BaseTask | undefined;
-    const dimensions = task
-      ? estimateNodeDimensions(task, showTags)
-      : { width: NODEWIDTH, height: NODEHEIGHT };
-
-    nodeDimensions.set(node.id, dimensions);
+  
+  componentNodes.forEach(node => {
+    const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
     dagreGraph.setNode(node.id, dimensions);
   });
-  edges.forEach((edge) => {
+  
+  componentEdges.forEach(edge => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
+  
   dagre.layout(dagreGraph);
-
-  return nodes.map((node) => {
+  
+  return componentNodes.map(node => {
     const nodeWithPosition = dagreGraph.node(node.id);
-    const dimensions = nodeDimensions.get(node.id) || {
-      width: NODEWIDTH,
-      height: NODEHEIGHT,
-    };
-
+    const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
+    
     if (!nodeWithPosition) {
       return {
         ...node,
@@ -499,13 +573,160 @@ export function getLayoutedElements(
       return {
         ...node,
         position: {
-          // Center the node at the position dagre calculated
           x: nodeWithPosition.x - dimensions.width / 2,
           y: nodeWithPosition.y - dimensions.height / 2,
         },
       };
     }
   });
+}
+
+export function getLayoutedElements(
+  nodes: Node[],
+  edges: Edge[],
+  direction: "Horizontal" | "Vertical" = "Horizontal",
+  showTags: boolean = true
+) {
+  if (nodes.length === 0) {
+    return nodes;
+  }
+  
+  // Store calculated dimensions for each node
+  const nodeDimensions = new Map<string, { width: number; height: number }>();
+  
+  nodes.forEach((node) => {
+    const task = node.data?.task as BaseTask | undefined;
+    const dimensions = task
+      ? estimateNodeDimensions(task, showTags)
+      : { width: NODEWIDTH, height: NODEHEIGHT };
+    
+    nodeDimensions.set(node.id, dimensions);
+  });
+  
+  // Find all connected components
+  const components = findConnectedComponents(nodes, edges);
+  
+  // Separate isolated nodes (components with only 1 node) from multi-node components
+  const isolatedNodes: string[][] = [];
+  const multiNodeComponents: string[][] = [];
+  
+  for (const component of components) {
+    if (component.length === 1) {
+      isolatedNodes.push(component);
+    } else {
+      multiNodeComponents.push(component);
+    }
+  }
+  
+  // Create a map for quick node lookup
+  const nodeMap = new Map<string, Node>();
+  nodes.forEach(node => nodeMap.set(node.id, node));
+  
+  // Layout each component separately
+  const allPositionedNodes: Node[] = [];
+  let maxX = 0;
+  let maxY = 0;
+  
+  // First, layout multi-node components in the main area
+  if (multiNodeComponents.length > 0) {
+    let currentX = 0;
+    let currentY = 0;
+    let maxComponentHeight = 0;
+    const horizontalSpacing = 200; // Space between components horizontally
+    const verticalSpacing = 150;   // Space between rows of components vertically
+    
+    for (const component of multiNodeComponents) {
+      // Get nodes and edges for this component
+      const componentNodes = component.map(id => nodeMap.get(id)!);
+      const componentEdgeSet = new Set<string>();
+      const componentEdges: Edge[] = [];
+      
+      component.forEach(nodeId => {
+        edges.forEach(edge => {
+          if ((edge.source === nodeId || edge.target === nodeId) && 
+              component.includes(edge.source) && component.includes(edge.target)) {
+            const edgeKey = `${edge.source}-${edge.target}`;
+            if (!componentEdgeSet.has(edgeKey)) {
+              componentEdgeSet.add(edgeKey);
+              componentEdges.push(edge);
+            }
+          }
+        });
+      });
+      
+      // Layout this component
+      const positionedComponent = layoutComponent(
+        componentNodes,
+        componentEdges,
+        direction,
+        showTags,
+        nodeDimensions
+      );
+      
+      // Get bounding box of this component
+      const bbox = getBoundingBox(positionedComponent);
+      const componentWidth = bbox.maxX - bbox.minX;
+      const componentHeight = bbox.maxY - bbox.minY;
+      
+      // Position this component relative to others
+      const offsetX = currentX - bbox.minX;
+      const offsetY = currentY - bbox.minY;
+      
+      const finalPositionedComponent = positionedComponent.map(node => ({
+        ...node,
+        position: {
+          x: node.position.x + offsetX,
+          y: node.position.y + offsetY
+        }
+      }));
+      
+      allPositionedNodes.push(...finalPositionedComponent);
+      
+      // Update max coordinates
+      maxX = Math.max(maxX, currentX + componentWidth);
+      maxY = Math.max(maxY, currentY + componentHeight);
+      
+      if (direction === "Horizontal") {
+        // Arrange components horizontally
+        currentX += componentWidth + horizontalSpacing;
+        maxComponentHeight = Math.max(maxComponentHeight, componentHeight);
+      } else {
+        // Arrange components vertically
+        currentY += componentHeight + verticalSpacing;
+      }
+    }
+  }
+  
+  // Then, layout isolated nodes in a vertical column on the left
+  if (isolatedNodes.length > 0) {
+    const isolatedColumnX = -300; // Position isolated nodes to the left of main area
+    let isolatedY = 0;
+    const isolatedVerticalSpacing = 100; // Space between isolated nodes vertically
+    
+    for (const component of isolatedNodes) {
+      const componentNodes = component.map(id => nodeMap.get(id)!);
+      
+      // For isolated nodes, we don't need to layout with dagre, just use default dimensions
+      const positionedComponent = componentNodes.map(node => {
+        const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
+        return {
+          ...node,
+          position: {
+            x: isolatedColumnX,
+            y: isolatedY
+          }
+        };
+      });
+      
+      allPositionedNodes.push(...positionedComponent);
+      
+      // Update max coordinates
+      maxY = Math.max(maxY, isolatedY + (nodeDimensions.get(component[0])?.height || NODEHEIGHT));
+      isolatedY += (nodeDimensions.get(component[0])?.height || NODEHEIGHT) + isolatedVerticalSpacing;
+    }
+  }
+  
+  return allPositionedNodes;
 }
 
 /**
@@ -525,8 +746,21 @@ export async function addLinkSignsBetweenTasks(
 
   const id = fromTask.id;
 
-  // Use polymorphism - each task type handles its own linking logic
-  await toTask.addLinkMetadata(vault, fromTask, linkingStyle);
+  // Check if toTask is a proper BaseTask instance with addLinkMetadata method
+  if (typeof (toTask as any).addLinkMetadata === 'function') {
+    // Use polymorphism - each task type handles its own linking logic
+    await toTask.addLinkMetadata(vault, fromTask, linkingStyle);
+  } else {
+    // Fallback for plain objects - create a proper NoteTask instance
+    const factory = new TaskFactory();
+    const rawTask: RawTask = {
+      status: toTask.status,
+      text: toTask.text || toTask.id,
+      link: { path: toTask.link },
+    };
+    const properToTask = factory.parse(rawTask, toTask.type === "note" ? "note" : "dataview");
+    await properToTask.addLinkMetadata(vault, fromTask, linkingStyle);
+  }
 
   return id + "-" + toTask.id;
 }
@@ -1058,6 +1292,8 @@ export function createNodesFromTasks(
   // eslint-disable-next-line no-unused-vars
   onAiBefore?: (taskId: string) => Promise<void>,
   // eslint-disable-next-line no-unused-vars
+  onInsertAfter?: (taskId: string) => Promise<void>,
+  // eslint-disable-next-line no-unused-vars
   onStatusChange?: (taskId: string, newStatus: TaskStatus) => void,
   // Proximity color settings
   dueProximityDays: number = 7,
@@ -1095,6 +1331,7 @@ export function createNodesFromTasks(
         onDeleteTask,
         onAiNext,
         onAiBefore,
+        onInsertAfter,
         onStatusChange,
         width: dimensions.width,
         height: dimensions.height,
