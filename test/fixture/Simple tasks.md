@@ -7,6 +7,6 @@
 - [ ] Extra final task with a really long description here ⛔ ldri05 ⛔ 3quyej
 
 Non task:
-- [ ] 
+- [ ]
 
 Some arbitrary file contents.
