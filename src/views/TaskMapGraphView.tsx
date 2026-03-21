@@ -18,6 +18,7 @@ import {
 } from "src/lib/utils";
 import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
+import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode from "src/components/task-node";
 import { NO_TAGS_VALUE } from "src/components/tag-select";
 import { TaskMinimap } from "src/components/task-minimap";
@@ -393,6 +394,18 @@ export default function TaskMapGraphView({
     [allTags, updateTaskTags]
   );
 
+  const filteredTasks = useMemo(() => {
+    const filteredIds = getFilteredNodeIds(
+      tasks,
+      selectedTags,
+      selectedStatuses,
+      excludedTags,
+      selectedFiles
+    );
+    const idSet = new Set(filteredIds);
+    return tasks.filter((t) => idSet.has(t.id));
+  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+
   return (
     <TagsContext.Provider value={tagsContextValue}>
       {}
@@ -437,6 +450,9 @@ export default function TaskMapGraphView({
           />
           <TaskMinimap />
           <Background />
+          {settings.showStatusCounts && (
+            <StatusCountsOverlay tasks={filteredTasks} />
+          )}
         </ReactFlow>
         {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
       </div>

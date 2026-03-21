@@ -97,6 +97,18 @@ export class TasksMapSettingTab extends PluginSettingTab {
           })
       );
 
+    new Setting(containerEl)
+      .setName(t("settings.show_status_counts"))
+      .setDesc(t("settings.show_status_counts_desc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showStatusCounts)
+          .onChange(async (value) => {
+            this.plugin.settings.showStatusCounts = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
     new Setting(containerEl).setHeading().setName(t("settings.layout"));
 
     new Setting(containerEl)

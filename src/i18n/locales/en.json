@@ -22,6 +22,8 @@
     "show_task_priorities_desc": "Display priority indicators on task nodes",
     "show_task_tags": "Show task tags",
     "show_task_tags_desc": "Display tags on task nodes",
+    "show_status_counts": "Show status counts",
+    "show_status_counts_desc": "Display a status counts overlay on the canvas",
     "layout": "Layout",
     "layout_direction": "Layout direction",
     "layout_direction_desc": "Direction for the node layout",

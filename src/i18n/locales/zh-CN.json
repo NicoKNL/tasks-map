@@ -22,6 +22,8 @@
     "show_task_priorities_desc": "在任务节点上显示优先级指示器",
     "show_task_tags": "显示任务标签",
     "show_task_tags_desc": "在任务节点上显示标签",
+    "show_status_counts": "显示状态计数",
+    "show_status_counts_desc": "在画布上显示状态计数叠加层",
     "layout": "布局",
     "layout_direction": "布局方向",
     "layout_direction_desc": "节点布局的方向",

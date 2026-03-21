@@ -974,3 +974,38 @@ If your plugin does not need CSS, delete this file.
     transform: rotate(360deg);
   }
 }
+
+/* Status Counts Overlay */
+.tasks-map-status-counts-overlay {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 35;
+  pointer-events: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.tasks-map-status-counts-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tasks-map-status-counts-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.tasks-map-status-counts-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
