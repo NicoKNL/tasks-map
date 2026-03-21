@@ -72,7 +72,12 @@
     "expand_filters": "Filters uitvouwen",
     "minimize_filters": "Filters minimaliseren",
     "filter_by_status": "Filteren op status...",
-    "filter_by_file": "Filteren op bestand of map..."
+    "filter_by_file": "Filteren op bestand of map...",
+    "status_todo": "Te doen",
+    "status_in_progress": "Bezig",
+    "status_done": "Klaar",
+    "status_canceled": "Geannuleerd",
+    "status_total": "Totaal"
   },
   "multiselect": {
     "select": "Selecteer...",

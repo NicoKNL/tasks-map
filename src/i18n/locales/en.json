@@ -72,7 +72,12 @@
     "expand_filters": "Expand filters",
     "minimize_filters": "Minimize filters",
     "filter_by_status": "Filter by status...",
-    "filter_by_file": "Filter by file or folder..."
+    "filter_by_file": "Filter by file or folder...",
+    "status_todo": "Todo",
+    "status_in_progress": "In Progress",
+    "status_done": "Done",
+    "status_canceled": "Canceled",
+    "status_total": "Total"
   },
   "multiselect": {
     "select": "Select...",
