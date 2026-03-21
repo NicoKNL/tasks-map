@@ -1,0 +1,1171 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+
+
+
+        <link rel="canonical" href="https://nicoknl.github.io/tasks-map/contributing/">
+
+
+        <link rel="prev" href="../getting-started/usage/">
+
+
+        <link rel="next" href="../documentation/">
+
+
+
+
+
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.24">
+
+
+
+        <title>Contributing - Tasks Map</title>
+
+
+
+
+
+
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.28978c9b.min.css">
+
+
+
+
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+
+
+
+
+
+
+
+
+
+
+
+
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+
+
+
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+
+
+
+
+
+  </head>
+
+
+
+
+
+
+
+
+
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+
+
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+
+
+        <a href="#contributing" class="md-skip">
+          Skip to content
+        </a>
+
+    </div>
+    <div data-md-component="announce">
+
+    </div>
+
+
+
+
+
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="Tasks Map" class="md-header__button md-logo" aria-label="Tasks Map" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Tasks Map
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+
+              Contributing
+
+          </span>
+        </div>
+      </div>
+    </div>
+
+
+        <form class="md-header__option" data-md-component="palette">
+
+
+
+
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+
+
+
+
+
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+
+
+</form>
+
+
+
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+
+
+
+
+
+        <label class="md-header__button md-icon" for="__search">
+
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+
+
+    <div class="md-header__source">
+
+    </div>
+  </nav>
+
+</header>
+
+    <div class="md-container" data-md-component="container">
+
+
+
+
+
+
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+
+
+
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="Tasks Map" class="md-nav__button md-logo" aria-label="Tasks Map" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    Tasks Map
+  </label>
+
+  <ul class="md-nav__list" data-md-scrollfix>
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Home
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item md-nav__item--nested">
+
+
+
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+
+
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Getting Started
+
+
+
+  </span>
+
+
+
+            </a>
+
+
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+
+          </div>
+
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+
+
+    Getting Started
+
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Installation
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../getting-started/usage/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Usage
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+          </ul>
+        </nav>
+
+    </li>
+
+
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item md-nav__item--active">
+
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+
+
+
+
+
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Contributing
+
+
+
+  </span>
+
+
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+
+      <a href="././" class="md-nav__link md-nav__link--active">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Contributing
+
+
+
+  </span>
+
+
+
+      </a>
+
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Development Environment
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Development Environment">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Prerequisites
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Setup
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#pre-commit-hooks-prek" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Pre-commit Hooks (prek)
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#dev-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Dev Mode
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Build
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#lint-format" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Lint &amp; Format
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#test" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Test
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#local-installation-in-obsidian" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Local Installation in Obsidian
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#ci-quality-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        CI / Quality Checks
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#releases-semantic-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Releases &amp; Semantic Versioning
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Releases &amp; Semantic Versioning">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        How It Works
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#deployment-to-obsidian" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Deployment to Obsidian
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Deployment to Obsidian">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#the-role-of-versionsjson" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        The Role of versions.json
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#the-role-of-manifestjson" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        The Role of manifest.json
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#commit-message-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Commit Message Conventions
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#api-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        API Documentation
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    Documentation
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    License
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Development Environment
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Development Environment">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Prerequisites
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Setup
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#pre-commit-hooks-prek" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Pre-commit Hooks (prek)
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#dev-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Dev Mode
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Build
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#lint-format" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Lint &amp; Format
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#test" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Test
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#local-installation-in-obsidian" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Local Installation in Obsidian
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#ci-quality-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        CI / Quality Checks
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#releases-semantic-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Releases &amp; Semantic Versioning
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Releases &amp; Semantic Versioning">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        How It Works
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#deployment-to-obsidian" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Deployment to Obsidian
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Deployment to Obsidian">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#the-role-of-versionsjson" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        The Role of versions.json
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#the-role-of-manifestjson" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        The Role of manifest.json
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#commit-message-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Commit Message Conventions
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#api-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        API Documentation
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+            <div class="md-content" data-md-component="content">
+
+              <article class="md-content__inner md-typeset">
+
+
+
+<h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h1>
+<p>Pull requests and suggestions are welcome! Please open an issue or PR on <a href="https://github.com/NicoKNL/tasks-map">GitHub</a>.</p>
+<h2 id="development-environment">Development Environment<a class="headerlink" href="#development-environment" title="Permanent link">&para;</a></h2>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://nodejs.org/">Node.js</a> &gt;= 24.0.0</li>
+<li>npm &gt;= 10.0.0</li>
+<li><a href="https://prek.j178.dev">prek</a> (optional but recommended — see <a href="#pre-commit-hooks-prek">Pre-commit Hooks</a> below)</li>
+</ul>
+<h3 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h3>
+<!-- prettier-ignore -->
+<ol>
+<li>Clone the repository:
+   <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/NicoKNL/tasks-map.git
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>tasks-map
+</span></code></pre></div></li>
+<li>Install dependencies:
+   <div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>npm<span class="w"> </span>install
+</span></code></pre></div></li>
+</ol>
+<h3 id="pre-commit-hooks-prek">Pre-commit Hooks (prek)<a class="headerlink" href="#pre-commit-hooks-prek" title="Permanent link">&para;</a></h3>
+<p><a href="https://prek.j178.dev">prek</a> is a git hook framework (written in Rust) that automatically runs checks before each commit, catching issues before they reach CI. The hook configuration lives in <code>prek.toml</code>.</p>
+<p>The configured hooks run on every commit:</p>
+<ul>
+<li><strong>trailing-whitespace</strong> — removes trailing whitespace</li>
+<li><strong>end-of-file-fixer</strong> — ensures files end with a newline</li>
+<li><strong>check-added-large-files</strong> — prevents accidentally committing large files</li>
+<li><strong>check-merge-conflict</strong> — detects leftover merge conflict markers</li>
+<li><strong>check-npm-install</strong> — verifies <code>node_modules</code> is up to date with <code>package-lock.json</code></li>
+<li><strong>eslint</strong> — runs <code>npm run lint</code></li>
+<li><strong>prettier</strong> — runs <code>npm run format</code></li>
+</ul>
+<p>To set up prek:</p>
+<!-- prettier-ignore -->
+<ol>
+<li>
+<p>Install prek (see <a href="https://prek.j178.dev">prek installation docs</a>):
+   <div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># macOS</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>brew<span class="w"> </span>install<span class="w"> </span>j178/tap/prek
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># or via pip</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pip<span class="w"> </span>install<span class="w"> </span>prek
+</span></code></pre></div></p>
+</li>
+<li>
+<p>Install the git hooks into your local repo:
+   <div class="language-sh highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>prek<span class="w"> </span>install
+</span></code></pre></div></p>
+</li>
+</ol>
+<p>From this point on, every <code>git commit</code> will automatically run the configured checks. If any check fails, the commit is aborted so you can fix the issue first.</p>
+<h3 id="dev-mode">Dev Mode<a class="headerlink" href="#dev-mode" title="Permanent link">&para;</a></h3>
+<p>Start the esbuild watcher for live development:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>npm<span class="w"> </span>run<span class="w"> </span>dev
+</span></code></pre></div>
+<h3 id="build">Build<a class="headerlink" href="#build" title="Permanent link">&para;</a></h3>
+<p>Run a full production build (includes TypeScript type checking):</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+</span></code></pre></div>
+<h3 id="lint-format">Lint &amp; Format<a class="headerlink" href="#lint-format" title="Permanent link">&para;</a></h3>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>npm<span class="w"> </span>run<span class="w"> </span>lint<span class="w">          </span><span class="c1"># ESLint check</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npm<span class="w"> </span>run<span class="w"> </span>lint:fix<span class="w">      </span><span class="c1"># ESLint auto-fix</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>npm<span class="w"> </span>run<span class="w"> </span>format<span class="w">        </span><span class="c1"># Prettier check</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>npm<span class="w"> </span>run<span class="w"> </span>format:fix<span class="w">    </span><span class="c1"># Prettier auto-fix</span>
+</span></code></pre></div>
+<h3 id="test">Test<a class="headerlink" href="#test" title="Permanent link">&para;</a></h3>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>npm<span class="w"> </span><span class="nb">test</span><span class="w">              </span><span class="c1"># Run tests</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>npm<span class="w"> </span>run<span class="w"> </span>test:watch<span class="w">    </span><span class="c1"># Watch mode</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>npm<span class="w"> </span>run<span class="w"> </span>test:coverage<span class="w"> </span><span class="c1"># Coverage report</span>
+</span></code></pre></div>
+<h3 id="local-installation-in-obsidian">Local Installation in Obsidian<a class="headerlink" href="#local-installation-in-obsidian" title="Permanent link">&para;</a></h3>
+<p>To test the plugin locally, symlink or copy the built output into your vault:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Build first</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Then copy main.js, manifest.json, and styles.css into:</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># &lt;your-vault&gt;/.obsidian/plugins/tasks-map/</span>
+</span></code></pre></div>
+<p>Enable the plugin in Obsidian under Settings → Community plugins.</p>
+<h2 id="ci-quality-checks">CI / Quality Checks<a class="headerlink" href="#ci-quality-checks" title="Permanent link">&para;</a></h2>
+<p>Every push and pull request to <code>main</code> triggers the <strong>Qualify</strong> workflow, which runs four parallel jobs:</p>
+<ul>
+<li><strong>Lint</strong> — ESLint</li>
+<li><strong>Format</strong> — Prettier</li>
+<li><strong>Test</strong> — Jest</li>
+<li><strong>Build</strong> — TypeScript type check + esbuild production build</li>
+</ul>
+<p>All checks must pass before a PR can be merged.</p>
+<h2 id="releases-semantic-versioning">Releases &amp; Semantic Versioning<a class="headerlink" href="#releases-semantic-versioning" title="Permanent link">&para;</a></h2>
+<p>Releases are fully automated via the <strong>Release</strong> workflow and follow <a href="https://semver.org/">Semantic Versioning</a>.</p>
+<h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Open a PR</strong> against <code>main</code>. The <a href="https://github.com/ronaldphilipsen/semVersie">semVersie</a> action automatically determines the version bump from the <strong>PR title</strong> and/or <strong>commit messages</strong> (PR title is preferred) and adds a label to your PR:</li>
+<li><code>major</code> — Breaking changes</li>
+<li><code>minor</code> — New features</li>
+<li>
+<p><code>patch</code> — Bug fixes</p>
+</li>
+<li>
+<p><strong>Merge the PR</strong>. Once merged, the release job:</p>
+</li>
+<li>Bumps the version in <code>package.json</code>, <code>package-lock.json</code>, <code>manifest.json</code>, and <code>versions.json</code> (configured in <code>semver-config.toml</code>).</li>
+<li>Builds the plugin.</li>
+<li>Creates a release commit (<code>chore: release version X.Y.Z</code>) and pushes it.</li>
+<li>Tags the commit and creates a GitHub Release with <code>main.js</code>, <code>manifest.json</code>, and <code>styles.css</code> as assets.</li>
+</ol>
+<h3 id="deployment-to-obsidian">Deployment to Obsidian<a class="headerlink" href="#deployment-to-obsidian" title="Permanent link">&para;</a></h3>
+<p>Obsidian's plugin update system works by pulling directly from GitHub Releases — there is no separate registry or upload step. When Obsidian checks for plugin updates, it:</p>
+<ol>
+<li>Reads the <code>manifest.json</code> from the <strong>latest GitHub Release</strong> tag (not from <code>main</code>) to determine the available version.</li>
+<li>Compares it against the locally installed version.</li>
+<li>If newer, downloads <code>main.js</code>, <code>manifest.json</code>, and <code>styles.css</code> from that release's assets.</li>
+</ol>
+<p>This means the release must include <strong>exactly these three files</strong> as release assets. The build output (<code>main.js</code>) is not committed to <code>main</code> — it only exists as a release artifact.</p>
+<h4 id="the-role-of-versionsjson">The Role of <code>versions.json</code><a class="headerlink" href="#the-role-of-versionsjson" title="Permanent link">&para;</a></h4>
+<p>Obsidian uses <code>versions.json</code> (read from the repository root on <code>main</code>) to check <strong>compatibility</strong>. It maps each plugin version to the minimum Obsidian app version required:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;0.18.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.8.0&quot;</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;0.19.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.8.0&quot;</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>If a user's Obsidian version is older than the <code>minAppVersion</code> declared for the latest release, Obsidian will not offer the update. The bump script appends each new version to this file automatically (currently hardcoded to <code>minAppVersion: 1.8.0</code>).</p>
+<h4 id="the-role-of-manifestjson">The Role of <code>manifest.json</code><a class="headerlink" href="#the-role-of-manifestjson" title="Permanent link">&para;</a></h4>
+<p><code>manifest.json</code> serves double duty:</p>
+<ul>
+<li><strong>In the repo root on <code>main</code></strong>: Obsidian reads this to register the plugin in the community plugin list (id, name, description, author).</li>
+<li><strong>In the GitHub Release assets</strong>: Obsidian reads this to determine the version number of the release.</li>
+</ul>
+<p>Both are kept in sync by the release workflow.</p>
+<h3 id="commit-message-conventions">Commit Message Conventions<a class="headerlink" href="#commit-message-conventions" title="Permanent link">&para;</a></h3>
+<p>semVersie inspects your PR title (preferred) and commit messages to determine the version bump. Use conventional-style prefixes:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Bump</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fix:</code></td>
+<td>patch</td>
+<td><code>fix: correct edge deletion logic</code></td>
+</tr>
+<tr>
+<td><code>feat:</code></td>
+<td>minor</td>
+<td><code>feat: add tag-based filtering</code></td>
+</tr>
+<tr>
+<td><code>feat!:</code></td>
+<td>major</td>
+<td><code>feat!: overhaul task syntax</code></td>
+</tr>
+<tr>
+<td><code>chore:</code>, <code>docs:</code>, <code>ci:</code>, <code>refactor:</code>, <code>test:</code>, <code>style:</code></td>
+<td>patch (or none)</td>
+<td><code>docs: update contributing guide</code></td>
+</tr>
+</tbody>
+</table>
+<p>The semver label on the PR is what ultimately determines the bump, so you can also adjust the label manually if needed.</p>
+<h2 id="api-documentation">API Documentation<a class="headerlink" href="#api-documentation" title="Permanent link">&para;</a></h2>
+<p>See <a href="https://github.com/obsidianmd/obsidian-api">Obsidian API Docs</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </article>
+            </div>
+
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+
+      </main>
+
+        <footer class="md-footer">
+
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+
+
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+
+</div>
+
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+
+
+
+
+
+
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["navigation.indexes"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+
+
+      <script src="../assets/javascripts/bundle.16f8adc2.min.js"></script>
+
+
+  </body>
+</html>
