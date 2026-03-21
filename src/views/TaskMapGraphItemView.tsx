@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import { ReactFlowProvider } from "reactflow";
@@ -13,7 +13,22 @@ import { t } from "../i18n";
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
 // Wrapper component that manages filter state and keys the ReactFlowProvider
-function TaskMapGraphWrapper({ settings }: { settings: TasksMapSettings }) {
+function TaskMapGraphWrapper({
+  pluginSettings,
+}: {
+  pluginSettings: TasksMapSettings;
+}) {
+  const [settings, setSettings] = useState<TasksMapSettings>({
+    ...pluginSettings,
+  });
+
+  useEffect(() => {
+    const handler = () => setSettings({ ...pluginSettings });
+    window.addEventListener("tasks-map:settings-changed", handler);
+    return () =>
+      window.removeEventListener("tasks-map:settings-changed", handler);
+  }, [pluginSettings]);
+
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [excludedTags, setExcludedTags] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
@@ -78,7 +93,7 @@ export default class TaskMapGraphItemView extends ItemView {
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
-          <TaskMapGraphWrapper settings={settings} />
+          <TaskMapGraphWrapper pluginSettings={settings} />
         </AppContext.Provider>
       );
     } else {

@@ -3,6 +3,7 @@ import { Language } from "../i18n";
 export interface TasksMapSettings {
   showPriorities: boolean;
   showTags: boolean;
+  showStatusCounts: boolean;
 
   layoutDirection: "Horizontal" | "Vertical";
   linkingStyle: "individual" | "csv" | "dataview";
@@ -21,6 +22,7 @@ export interface TasksMapSettings {
 export const DEFAULT_SETTINGS: TasksMapSettings = {
   showPriorities: true,
   showTags: true,
+  showStatusCounts: true,
 
   layoutDirection: "Horizontal",
   linkingStyle: "csv",

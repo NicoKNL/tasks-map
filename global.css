@@ -974,3 +974,74 @@ If your plugin does not need CSS, delete this file.
     transform: rotate(360deg);
   }
 }
+
+/* Status Counts Overlay */
+.tasks-map-status-counts-overlay {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 35;
+  pointer-events: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.tasks-map-status-counts-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.tasks-map-status-counts-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tasks-map-status-counts-dot--todo {
+  background: var(--text-muted);
+}
+
+.tasks-map-status-counts-dot--in_progress {
+  background: var(--tasks-map-task-in-progress-blue);
+}
+
+.tasks-map-status-counts-dot--done {
+  background: var(--tasks-map-task-completed-green);
+}
+
+.tasks-map-status-counts-dot--canceled {
+  background: var(--tasks-map-task-canceled-red);
+}
+
+.tasks-map-status-counts-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tasks-map-status-counts-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.tasks-map-status-counts-total {
+  background: var(--interactive-accent);
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+
+.tasks-map-status-counts-total .tasks-map-status-counts-label,
+.tasks-map-status-counts-total .tasks-map-status-counts-value {
+  color: var(--status-counts-total-color, #ffffff);
+}
