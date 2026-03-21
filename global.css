@@ -997,6 +997,7 @@ If your plugin does not need CSS, delete this file.
   display: flex;
   align-items: center;
   gap: 6px;
+  line-height: 1;
 }
 
 .tasks-map-status-counts-dot {
@@ -1028,7 +1029,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-status-counts-value {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-normal);
 }
