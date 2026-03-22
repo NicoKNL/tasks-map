@@ -23,3 +23,6 @@ data.json
 
 # Test coverage reports
 coverage/
+
+# Zensical docs build folder
+site/
