@@ -98,11 +98,13 @@ export function estimateNodeDimensions(
   const englishCharWidth = 7; // Width for English characters and numbers
 
   // Count Chinese characters vs non-Chinese characters
-  const chineseCharCount = (task.summary.match(/[\u4e00-\u9fff]/g) || []).length;
+  const chineseCharCount = (task.summary.match(/[\u4e00-\u9fff]/g) || [])
+    .length;
   const otherCharCount = task.summary.length - chineseCharCount;
 
   // Calculate text width requirement
-  const textWidth = chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth;
+  const textWidth =
+    chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth;
 
   // Minimum and maximum width based on Chinese character count (7-15 chars)
   const minChineseWidth = 7 * chineseCharWidth; // Minimum 7 Chinese characters width
@@ -112,7 +114,10 @@ export function estimateNodeDimensions(
   const widthAtMaxLimit = chineseCharCount > 15 || textWidth > maxChineseWidth;
 
   // Target width for text content (clamped between min and max Chinese width)
-  const targetTextWidth = Math.min(maxChineseWidth, Math.max(minChineseWidth, textWidth));
+  const targetTextWidth = Math.min(
+    maxChineseWidth,
+    Math.max(minChineseWidth, textWidth)
+  );
 
   const paddingHorizontal = 24; // 12px left + 12px right
   const iconsWidth = 80; // Approximate width for status, priority, star, link, menu buttons
@@ -142,15 +147,24 @@ export function estimateNodeDimensions(
 
   // Estimate text wrapping based on average character width
   // Use weighted average based on character composition
-  const avgCharWidth = chineseCharCount > 0 ?
-    (chineseCharCount * chineseCharWidth + otherCharCount * englishCharWidth) / task.summary.length :
-    englishCharWidth;
+  const avgCharWidth =
+    chineseCharCount > 0
+      ? (chineseCharCount * chineseCharWidth +
+          otherCharCount * englishCharWidth) /
+        task.summary.length
+      : englishCharWidth;
 
-  const avgCharsPerLine = Math.max(1, Math.floor(effectiveContentWidth / avgCharWidth));
+  const avgCharsPerLine = Math.max(
+    1,
+    Math.floor(effectiveContentWidth / avgCharWidth)
+  );
   const lineHeight = 22; // Slightly more than font size for line spacing
 
   // Calculate lines needed for summary
-  const summaryLines = Math.max(1, Math.ceil(task.summary.length / avgCharsPerLine));
+  const summaryLines = Math.max(
+    1,
+    Math.ceil(task.summary.length / avgCharsPerLine)
+  );
   const summaryHeight = summaryLines * lineHeight;
 
   // Estimate height for tags (each row of tags is ~28px)
@@ -158,7 +172,10 @@ export function estimateNodeDimensions(
   if (showTags && task.tags.length > 0) {
     // Estimate how many tags per row based on width
     const tagMinWidth = 60; // Minimum width per tag
-    const tagsPerRow = Math.max(1, Math.floor(effectiveContentWidth / tagMinWidth));
+    const tagsPerRow = Math.max(
+      1,
+      Math.floor(effectiveContentWidth / tagMinWidth)
+    );
     const tagRows = Math.ceil((task.tags.length + 1) / tagsPerRow); // +1 for "Add tag" button
     tagsHeight = tagRows * 28;
   }
@@ -182,7 +199,10 @@ export function estimateNodeDimensions(
   if (Math.abs(currentAspectRatio - targetAspectRatio) > 0.3) {
     // Adjust height to get closer to target aspect ratio, but within reasonable bounds
     const targetHeight = width / targetAspectRatio;
-    finalHeight = Math.max(NODEHEIGHT, Math.min(targetHeight, totalHeight * 1.5));
+    finalHeight = Math.max(
+      NODEHEIGHT,
+      Math.min(targetHeight, totalHeight * 1.5)
+    );
     // If height was limited by target aspect ratio, it's at max limit
     if (finalHeight === targetHeight && targetHeight < totalHeight) {
       heightAtMaxLimit = true;
@@ -458,37 +478,37 @@ export async function addTagToTaskInVault(
  * Find all connected components in the graph
  */
 function findConnectedComponents(nodes: Node[], edges: Edge[]): string[][] {
-  const nodeIds = new Set(nodes.map(node => node.id));
+  const nodeIds = new Set(nodes.map((node) => node.id));
   const adjacency = new Map<string, string[]>();
-  
+
   // Initialize adjacency list
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     adjacency.set(node.id, []);
   });
-  
+
   // Build adjacency list from edges
-  edges.forEach(edge => {
+  edges.forEach((edge) => {
     if (nodeIds.has(edge.source) && nodeIds.has(edge.target)) {
       adjacency.get(edge.source)?.push(edge.target);
       adjacency.get(edge.target)?.push(edge.source);
     }
   });
-  
+
   const visited = new Set<string>();
   const components: string[][] = [];
-  
+
   for (const nodeId of nodeIds) {
     if (!visited.has(nodeId)) {
       const component: string[] = [];
       const queue: string[] = [nodeId];
-      
+
       while (queue.length > 0) {
         const current = queue.shift()!;
         if (visited.has(current)) continue;
-        
+
         visited.add(current);
         component.push(current);
-        
+
         const neighbors = adjacency.get(current) || [];
         for (const neighbor of neighbors) {
           if (!visited.has(neighbor)) {
@@ -496,41 +516,46 @@ function findConnectedComponents(nodes: Node[], edges: Edge[]): string[][] {
           }
         }
       }
-      
+
       if (component.length > 0) {
         components.push(component);
       }
     }
   }
-  
+
   return components;
 }
 
 /**
  * Get bounding box of a set of nodes
  */
-function getBoundingBox(positionedNodes: Node[]): { minX: number; minY: number; maxX: number; maxY: number } {
+function getBoundingBox(positionedNodes: Node[]): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+} {
   if (positionedNodes.length === 0) {
     return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   }
-  
+
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  
-  positionedNodes.forEach(node => {
+
+  positionedNodes.forEach((node) => {
     const x = node.position.x;
     const y = node.position.y;
     const width = node.width || NODEWIDTH;
     const height = node.height || NODEHEIGHT;
-    
+
     minX = Math.min(minX, x);
     minY = Math.min(minY, y);
     maxX = Math.max(maxX, x + width);
     maxY = Math.max(maxY, y + height);
   });
-  
+
   return { minX, minY, maxX, maxY };
 }
 
@@ -549,22 +574,28 @@ function layoutComponent(
   const rankdir = direction === "Horizontal" ? "LR" : "TB";
   // Increase internal spacing within components to prevent overlap
   dagreGraph.setGraph({ rankdir, nodesep: 60, ranksep: 80 });
-  
-  componentNodes.forEach(node => {
-    const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
+
+  componentNodes.forEach((node) => {
+    const dimensions = nodeDimensions.get(node.id) || {
+      width: NODEWIDTH,
+      height: NODEHEIGHT,
+    };
     dagreGraph.setNode(node.id, dimensions);
   });
-  
-  componentEdges.forEach(edge => {
+
+  componentEdges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
-  
+
   dagre.layout(dagreGraph);
-  
-  return componentNodes.map(node => {
+
+  return componentNodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
-    const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
-    
+    const dimensions = nodeDimensions.get(node.id) || {
+      width: NODEWIDTH,
+      height: NODEHEIGHT,
+    };
+
     if (!nodeWithPosition) {
       return {
         ...node,
@@ -591,26 +622,26 @@ export function getLayoutedElements(
   if (nodes.length === 0) {
     return nodes;
   }
-  
+
   // Store calculated dimensions for each node
   const nodeDimensions = new Map<string, { width: number; height: number }>();
-  
+
   nodes.forEach((node) => {
     const task = node.data?.task as BaseTask | undefined;
     const dimensions = task
       ? estimateNodeDimensions(task, showTags)
       : { width: NODEWIDTH, height: NODEHEIGHT };
-    
+
     nodeDimensions.set(node.id, dimensions);
   });
-  
+
   // Find all connected components
   const components = findConnectedComponents(nodes, edges);
-  
+
   // Separate isolated nodes (components with only 1 node) from multi-node components
   const isolatedNodes: string[][] = [];
   const multiNodeComponents: string[][] = [];
-  
+
   for (const component of components) {
     if (component.length === 1) {
       isolatedNodes.push(component);
@@ -618,37 +649,40 @@ export function getLayoutedElements(
       multiNodeComponents.push(component);
     }
   }
-  
+
   // Create a map for quick node lookup
   const nodeMap = new Map<string, Node>();
-  nodes.forEach(node => nodeMap.set(node.id, node));
-  
+  nodes.forEach((node) => nodeMap.set(node.id, node));
+
   // Layout each component separately
   const allPositionedNodes: Node[] = [];
   let maxX = 0;
   let maxY = 0;
-  
+
   // First, layout multi-node components using a flow layout based on actual bounding boxes
   if (multiNodeComponents.length > 0) {
     const horizontalSpacing = 150; // Substantial spacing between components horizontally
-    const verticalSpacing = 100;   // Substantial spacing between components vertically
-    const maxColumns = 3;          // Maximum number of columns before wrapping to next row
-    
+    const verticalSpacing = 100; // Substantial spacing between components vertically
+    const maxColumns = 3; // Maximum number of columns before wrapping to next row
+
     let currentX = 0;
     let currentY = 0;
     let rowMaxHeight = 0;
     let columnCount = 0;
-    
+
     for (const component of multiNodeComponents) {
       // Get nodes and edges for this component
-      const componentNodes = component.map(id => nodeMap.get(id)!);
+      const componentNodes = component.map((id) => nodeMap.get(id)!);
       const componentEdgeSet = new Set<string>();
       const componentEdges: Edge[] = [];
-      
-      component.forEach(nodeId => {
-        edges.forEach(edge => {
-          if ((edge.source === nodeId || edge.target === nodeId) && 
-              component.includes(edge.source) && component.includes(edge.target)) {
+
+      component.forEach((nodeId) => {
+        edges.forEach((edge) => {
+          if (
+            (edge.source === nodeId || edge.target === nodeId) &&
+            component.includes(edge.source) &&
+            component.includes(edge.target)
+          ) {
             const edgeKey = `${edge.source}-${edge.target}`;
             if (!componentEdgeSet.has(edgeKey)) {
               componentEdgeSet.add(edgeKey);
@@ -657,7 +691,7 @@ export function getLayoutedElements(
           }
         });
       });
-      
+
       // Layout this component
       const positionedComponent = layoutComponent(
         componentNodes,
@@ -666,18 +700,18 @@ export function getLayoutedElements(
         showTags,
         nodeDimensions
       );
-      
+
       // Get bounding box of this component
       const bbox = getBoundingBox(positionedComponent);
       const componentWidth = bbox.maxX - bbox.minX;
       const componentHeight = bbox.maxY - bbox.minY;
-      
+
       // Add substantial safety margin to prevent overlap (30% of component size or minimum 150px)
       const safetyMarginX = Math.max(300, componentWidth * 0.3);
       const safetyMarginY = Math.max(300, componentHeight * 0.3);
       const totalWidth = componentWidth + safetyMarginX;
       const totalHeight = componentHeight + safetyMarginY;
-      
+
       // Check if we need to wrap to next row
       if (columnCount >= maxColumns) {
         // Move to next row
@@ -686,61 +720,69 @@ export function getLayoutedElements(
         rowMaxHeight = 0;
         columnCount = 0;
       }
-      
+
       // Position this component based on actual boundaries
       const offsetX = currentX - bbox.minX;
       const offsetY = currentY - bbox.minY;
-      
-      const finalPositionedComponent = positionedComponent.map(node => ({
+
+      const finalPositionedComponent = positionedComponent.map((node) => ({
         ...node,
         position: {
           x: node.position.x + offsetX,
-          y: node.position.y + offsetY
-        }
+          y: node.position.y + offsetY,
+        },
       }));
-      
+
       allPositionedNodes.push(...finalPositionedComponent);
-      
+
       // Update for next component
       currentX += totalWidth + horizontalSpacing;
       rowMaxHeight = Math.max(rowMaxHeight, totalHeight);
       columnCount++;
-      
+
       // Update max coordinates
       maxX = Math.max(maxX, currentX);
       maxY = Math.max(maxY, currentY + totalHeight);
     }
   }
-  
+
   // Then, layout isolated nodes in a vertical column on the left
   if (isolatedNodes.length > 0) {
     const isolatedColumnX = -300; // Position isolated nodes to the left of main area
     let isolatedY = 0;
     const isolatedVerticalSpacing = 100; // Space between isolated nodes vertically
-    
+
     for (const component of isolatedNodes) {
-      const componentNodes = component.map(id => nodeMap.get(id)!);
-      
+      const componentNodes = component.map((id) => nodeMap.get(id)!);
+
       // For isolated nodes, we don't need to layout with dagre, just use default dimensions
-      const positionedComponent = componentNodes.map(node => {
-        const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
+      const positionedComponent = componentNodes.map((node) => {
+        const dimensions = nodeDimensions.get(node.id) || {
+          width: NODEWIDTH,
+          height: NODEHEIGHT,
+        };
         return {
           ...node,
           position: {
             x: isolatedColumnX,
-            y: isolatedY
-          }
+            y: isolatedY,
+          },
         };
       });
-      
+
       allPositionedNodes.push(...positionedComponent);
-      
+
       // Update max coordinates
-      maxY = Math.max(maxY, isolatedY + (nodeDimensions.get(component[0])?.height || NODEHEIGHT));
-      isolatedY += (nodeDimensions.get(component[0])?.height || NODEHEIGHT) + isolatedVerticalSpacing;
+      maxY = Math.max(
+        maxY,
+        isolatedY + (nodeDimensions.get(component[0])?.height || NODEHEIGHT)
+      );
+      isolatedY +=
+        (nodeDimensions.get(component[0])?.height || NODEHEIGHT) +
+        isolatedVerticalSpacing;
     }
   }
-  
+
   return allPositionedNodes;
 }
 
@@ -762,7 +804,7 @@ export async function addLinkSignsBetweenTasks(
   const id = fromTask.id;
 
   // Check if toTask is a proper BaseTask instance with addLinkMetadata method
-  if (typeof (toTask as any).addLinkMetadata === 'function') {
+  if (typeof (toTask as any).addLinkMetadata === "function") {
     // Use polymorphism - each task type handles its own linking logic
     await toTask.addLinkMetadata(vault, fromTask, linkingStyle);
   } else {
@@ -773,7 +815,10 @@ export async function addLinkSignsBetweenTasks(
       text: toTask.text || toTask.id,
       link: { path: toTask.link },
     };
-    const properToTask = factory.parse(rawTask, toTask.type === "note" ? "note" : "dataview");
+    const properToTask = factory.parse(
+      rawTask,
+      toTask.type === "note" ? "note" : "dataview"
+    );
     await properToTask.addLinkMetadata(vault, fromTask, linkingStyle);
   }
 
@@ -1282,9 +1327,7 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
 
       // For note-based tasks, store the file path as the link reference
       links.push(file.path);
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return links;
@@ -1296,7 +1339,7 @@ export function createNodesFromTasks(
   showPriorities: boolean = true,
   showTags: boolean = true,
   debugVisualization: boolean = false,
-    tagColorMode: "random" | "static" = "random",
+  tagColorMode: "random" | "static" = "random",
   tagColorSeed: number = 42,
   tagStaticColor: string = "#3b82f6",
   themeMode: "light" | "dark" | "system" = "system",
@@ -1339,7 +1382,7 @@ export function createNodesFromTasks(
         showPriorities,
         showTags,
         debugVisualization,
-                tagColorMode,
+        tagColorMode,
         tagColorSeed,
         tagStaticColor,
         themeMode,
@@ -1558,18 +1601,20 @@ export function calculateProximityColor(
   // Linear interpolation between baseColor and targetColor
   // Ratio = 1 - (daysRemaining / proximityDays)
   // As daysRemaining decreases from proximityDays to 0, ratio increases from 0 to 1
-  const ratio = 1 - (daysRemaining / proximityDays);
+  const ratio = 1 - daysRemaining / proximityDays;
 
   // Simple color interpolation - assumes colors are in hex format
   // For simplicity, we'll use CSS rgba() for interpolation
   // Convert hex colors to RGB
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2])$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 0, g: 0, b: 0 };
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : { r: 0, g: 0, b: 0 };
   };
 
   const rgb1 = hexToRgb(baseColor);
@@ -1594,12 +1639,12 @@ export function daysRemainingFromToday(dateStr: string): number {
   let targetDate: Date;
 
   // Handle relative dates
-  if (dateStr.toLowerCase() === 'today') {
+  if (dateStr.toLowerCase() === "today") {
     targetDate = new Date(today);
-  } else if (dateStr.toLowerCase() === 'tomorrow') {
+  } else if (dateStr.toLowerCase() === "tomorrow") {
     targetDate = new Date(today);
     targetDate.setDate(today.getDate() + 1);
-  } else if (dateStr.toLowerCase() === 'yesterday') {
+  } else if (dateStr.toLowerCase() === "yesterday") {
     targetDate = new Date(today);
     targetDate.setDate(today.getDate() - 1);
   } else {
@@ -1624,18 +1669,21 @@ export function daysRemainingFromToday(dateStr: string): number {
  * Uses the tasks array to build adjacency list from incomingLinks.
  * Returns a Set of task IDs including the given task ID.
  */
-export function findRelatedTaskIds(tasks: BaseTask[], taskId: string): Set<string> {
+export function findRelatedTaskIds(
+  tasks: BaseTask[],
+  taskId: string
+): Set<string> {
   // Build adjacency list: map from task ID to list of neighbor IDs (both parents and children)
   const adjacency = new Map<string, string[]>();
 
   // Initialize adjacency for all tasks
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     adjacency.set(task.id, []);
   });
 
   // Add edges based on incomingLinks (parent -> child)
-  tasks.forEach(task => {
-    task.incomingLinks.forEach(parentId => {
+  tasks.forEach((task) => {
+    task.incomingLinks.forEach((parentId) => {
       // parentId may not exist in tasks (if filtered out), but we still add edge if parent exists
       if (adjacency.has(parentId)) {
         adjacency.get(parentId)!.push(task.id);

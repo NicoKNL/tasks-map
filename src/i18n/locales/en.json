@@ -22,6 +22,8 @@
     "show_task_priorities_desc": "Display priority indicators on task nodes",
     "show_task_tags": "Show task tags",
     "show_task_tags_desc": "Display tags on task nodes",
+    "show_status_counts": "Show status counts",
+    "show_status_counts_desc": "Display a status counts overlay on the canvas",
     "layout": "Layout",
     "layout_direction": "Layout direction",
     "layout_direction_desc": "Direction for the node layout",
@@ -119,7 +121,12 @@
     "expand_filters": "Expand filters",
     "minimize_filters": "Minimize filters",
     "filter_by_status": "Filter by status...",
-    "filter_by_file": "Filter by file or folder..."
+    "filter_by_file": "Filter by file or folder...",
+    "status_todo": "Todo",
+    "status_in_progress": "In Progress",
+    "status_done": "Done",
+    "status_canceled": "Canceled",
+    "status_total": "Total"
   },
   "multiselect": {
     "select": "Select...",

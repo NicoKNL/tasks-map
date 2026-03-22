@@ -84,6 +84,8 @@ export default class TasksMapPlugin extends Plugin {
     await this.saveData(this.settings);
     // Update language when settings change
     changeLanguage(this.settings.language);
+    // Notify open views of settings change
+    window.dispatchEvent(new Event("tasks-map:settings-changed"));
   }
 
   async activateViewInMainArea() {

@@ -1,0 +1,28 @@
+[project]
+site_name = "Tasks Map"
+site_url = "https://nicoknl.github.io/tasks-map/"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Getting Started" = [
+    "getting-started/index.md",
+    "getting-started/installation.md",
+    "getting-started/usage.md",
+  ] },
+  { "Contributing" = "contributing.md" },
+  { "Documentation" = "documentation.md" },
+  { "License" = "license.md" },
+]
+
+[project.theme]
+features = ["navigation.indexes"]
+
+[[project.theme.palette]]
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"

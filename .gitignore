@@ -4,6 +4,7 @@
 # Intellij
 *.iml
 .idea
+.clinerules
 
 # npm
 node_modules
@@ -23,4 +24,6 @@ data.json
 
 # Test coverage reports
 coverage/
-.clinerules
+
+# Zensical docs build folder
+site/

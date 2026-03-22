@@ -3,6 +3,7 @@ import { Language } from "../i18n";
 export interface TasksMapSettings {
   showPriorities: boolean;
   showTags: boolean;
+  showStatusCounts: boolean;
 
   taskInbox: string;
 
@@ -51,6 +52,7 @@ export interface TasksMapSettings {
 export const DEFAULT_SETTINGS: TasksMapSettings = {
   showPriorities: true,
   showTags: true,
+  showStatusCounts: true,
 
   taskInbox: "Task Inbox.md",
 

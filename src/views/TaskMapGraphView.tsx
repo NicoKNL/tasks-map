@@ -23,6 +23,7 @@ import {
 } from "src/lib/utils";
 import { BaseTask, RawTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
+import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode, { NODEWIDTH, NODEHEIGHT } from "src/components/task-node";
 import { NO_TAGS_VALUE } from "src/components/tag-select";
 import { TaskMinimap } from "src/components/task-minimap";
@@ -215,9 +216,9 @@ export default function TaskMapGraphView({
       excludedTags,
       selectedFiles
     );
-    
+
     const totalTasks = filteredTasks.length;
-    
+
     // Initialize counts for each status
     const tasksByStatus: Record<TaskStatus, number> = {
       todo: 0,
@@ -225,12 +226,12 @@ export default function TaskMapGraphView({
       done: 0,
       canceled: 0
     };
-    
+
     // Count tasks by status
     filteredTasks.forEach(task => {
       tasksByStatus[task.status] = (tasksByStatus[task.status] || 0) + 1;
     });
-    
+
     console.log("Task statistics calculated:", { totalTasks, tasksByStatus });
     return {
       totalTasks,
@@ -605,21 +606,21 @@ export default function TaskMapGraphView({
   const handleStatusChange = useCallback(async (taskId: string, newStatus: TaskStatus) => {
     console.log("===== handleStatusChange START =====");
     console.log("Parameters:", { taskId, newStatus });
-    
+
     const task = tasks.find(t => t.id === taskId);
     if (!task) {
       console.log("Task not found!");
       return;
     }
-    
+
     console.log("Found task:", { id: task.id, currentStatus: task.status, text: task.text });
-    
+
     // Update task status in vault
     try {
       console.log("Updating task status in vault...");
       await updateTaskStatusInVault(task, newStatus, app);
       console.log("Vault update successful");
-      
+
       // Update local state - preserve task instance prototype
       setTasks(prevTasks => {
         console.log("setTasks callback executing, prevTasks length:", prevTasks.length);
@@ -637,7 +638,7 @@ export default function TaskMapGraphView({
         console.log("Updated tasks statuses:", updatedTasks.map(t => ({ id: t.id, status: t.status })));
         return updatedTasks;
       });
-      
+
       console.log("Local state update triggered");
       // No need to reload tasks, we've updated the local state
       // Status bar will automatically refresh due to taskStatistics dependency
@@ -646,7 +647,7 @@ export default function TaskMapGraphView({
       const message = error instanceof Error ? error.message : String(error);
       new Notice(`Failed to update task status: ${message}`);
     }
-    
+
     console.log("===== handleStatusChange END =====");
   }, [tasks, app]);
 
@@ -667,7 +668,7 @@ export default function TaskMapGraphView({
 
     // Get current task text to use as template
     const currentTaskText = currentTask.text;
-    
+
     // Create new task after current task
     let newTaskLine = await tasksApi.createTaskLineModal();
     if (!newTaskLine) {
@@ -691,7 +692,7 @@ export default function TaskMapGraphView({
 
     // Find all outgoing connections (tasks that have currentTask.id in their incomingLinks)
     const outgoingTasks = tasks.filter(t => t.incomingLinks.includes(currentTask.id));
-    
+
     // Create connection from current task to new task
     await addLinkSignsBetweenTasks(
       vault,
@@ -704,7 +705,7 @@ export default function TaskMapGraphView({
     for (const outgoingTask of outgoingTasks) {
       // Remove connection from current task to outgoing task
       await removeLinkSignsBetweenTasks(vault, outgoingTask, currentTask.id);
-      
+
       // Create connection from new task to outgoing task
       await addLinkSignsBetweenTasks(
         vault,
@@ -1284,15 +1285,15 @@ export default function TaskMapGraphView({
     // Find the node in the nodes array
     const node = nodes.find(n => n.id === taskId);
     if (!node) return;
-    
+
     // Update all nodes: set selected to true only for the target node
-    setNodes(prevNodes => 
+    setNodes(prevNodes =>
       prevNodes.map(n => ({
         ...n,
         selected: n.id === taskId
       }))
     );
-    
+
     // Center the view on the node
     reactFlowInstance.setCenter(
       node.position.x + (node.width || NODEHEIGHT) / 2,
@@ -1323,6 +1324,18 @@ export default function TaskMapGraphView({
     }),
     [allTags, updateTaskTags]
   );
+
+  const filteredTasks = useMemo(() => {
+    const filteredIds = getFilteredNodeIds(
+      tasks,
+      selectedTags,
+      selectedStatuses,
+      excludedTags,
+      selectedFiles
+    );
+    const idSet = new Set(filteredIds);
+    return tasks.filter((t) => idSet.has(t.id));
+  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
@@ -1394,7 +1407,7 @@ export default function TaskMapGraphView({
             searchPanelOpen={isSearchPanelOpen}
             searchResultsCount={searchResultsCount}
           />
-          <StatusBar 
+          <StatusBar
             totalTasks={taskStatistics.totalTasks}
             tasksByStatus={taskStatistics.tasksByStatus}
             selectedStatuses={selectedStatuses}
@@ -1409,6 +1422,9 @@ export default function TaskMapGraphView({
           />
           <TaskMinimap />
           <Background />
+          {settings.showStatusCounts && (
+            <StatusCountsOverlay tasks={filteredTasks} />
+          )}
         </ReactFlow>
         {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
       </div>

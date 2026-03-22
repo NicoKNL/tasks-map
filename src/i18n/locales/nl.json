@@ -22,6 +22,8 @@
     "show_task_priorities_desc": "Toon prioriteitsindicatoren op taakknooppunten",
     "show_task_tags": "Taak tags tonen",
     "show_task_tags_desc": "Toon tags op taakknooppunten",
+    "show_status_counts": "Statustellingen tonen",
+    "show_status_counts_desc": "Toon een statustellingen overlay op het canvas",
     "layout": "Indeling",
     "layout_direction": "Indelingsrichting",
     "layout_direction_desc": "Richting voor de knooppuntindeling",
@@ -94,7 +96,12 @@
     "expand_filters": "Filters uitvouwen",
     "minimize_filters": "Filters minimaliseren",
     "filter_by_status": "Filteren op status...",
-    "filter_by_file": "Filteren op bestand of map..."
+    "filter_by_file": "Filteren op bestand of map...",
+    "status_todo": "Te doen",
+    "status_in_progress": "Bezig",
+    "status_done": "Klaar",
+    "status_canceled": "Geannuleerd",
+    "status_total": "Totaal"
   },
   "multiselect": {
     "select": "Selecteer...",
