@@ -547,7 +547,8 @@ function layoutComponent(
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   const rankdir = direction === "Horizontal" ? "LR" : "TB";
-  dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
+  // Increase internal spacing within components to prevent overlap
+  dagreGraph.setGraph({ rankdir, nodesep: 60, ranksep: 80 });
   
   componentNodes.forEach(node => {
     const dimensions = nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT };
@@ -627,13 +628,16 @@ export function getLayoutedElements(
   let maxX = 0;
   let maxY = 0;
   
-  // First, layout multi-node components in the main area
+  // First, layout multi-node components using a flow layout based on actual bounding boxes
   if (multiNodeComponents.length > 0) {
+    const horizontalSpacing = 150; // Substantial spacing between components horizontally
+    const verticalSpacing = 100;   // Substantial spacing between components vertically
+    const maxColumns = 3;          // Maximum number of columns before wrapping to next row
+    
     let currentX = 0;
     let currentY = 0;
-    let maxComponentHeight = 0;
-    const horizontalSpacing = 200; // Space between components horizontally
-    const verticalSpacing = 150;   // Space between rows of components vertically
+    let rowMaxHeight = 0;
+    let columnCount = 0;
     
     for (const component of multiNodeComponents) {
       // Get nodes and edges for this component
@@ -668,7 +672,22 @@ export function getLayoutedElements(
       const componentWidth = bbox.maxX - bbox.minX;
       const componentHeight = bbox.maxY - bbox.minY;
       
-      // Position this component relative to others
+      // Add substantial safety margin to prevent overlap (30% of component size or minimum 150px)
+      const safetyMarginX = Math.max(300, componentWidth * 0.3);
+      const safetyMarginY = Math.max(300, componentHeight * 0.3);
+      const totalWidth = componentWidth + safetyMarginX;
+      const totalHeight = componentHeight + safetyMarginY;
+      
+      // Check if we need to wrap to next row
+      if (columnCount >= maxColumns) {
+        // Move to next row
+        currentY += rowMaxHeight + verticalSpacing;
+        currentX = 0;
+        rowMaxHeight = 0;
+        columnCount = 0;
+      }
+      
+      // Position this component based on actual boundaries
       const offsetX = currentX - bbox.minX;
       const offsetY = currentY - bbox.minY;
       
@@ -682,18 +701,14 @@ export function getLayoutedElements(
       
       allPositionedNodes.push(...finalPositionedComponent);
       
-      // Update max coordinates
-      maxX = Math.max(maxX, currentX + componentWidth);
-      maxY = Math.max(maxY, currentY + componentHeight);
+      // Update for next component
+      currentX += totalWidth + horizontalSpacing;
+      rowMaxHeight = Math.max(rowMaxHeight, totalHeight);
+      columnCount++;
       
-      if (direction === "Horizontal") {
-        // Arrange components horizontally
-        currentX += componentWidth + horizontalSpacing;
-        maxComponentHeight = Math.max(maxComponentHeight, componentHeight);
-      } else {
-        // Arrange components vertically
-        currentY += componentHeight + verticalSpacing;
-      }
+      // Update max coordinates
+      maxX = Math.max(maxX, currentX);
+      maxY = Math.max(maxY, currentY + totalHeight);
     }
   }
   
