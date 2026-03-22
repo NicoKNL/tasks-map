@@ -110,13 +110,6 @@
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
   },
-  "status_bar": {
-    "todo": "Te doen",
-    "in_progress": "Bezig",
-    "done": "Voltooid",
-    "canceled": "Geannuleerd",
-    "total": "Totaal"
-  },
   "search_panel": {
     "search_tasks": "Taken Zoeken",
     "minimize": "Sluiten",

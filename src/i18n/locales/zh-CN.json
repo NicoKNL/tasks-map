@@ -135,13 +135,6 @@
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
   },
-  "status_bar": {
-    "todo": "待办",
-    "in_progress": "进行中",
-    "done": "已完成",
-    "canceled": "已取消",
-    "total": "总计"
-  },
   "search_panel": {
     "search_tasks": "搜索任务",
     "minimize": "关闭",

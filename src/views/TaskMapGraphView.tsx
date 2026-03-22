@@ -31,7 +31,6 @@ import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
 import { TagsContext } from "src/contexts/context";
 import { t } from "../i18n";
-import StatusBar from "../components/status-bar";
 import SearchPanel from "../components/search-panel";
 
 import { TaskStatus } from "src/types/task";
@@ -1406,11 +1405,6 @@ export default function TaskMapGraphView({
             showTagsSetting={settings.showTags}
             searchPanelOpen={isSearchPanelOpen}
             searchResultsCount={searchResultsCount}
-          />
-          <StatusBar
-            totalTasks={taskStatistics.totalTasks}
-            tasksByStatus={taskStatistics.tasksByStatus}
-            selectedStatuses={selectedStatuses}
           />
           <SearchPanel
             isOpen={isSearchPanelOpen}
