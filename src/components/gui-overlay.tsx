@@ -23,6 +23,8 @@ interface GuiOverlayProps {
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
+  excludeIsolatedNodes?: boolean;
+  setExcludeIsolatedNodes: () => void;
   layoutDirection?: "Horizontal" | "Vertical";
   showPriorities?: boolean;
   showTagsSetting?: boolean;
@@ -48,6 +50,8 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     showTags = true,
     hideTags = false,
     setHideTags,
+    excludeIsolatedNodes = false,
+    setExcludeIsolatedNodes,
     layoutDirection,
     showPriorities,
     showTagsSetting,
@@ -59,6 +63,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 
   const handleToggleHideTags = () => {
     setHideTags();
+  };
+
+  const handleToggleExcludeIsolatedNodes = () => {
+    setExcludeIsolatedNodes();
   };
 
   const toggleMinimized = () => {
@@ -157,8 +165,9 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               />
             </div>
 
-            {showTags && (
-              <div className="tasks-map-filter-item">
+          <div className="tasks-map-filter-item">
+            <div className="tasks-map-gui-overlay-checkbox-row">
+              {showTags && (
                 <label className="tasks-map-gui-overlay-checkbox-label">
                   <input
                     type="checkbox"
@@ -170,8 +179,20 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                     {t("filters.hide_tags_on_nodes")}
                   </span>
                 </label>
-              </div>
-            )}
+              )}
+              <label className="tasks-map-gui-overlay-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={excludeIsolatedNodes}
+                  onChange={handleToggleExcludeIsolatedNodes}
+                  className="tasks-map-gui-overlay-checkbox-input"
+                />
+                <span className="tasks-map-gui-overlay-checkbox-text">
+                  {t("filters.exclude_isolated_nodes")}
+                </span>
+              </label>
+            </div>
+          </div>
           </div>
 
           {/* Create Button */}

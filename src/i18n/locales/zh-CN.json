@@ -116,6 +116,7 @@
     "exclude_labels": "排除标签",
     "files_folders": "文件 / 文件夹",
     "hide_tags_on_nodes": "隐藏节点上的标签",
+    "exclude_isolated_nodes": "排除孤立节点",
     "create_tasks": "创建新任务",
     "reload_tasks": "重新加载任务",
     "expand_filters": "展开筛选器",

@@ -116,6 +116,7 @@
     "exclude_labels": "Exclude labels",
     "files_folders": "Files / Folders",
     "hide_tags_on_nodes": "Hide tags on nodes",
+    "exclude_isolated_nodes": "Exclude isolated nodes",
     "create_tasks": "Create task",
     "reload_tasks": "Reload tasks",
     "expand_filters": "Expand filters",

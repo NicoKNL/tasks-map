@@ -59,7 +59,9 @@ const getFilteredNodeIds = (
   selectedTags: string[],
   selectedStatuses: TaskStatus[],
   excludedTags: string[],
-  selectedFiles: string[]
+  selectedFiles: string[],
+  excludeIsolated: boolean = false,
+  allEdges: { source: string; target: string }[] = []
 ) => {
   let filtered = tasks;
   if (selectedTags.length > 0) {
@@ -101,6 +103,17 @@ const getFilteredNodeIds = (
       });
     });
   }
+  
+  // Exclude isolated nodes if requested
+  if (excludeIsolated) {
+    const connectedNodeIds = new Set<string>();
+    allEdges.forEach(edge => {
+      connectedNodeIds.add(edge.source);
+      connectedNodeIds.add(edge.target);
+    });
+    filtered = filtered.filter(task => connectedNodeIds.has(task.id));
+  }
+  
   return filtered.map((task) => task.id);
 };
 
@@ -110,7 +123,9 @@ const getFilteredTasks = (
   selectedTags: string[],
   selectedStatuses: TaskStatus[],
   excludedTags: string[],
-  selectedFiles: string[]
+  selectedFiles: string[],
+  excludeIsolated: boolean = false,
+  allEdges: { source: string; target: string }[] = []
 ): BaseTask[] => {
   let filtered = tasks;
   if (selectedTags.length > 0) {
@@ -152,6 +167,17 @@ const getFilteredTasks = (
       });
     });
   }
+  
+  // Exclude isolated nodes if requested
+  if (excludeIsolated) {
+    const connectedNodeIds = new Set<string>();
+    allEdges.forEach(edge => {
+      connectedNodeIds.add(edge.source);
+      connectedNodeIds.add(edge.target);
+    });
+    filtered = filtered.filter(task => connectedNodeIds.has(task.id));
+  }
+  
   return filtered;
 };
 
@@ -201,6 +227,7 @@ export default function TaskMapGraphView({
   const skipFitViewRef = React.useRef(false);
 
   const [hideTags, setHideTags] = React.useState(false);
+  const [excludeIsolatedNodes, setExcludeIsolatedNodes] = React.useState(false);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = React.useState(false);
   const [searchResultsCount, setSearchResultsCount] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -208,12 +235,18 @@ export default function TaskMapGraphView({
   // Calculate task statistics
   const taskStatistics = useMemo(() => {
     console.log("Calculating task statistics, tasks count:", tasks.length);
+    
+    // Create edges for filtering with correct settings
+    const allEdges = createEdgesFromTasks(tasks, settings.layoutDirection, settings.debugVisualization);
+    
     const filteredTasks = getFilteredTasks(
       tasks,
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      excludeIsolatedNodes,
+      allEdges
     );
 
     const totalTasks = filteredTasks.length;
@@ -236,10 +269,14 @@ export default function TaskMapGraphView({
       totalTasks,
       tasksByStatus
     };
-  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles, excludeIsolatedNodes]);
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
+  }, []);
+
+  const toggleExcludeIsolatedNodes = useCallback(() => {
+    setExcludeIsolatedNodes((prev) => !prev);
   }, []);
 
   // Maintain a live registry of tags per task for efficient allTags computation
@@ -810,12 +847,17 @@ export default function TaskMapGraphView({
       settings.debugVisualization
     );
 
+    // Create edges for filtering isolated nodes
+    const allEdgesForFiltering = createEdgesFromTasks(tasks, settings.layoutDirection, settings.debugVisualization);
+    
     const filteredNodeIds = getFilteredNodeIds(
       tasks,
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      excludeIsolatedNodes,
+      allEdgesForFiltering
     );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
@@ -845,6 +887,9 @@ export default function TaskMapGraphView({
     tasks,
     selectedTags,
     selectedStatuses,
+    excludedTags,
+    selectedFiles,
+    excludeIsolatedNodes,
     settings,
     reactFlowInstance,
     setNodes,
@@ -1325,16 +1370,21 @@ export default function TaskMapGraphView({
   );
 
   const filteredTasks = useMemo(() => {
+    // Create edges for filtering isolated nodes
+    const allEdgesForFiltering = createEdgesFromTasks(tasks, settings.layoutDirection, settings.debugVisualization);
+    
     const filteredIds = getFilteredNodeIds(
       tasks,
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      excludeIsolatedNodes,
+      allEdgesForFiltering
     );
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
-  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles, excludeIsolatedNodes]);
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
@@ -1400,6 +1450,8 @@ export default function TaskMapGraphView({
             showTags={settings.showTags}
             hideTags={hideTags}
             setHideTags={toggleHideTags}
+            excludeIsolatedNodes={excludeIsolatedNodes}
+            setExcludeIsolatedNodes={toggleExcludeIsolatedNodes}
             layoutDirection={settings.layoutDirection}
             showPriorities={settings.showPriorities}
             showTagsSetting={settings.showTags}

@@ -91,6 +91,7 @@
     "exclude_labels": "Labels uitsluiten",
     "files_folders": "Bestanden / Mappen",
     "hide_tags_on_nodes": "Tags op knooppunten verbergen",
+    "exclude_isolated_nodes": "Geïsoleerde knooppunten uitsluiten",
     "create_tasks": "Taak maken",
     "reload_tasks": "Taken opnieuw laden",
     "expand_filters": "Filters uitvouwen",

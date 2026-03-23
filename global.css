@@ -689,6 +689,14 @@
   font-size: 12px;
 }
 
+/* Checkbox row for horizontal layout */
+.tasks-map-gui-overlay-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .tasks-map-gui-overlay-reload-button {
   width: 100%;
   padding: 10px 16px;
