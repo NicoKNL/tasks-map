@@ -217,7 +217,6 @@ export default function TaskMapGraphView({
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [tasks, setTasks] = React.useState<BaseTask[]>([]);
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
   const connectionStartHandleRef = React.useRef<{
     nodeId: string | null;
@@ -335,18 +334,13 @@ export default function TaskMapGraphView({
   }, [hideTags]);
 
   const reloadTasks = useCallback(() => {
-    setIsLoading(true);
-    // Use setTimeout to allow the loading UI to render before heavy computation
-    setTimeout(() => {
-      const newTasks = getAllTasks(app);
-      setTasks(newTasks);
-      const newRegistry = new Map<string, string[]>();
-      newTasks.forEach((task) => {
-        newRegistry.set(task.id, task.tags);
-      });
-      setTaskTagsRegistry(newRegistry);
-      setIsLoading(false);
-    }, 0);
+    const newTasks = getAllTasks(app);
+    setTasks(newTasks);
+    const newRegistry = new Map<string, string[]>();
+    newTasks.forEach((task) => {
+      newRegistry.set(task.id, task.tags);
+    });
+    setTaskTagsRegistry(newRegistry);
   }, [app]);
 
   const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
@@ -637,7 +631,7 @@ export default function TaskMapGraphView({
       const message = error instanceof Error ? error.message : String(error);
       new Notice(`Failed to create previous task: ${message}`);
     }
-      }, [tasks, settings, app, vault, reloadTasks]);
+    }, [tasks, settings, app, vault, reloadTasks]);
 
   const handleStatusChange = useCallback(async (taskId: string, newStatus: TaskStatus) => {
     console.log("===== handleStatusChange START =====");
@@ -757,7 +751,7 @@ export default function TaskMapGraphView({
     setTimeout(() => {
       reloadTasks();
     }, 200);
-  }, [tasks, settings, app, vault, reloadTasks]);
+    }, [tasks, settings, app, vault, reloadTasks]);
 
   const handleCreateTask = useCallback((taskLine: string) => {
     const rawTask: RawTask = {
@@ -1401,12 +1395,6 @@ export default function TaskMapGraphView({
           }
         }}
       >
-        {isLoading && (
-          <div className="tasks-map-loading-container">
-            <div className="tasks-map-spinner" />
-            <div className="tasks-map-loading-text">Loading tasks...</div>
-          </div>
-        )}
         <ReactFlow
           nodes={nodes}
           edges={edges}
