@@ -230,51 +230,44 @@ export default function TaskMapGraphView({
   const [isSearchPanelOpen, setIsSearchPanelOpen] = React.useState(false);
   const [searchResultsCount, setSearchResultsCount] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
+    useMemo(() => {
+        const allEdges = createEdgesFromTasks(tasks, settings.layoutDirection, settings.debugVisualization);
 
-  // Calculate task statistics
-  const taskStatistics = useMemo(() => {
-    console.log("Calculating task statistics, tasks count:", tasks.length);
-    
-    // Create edges for filtering with correct settings
-    const allEdges = createEdgesFromTasks(tasks, settings.layoutDirection, settings.debugVisualization);
-    
-    const filteredTasks = getFilteredTasks(
-      tasks,
-      selectedTags,
-      selectedStatuses,
-      excludedTags,
-      selectedFiles,
-      excludeIsolatedNodes,
-      allEdges
-    );
+        const filteredTasks = getFilteredTasks(
+            tasks,
+            selectedTags,
+            selectedStatuses,
+            excludedTags,
+            selectedFiles,
+            excludeIsolatedNodes,
+            allEdges
+        );
 
-    const totalTasks = filteredTasks.length;
+        const totalTasks = filteredTasks.length;
 
-    // Initialize counts for each status
-    const tasksByStatus: Record<TaskStatus, number> = {
-      todo: 0,
-      in_progress: 0,
-      done: 0,
-      canceled: 0
-    };
+        // Initialize counts for each status
+        const tasksByStatus: Record<TaskStatus, number> = {
+            todo: 0,
+            in_progress: 0,
+            done: 0,
+            canceled: 0
+        };
 
-    // Count tasks by status
-    filteredTasks.forEach(task => {
-      tasksByStatus[task.status] = (tasksByStatus[task.status] || 0) + 1;
-    });
+        // Count tasks by status
+        filteredTasks.forEach(task => {
+            tasksByStatus[task.status] = (tasksByStatus[task.status] || 0) + 1;
+        });
 
-    console.log("Task statistics calculated:", { totalTasks, tasksByStatus });
-    return {
-      totalTasks,
-      tasksByStatus
-    };
-  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles, excludeIsolatedNodes]);
+        return {
+            totalTasks,
+            tasksByStatus
+        };
+    }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles, excludeIsolatedNodes]);
 
-  const toggleHideTags = useCallback(() => {
-    setHideTags((prev) => !prev);
-  }, []);
-
-  const toggleExcludeIsolatedNodes = useCallback(() => {
+    const toggleHideTags = useCallback(() => {
+        setHideTags((prev) => !prev);
+    }, []);
+    const toggleExcludeIsolatedNodes = useCallback(() => {
     setExcludeIsolatedNodes((prev) => !prev);
   }, []);
 
@@ -664,14 +657,10 @@ export default function TaskMapGraphView({
           }
           return t;
         });
-        console.log("Updated tasks array length:", updatedTasks.length);
-        console.log("Updated tasks statuses:", updatedTasks.map(t => ({ id: t.id, status: t.status })));
         return updatedTasks;
       });
 
       console.log("Local state update triggered");
-      // No need to reload tasks, we've updated the local state
-      // Status bar will automatically refresh due to taskStatistics dependency
     } catch (error) {
       console.error("Failed to update task status:", error);
       const message = error instanceof Error ? error.message : String(error);
@@ -696,34 +685,25 @@ export default function TaskMapGraphView({
     }
     const tasksApi = tasksPlugin.apiV1;
 
-    // Get current task text to use as template
-    const currentTaskText = currentTask.text;
-
-    // Create new task after current task
     let newTaskLine = await tasksApi.createTaskLineModal();
     if (!newTaskLine) {
       new Notice("Task creation cancelled.");
       return;
     }
 
-    // Add to inbox
-    await addIsolatedTaskLineToVault(newTaskLine, settings.taskInbox, app);
+    const currentFile = currentTask.link;
+    await addIsolatedTaskLineToVault(newTaskLine, currentFile, app);
 
-    // Parse new task
     const factory = new TaskFactory();
     const rawTask: RawTask = {
       status: "todo",
       text: newTaskLine,
-      link: {
-        path: settings.taskInbox,
-      },
+      link: { path: currentFile },
     };
     const newTask = factory.parse(rawTask, "dataview");
 
-    // Find all outgoing connections (tasks that have currentTask.id in their incomingLinks)
     const outgoingTasks = tasks.filter(t => t.incomingLinks.includes(currentTask.id));
 
-    // Create connection from current task to new task
     await addLinkSignsBetweenTasks(
       vault,
       currentTask,
@@ -731,18 +711,15 @@ export default function TaskMapGraphView({
       settings.linkingStyle
     );
 
-    // Transfer outgoing connections from current task to new task
     for (const outgoingTask of outgoingTasks) {
-      // Remove connection from current task to outgoing task
-      await removeLinkSignsBetweenTasks(vault, outgoingTask, currentTask.id);
-
-      // Create connection from new task to outgoing task
       await addLinkSignsBetweenTasks(
-        vault,
-        newTask,
-        outgoingTask,
-        settings.linkingStyle
+          vault,
+          newTask,
+          outgoingTask,
+          settings.linkingStyle
       );
+
+      await removeLinkSignsBetweenTasks(vault, outgoingTask, currentTask.id);
     }
 
     new Notice("Task inserted after successfully!");
@@ -797,12 +774,6 @@ export default function TaskMapGraphView({
       newRegistry.set(task.id, task.tags);
     });
     setTaskTagsRegistry(newRegistry);
-  }, [tasks]);
-
-  // Debug: log tasks changes
-  useEffect(() => {
-    console.log("Tasks array updated, length:", tasks.length);
-    console.log("Tasks statuses:", tasks.map(t => ({ id: t.id, status: t.status })));
   }, [tasks]);
 
   useEffect(() => {
