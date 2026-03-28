@@ -1,8 +1,8 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
-import { TaskStatus } from "src/types/task";
-import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { TaskStatus, BaseTask } from "src/types/task";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { t } from "../i18n";
 
 interface GuiOverlayProps {
@@ -21,6 +21,8 @@ interface GuiOverlayProps {
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
+  onSearch: (query: string) => number; // eslint-disable-line no-unused-vars
+  filteredTasks: BaseTask[];
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -40,9 +42,36 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     showTags = true,
     hideTags = false,
     setHideTags,
+    onSearch,
+    filteredTasks,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResultCount, setSearchResultCount] = useState<number | null>(
+    null
+  );
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const suggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const lowerQuery = searchQuery.toLowerCase();
+    return filteredTasks
+      .filter(
+        (task) =>
+          task.summary.toLowerCase().includes(lowerQuery) ||
+          task.id.toLowerCase().includes(lowerQuery) ||
+          task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      )
+      .slice(0, 8);
+  }, [searchQuery, filteredTasks]);
+
+  useEffect(() => {
+    setSelectedSuggestion(-1);
+  }, [suggestions]);
 
   const handleToggleHideTags = () => {
     setHideTags();
@@ -50,6 +79,64 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 
   const toggleMinimized = () => {
     setIsMinimized((prev) => !prev);
+  };
+
+  const submitSearch = () => {
+    setShowSuggestions(false);
+    if (!searchQuery.trim()) {
+      clearSearch();
+    } else {
+      const count = onSearch(searchQuery);
+      setSearchResultCount(count);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedSuggestion((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedSuggestion((prev) => (prev > 0 ? prev - 1 : -1));
+    } else if (e.key === "Enter") {
+      if (selectedSuggestion >= 0 && suggestions[selectedSuggestion]) {
+        const task = suggestions[selectedSuggestion];
+        setSearchQuery(task.summary);
+        setShowSuggestions(false);
+        const count = onSearch(task.summary);
+        setSearchResultCount(count);
+      } else {
+        submitSearch();
+      }
+    } else if (e.key === "Escape") {
+      if (showSuggestions) {
+        setShowSuggestions(false);
+      } else {
+        clearSearch();
+      }
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setShowSuggestions(true);
+    setSearchResultCount(null);
+  };
+
+  const handleSelectSuggestion = (task: BaseTask) => {
+    setSearchQuery(task.summary);
+    setShowSuggestions(false);
+    const count = onSearch(task.summary);
+    setSearchResultCount(count);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResultCount(null);
+    setShowSuggestions(false);
+    onSearch("");
   };
 
   return (
@@ -68,6 +155,76 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 
       {!isMinimized && (
         <>
+          <div className="tasks-map-search-bar">
+            <div className="tasks-map-search-bar-row">
+              <button
+                className="tasks-map-search-icon-button"
+                onClick={submitSearch}
+                title={t("search.placeholder")}
+              >
+                <Search size={14} />
+              </button>
+              <input
+                ref={inputRef}
+                type="text"
+                className="tasks-map-search-input"
+                placeholder={t("search.placeholder")}
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
+                onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
+                onBlur={() =>
+                  setTimeout(() => {
+                    setShowSuggestions(false);
+                  }, 150)
+                }
+              />
+              {searchQuery && (
+                <button
+                  className="tasks-map-search-clear"
+                  onClick={clearSearch}
+                  title="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            {searchResultCount !== null && (
+              <span className="tasks-map-search-result-count">
+                {searchResultCount > 0
+                  ? t("search.results_count", { count: searchResultCount })
+                  : t("search.no_results")}
+              </span>
+            )}
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                className="tasks-map-search-suggestions"
+                ref={suggestionsRef}
+              >
+                {suggestions.map((task, index) => (
+                  <div
+                    key={task.id}
+                    className={`tasks-map-search-suggestion ${
+                      index === selectedSuggestion
+                        ? "tasks-map-search-suggestion--active"
+                        : ""
+                    }`}
+                    onMouseDown={() => handleSelectSuggestion(task)}
+                  >
+                    <span className="tasks-map-search-suggestion-summary">
+                      {task.summary}
+                    </span>
+                    {task.tags.length > 0 && (
+                      <span className="tasks-map-search-suggestion-tags">
+                        {task.tags.slice(0, 3).join(", ")}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="tasks-map-filter-section">
             <div className="tasks-map-filter-item">
               <label className="tasks-map-filter-label">

@@ -50,7 +50,8 @@ const getFilteredNodeIds = (
   selectedTags: string[],
   selectedStatuses: TaskStatus[],
   excludedTags: string[],
-  selectedFiles: string[]
+  selectedFiles: string[],
+  searchQuery: string
 ) => {
   let filtered = tasks;
   if (selectedTags.length > 0) {
@@ -92,6 +93,15 @@ const getFilteredNodeIds = (
       });
     });
   }
+  if (searchQuery.trim()) {
+    const lowerQuery = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (task) =>
+        task.summary.toLowerCase().includes(lowerQuery) ||
+        task.id.toLowerCase().includes(lowerQuery) ||
+        task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    );
+  }
   return filtered.map((task) => task.id);
 };
 
@@ -118,6 +128,7 @@ export default function TaskMapGraphView({
 
   const [hideTags, setHideTags] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
@@ -268,7 +279,8 @@ export default function TaskMapGraphView({
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      activeSearchQuery
     );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
@@ -303,6 +315,7 @@ export default function TaskMapGraphView({
     setNodes,
     setEdges,
     handleDeleteTask,
+    activeSearchQuery,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
@@ -402,11 +415,38 @@ export default function TaskMapGraphView({
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      activeSearchQuery
     );
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
-  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+  }, [
+    tasks,
+    selectedTags,
+    selectedStatuses,
+    excludedTags,
+    selectedFiles,
+    activeSearchQuery,
+  ]);
+
+  const handleSearch = useCallback(
+    (query: string): number => {
+      setActiveSearchQuery(query);
+
+      if (!query.trim()) {
+        return 0;
+      }
+
+      const lowerQuery = query.toLowerCase();
+      return filteredTasks.filter(
+        (task) =>
+          task.summary.toLowerCase().includes(lowerQuery) ||
+          task.id.toLowerCase().includes(lowerQuery) ||
+          task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      ).length;
+    },
+    [filteredTasks]
+  );
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
@@ -449,6 +489,8 @@ export default function TaskMapGraphView({
             showTags={settings.showTags}
             hideTags={hideTags}
             setHideTags={toggleHideTags}
+            onSearch={handleSearch}
+            filteredTasks={filteredTasks}
           />
           <TaskMinimap />
           <Background />

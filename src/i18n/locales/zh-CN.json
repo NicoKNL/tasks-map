@@ -90,6 +90,11 @@
     "select": "选择...",
     "no_tags": "无标签"
   },
+  "search": {
+    "placeholder": "搜索任务...",
+    "results_count": "找到 {{count}} 个结果",
+    "no_results": "未找到结果"
+  },
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
   }
