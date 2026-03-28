@@ -16,6 +16,8 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  pages: write
+  id-token: write
 
 jobs:
   version:
@@ -91,3 +93,39 @@ jobs:
             --title="${{ needs.version.outputs.version }}" \
             --notes "$RELEASE_NOTES" \
             main.js manifest.json styles.css
+
+  docs:
+    name: Deploy Docs
+    needs: release
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+
+      - name: Install zensical
+        run: pip install zensical
+
+      - name: Build docs
+        run: zensical build --clean
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
