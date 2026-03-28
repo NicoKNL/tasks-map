@@ -68,7 +68,7 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: npx jest --coverage | tee coverage.txt
+        run: npm run test:coverage | tee coverage.txt
 
       - name: Jest coverage comment
         if: github.event_name == 'pull_request'
