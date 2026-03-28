@@ -24,6 +24,7 @@ jobs:
       - name: Label PR
         uses: actions/labeler@v6
         with:
+          configuration-path: .github/labeler.yaml
           sync-labels: true
 
   lint:
