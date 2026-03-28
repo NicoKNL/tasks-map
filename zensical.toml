@@ -8,6 +8,7 @@ nav = [
     "getting-started/index.md",
     "getting-started/installation.md",
     "getting-started/usage.md",
+    "getting-started/settings.md",
   ] },
   { "Contributing" = "contributing.md" },
   { "Documentation" = "documentation.md" },
