@@ -258,7 +258,9 @@ export default function TaskMapGraphView({
     let newEdges = createEdgesFromTasks(
       tasks,
       settings.layoutDirection,
-      settings.debugVisualization
+      settings.debugVisualization,
+      settings.edgeStyle,
+      settings.smoothStepRadius
     );
 
     const filteredNodeIds = getFilteredNodeIds(

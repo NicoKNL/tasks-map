@@ -6,6 +6,8 @@ export interface TasksMapSettings {
   showStatusCounts: boolean;
 
   layoutDirection: "Horizontal" | "Vertical";
+  edgeStyle: "Bezier" | "Straight" | "SmoothStep";
+  smoothStepRadius: number;
   linkingStyle: "individual" | "csv" | "dataview";
 
   debugVisualization: boolean;
@@ -25,6 +27,8 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
   showStatusCounts: true,
 
   layoutDirection: "Horizontal",
+  edgeStyle: "Bezier",
+  smoothStepRadius: 10,
   linkingStyle: "csv",
 
   debugVisualization: false,

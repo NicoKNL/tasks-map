@@ -1,4 +1,32 @@
-import { EdgeProps, getBezierPath, Position } from "reactflow";
+import {
+  EdgeProps,
+  getBezierPath,
+  getStraightPath,
+  getSmoothStepPath,
+  Position,
+} from "reactflow";
+
+function getEdgePath(
+  edgeStyle: string,
+  params: {
+    sourceX: number;
+    sourceY: number;
+    targetX: number;
+    targetY: number;
+    sourcePosition: Position;
+    targetPosition: Position;
+  },
+  borderRadius: number = 5
+) {
+  switch (edgeStyle) {
+    case "Straight":
+      return getStraightPath(params);
+    case "SmoothStep":
+      return getSmoothStepPath({ ...params, borderRadius });
+    default:
+      return getBezierPath(params);
+  }
+}
 
 export default function HashEdge({
   id,
@@ -11,18 +39,24 @@ export default function HashEdge({
 }: EdgeProps) {
   // Set positions based on layout direction
   const layoutDirection = data?.layoutDirection || "Horizontal";
+  const edgeStyle = data?.edgeStyle || "Bezier";
+  const smoothStepRadius = data?.smoothStepRadius ?? 10;
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
   const targetPosition = isVertical ? Position.Top : Position.Left;
 
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-  });
+  const [edgePath, labelX, labelY] = getEdgePath(
+    edgeStyle,
+    {
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+    },
+    smoothStepRadius
+  );
 
   return (
     <g>
