@@ -938,7 +938,9 @@ export function createNodesFromTasks(
 export function createEdgesFromTasks(
   tasks: BaseTask[],
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
-  debugVisualization: boolean = false
+  debugVisualization: boolean = false,
+  edgeStyle: "Bezier" | "Straight" | "SmoothStep" = "Bezier",
+  smoothStepRadius: number = 5
 ): TaskEdge[] {
   const edges: TaskEdge[] = [];
 
@@ -956,6 +958,8 @@ export function createEdgesFromTasks(
           hash: `${parentTaskId}-${task.id}`,
           layoutDirection,
           debugVisualization,
+          edgeStyle,
+          smoothStepRadius,
         },
       });
     });

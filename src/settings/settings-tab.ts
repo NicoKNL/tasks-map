@@ -127,6 +127,41 @@ export class TasksMapSettingTab extends PluginSettingTab {
           })
       );
 
+    new Setting(containerEl)
+      .setName(t("settings.edge_style"))
+      .setDesc(t("settings.edge_style_desc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("Bezier", t("settings.edge_style_bezier"))
+          .addOption("Straight", t("settings.edge_style_straight"))
+          .addOption("SmoothStep", t("settings.edge_style_smoothstep"))
+          .setValue(this.plugin.settings.edgeStyle)
+          .onChange(async (value) => {
+            this.plugin.settings.edgeStyle = value as
+              | "Bezier"
+              | "Straight"
+              | "SmoothStep";
+            await this.plugin.saveSettings();
+            this.display();
+          })
+      );
+
+    if (this.plugin.settings.edgeStyle === "SmoothStep") {
+      new Setting(containerEl)
+        .setName(t("settings.smooth_step_radius"))
+        .setDesc(t("settings.smooth_step_radius_desc"))
+        .addText((text) =>
+          text
+            .setPlaceholder("5")
+            .setValue(this.plugin.settings.smoothStepRadius.toString())
+            .onChange(async (value) => {
+              const radius = Math.max(0, parseInt(value) || 0);
+              this.plugin.settings.smoothStepRadius = radius;
+              await this.plugin.saveSettings();
+            })
+        );
+    }
+
     new Setting(containerEl).setHeading().setName(t("settings.tag_appearance"));
 
     new Setting(containerEl)

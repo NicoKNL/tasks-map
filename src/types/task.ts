@@ -30,6 +30,8 @@ export interface TaskEdgeData {
   hash: string;
   layoutDirection?: "Horizontal" | "Vertical";
   debugVisualization?: boolean;
+  edgeStyle?: "Bezier" | "Straight" | "SmoothStep";
+  smoothStepRadius?: number;
 }
 
 export type TaskNode = Node<TaskNodeData, "task">;
