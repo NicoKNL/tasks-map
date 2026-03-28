@@ -51,6 +51,9 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -64,8 +67,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:coverage | tee coverage.txt
+
+      - name: Jest coverage comment
+        if: github.event_name == 'pull_request'
+        uses: MishaKav/jest-coverage-comment@v1
+        with:
+          coverage-summary-path: coverage/coverage-summary.json
+          coverage-path: coverage.txt
+          title: Code Coverage
+          summary-title: Coverage Summary
+          badge-title: Coverage
+          junitxml-title: ""
+          coverage-title: Coverage Report
+          coverage-path-prefix: src/
 
   build:
     name: Build Check

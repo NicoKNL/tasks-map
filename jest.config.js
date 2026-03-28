@@ -10,7 +10,15 @@ module.exports = {
     '!src/main.tsx',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
+  coverageThreshold: {
+    global: {
+      lines: 14,
+      branches: 10,
+      functions: 7,
+      statements: 13,
+    },
+  },
   moduleNameMapper: {
     '^obsidian$': '<rootDir>/test/mocks/obsidian.ts',
     '^src/components/(.*)$': '<rootDir>/test/mocks/components.ts',
