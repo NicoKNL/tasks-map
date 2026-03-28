@@ -1,0 +1,44 @@
+"📖 documentation":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "**/*.md"
+
+"💻 source":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/**"
+
+"🧪 tests":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "test/**"
+
+"🏗️ build":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "esbuild.config.mjs"
+          - "tsconfig.json"
+          - "package.json"
+          - "package-lock.json"
+
+"⚙️ ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+
+"🎨 styles":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.css"
+
+"🌍 i18n":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/i18n/**"
+
+"📦 dependencies":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "package.json"
+          - "package-lock.json"

@@ -10,6 +10,23 @@ env:
   NODE_VERSION: "24"
 
 jobs:
+  label:
+    name: PR Labeler
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Label PR
+        uses: actions/labeler@v6
+        with:
+          configuration-path: .github/labeler.yaml
+          sync-labels: true
+
   lint:
     name: Lint Check
     runs-on: ubuntu-latest
