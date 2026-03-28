@@ -435,24 +435,14 @@ export default function TaskMapGraphView({
     );
   }, [preSearchFilteredTasks, activeSearchQuery]);
 
-  const handleSearch = useCallback(
-    (query: string): number => {
-      setActiveSearchQuery(query);
+  const searchResultCount = useMemo(() => {
+    if (!activeSearchQuery.trim()) return null;
+    return filteredTasks.length;
+  }, [activeSearchQuery, filteredTasks]);
 
-      if (!query.trim()) {
-        return 0;
-      }
-
-      const lowerQuery = query.toLowerCase();
-      return preSearchFilteredTasks.filter(
-        (task) =>
-          task.summary.toLowerCase().includes(lowerQuery) ||
-          task.id.toLowerCase().includes(lowerQuery) ||
-          task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
-      ).length;
-    },
-    [preSearchFilteredTasks]
-  );
+  const handleSearch = useCallback((query: string): void => {
+    setActiveSearchQuery(query);
+  }, []);
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
@@ -496,6 +486,7 @@ export default function TaskMapGraphView({
             hideTags={hideTags}
             setHideTags={toggleHideTags}
             onSearch={handleSearch}
+            searchResultCount={searchResultCount}
             suggestionTasks={preSearchFilteredTasks}
           />
           <TaskMinimap />

@@ -21,7 +21,8 @@ interface GuiOverlayProps {
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
-  onSearch: (_query: string) => number;
+  onSearch: (_query: string) => void;
+  searchResultCount: number | null;
   suggestionTasks: BaseTask[];
 }
 
@@ -43,14 +44,12 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     hideTags = false,
     setHideTags,
     onSearch,
+    searchResultCount,
     suggestionTasks,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResultCount, setSearchResultCount] = useState<number | null>(
-    null
-  );
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -86,8 +85,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     if (!searchQuery.trim()) {
       clearSearch();
     } else {
-      const count = onSearch(searchQuery);
-      setSearchResultCount(count);
+      onSearch(searchQuery);
     }
   };
 
@@ -105,8 +103,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
         const task = suggestions[selectedSuggestion];
         setSearchQuery(task.id);
         setShowSuggestions(false);
-        const count = onSearch(task.id);
-        setSearchResultCount(count);
+        onSearch(task.id);
       } else {
         submitSearch();
       }
@@ -122,19 +119,16 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setShowSuggestions(true);
-    setSearchResultCount(null);
   };
 
   const handleSelectSuggestion = (task: BaseTask) => {
     setSearchQuery(task.id);
     setShowSuggestions(false);
-    const count = onSearch(task.id);
-    setSearchResultCount(count);
+    onSearch(task.id);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
-    setSearchResultCount(null);
     setShowSuggestions(false);
     onSearch("");
   };
