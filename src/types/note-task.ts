@@ -231,7 +231,8 @@ export class NoteTask extends BaseTask {
             if (tagMatch && tagMatch[1] === tagToRemove) {
               // Found the tag, remove it
               lines.splice(i, 1);
-              frontmatterEnd--;
+              // eslint-disable-next-line no-useless-assignment
+              frontmatterEnd--; // TODO: refactor to avoid reassignment (no-useless-assignment)
               break;
             }
             i++;
