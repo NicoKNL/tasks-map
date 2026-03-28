@@ -209,6 +209,8 @@ export function addDateToTask(
   const existingFormats = detectExistingFormats(cleanedLine);
 
   // Choose format based on existing formats or default to tasks format
+  // TODO: refactor to avoid reassignment (no-useless-assignment)
+  // eslint-disable-next-line no-useless-assignment
   let newDateTag = "";
   if (existingFormats === "dataview") {
     newDateTag = ` [[${mappings.dataview}::${date}]]`;
