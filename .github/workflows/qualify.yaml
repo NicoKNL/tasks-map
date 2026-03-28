@@ -10,6 +10,39 @@ env:
   NODE_VERSION: "24"
 
 jobs:
+  changeset:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Detect file changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            code:
+              - 'src/**'
+              - 'test/**'
+              - 'main.js'
+              - 'global.css'
+              - 'styles.css'
+              - 'esbuild.config.mjs'
+              - 'tsconfig.json'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'eslint.config.mjs'
+              - 'jest.config.js'
+            docs:
+              - 'docs/**'
+              - 'zensical.toml'
+
   label:
     name: PR Labeler
     if: github.event_name == 'pull_request'
@@ -29,6 +62,8 @@ jobs:
 
   lint:
     name: Lint Check
+    needs: changeset
+    if: needs.changeset.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -48,6 +83,8 @@ jobs:
 
   format:
     name: Format Check
+    needs: changeset
+    if: needs.changeset.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -67,6 +104,8 @@ jobs:
 
   test:
     name: Test Suite
+    needs: changeset
+    if: needs.changeset.outputs.code == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -102,6 +141,8 @@ jobs:
 
   build:
     name: Build Check
+    needs: changeset
+    if: needs.changeset.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -124,6 +165,8 @@ jobs:
 
   docs:
     name: Docs Build Check
+    needs: changeset
+    if: needs.changeset.outputs.docs == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

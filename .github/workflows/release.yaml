@@ -20,6 +20,24 @@ permissions:
   id-token: write
 
 jobs:
+  changeset:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Detect file changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'zensical.toml'
+
   version:
     outputs:
       release: ${{ steps.semver.outputs.release }}
@@ -96,7 +114,8 @@ jobs:
 
   docs:
     name: Deploy Docs
-    needs: release
+    needs: changeset
+    if: needs.changeset.outputs.docs == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
