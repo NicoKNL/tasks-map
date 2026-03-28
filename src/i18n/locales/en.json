@@ -90,6 +90,12 @@
     "select": "Select...",
     "no_tags": "No tags"
   },
+  "search": {
+    "placeholder": "Search tasks...",
+    "clear": "Clear search",
+    "results_count": "{{count}} result(s) found",
+    "no_results": "No results found"
+  },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
   }

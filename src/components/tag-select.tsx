@@ -1,7 +1,6 @@
 import Select, { MultiValue } from "react-select";
 import { t } from "../i18n";
-
-export const NO_TAGS_VALUE = "__NO_TAGS__";
+import { NO_TAGS_VALUE } from "src/lib/filter-tasks";
 
 interface TagSelectProps {
   allTags: string[];

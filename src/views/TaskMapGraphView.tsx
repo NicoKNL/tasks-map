@@ -20,7 +20,7 @@ import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
 import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode from "src/components/task-node";
-import { NO_TAGS_VALUE } from "src/components/tag-select";
+import { getFilteredNodeIds } from "src/lib/filter-tasks";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
@@ -43,57 +43,6 @@ interface TaskMapGraphViewProps {
   selectedFiles: string[];
   setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
-
-// Helper function to filter tasks
-const getFilteredNodeIds = (
-  tasks: BaseTask[],
-  selectedTags: string[],
-  selectedStatuses: TaskStatus[],
-  excludedTags: string[],
-  selectedFiles: string[]
-) => {
-  let filtered = tasks;
-  if (selectedTags.length > 0) {
-    filtered = filtered.filter((task) => {
-      const noTagsSelected = selectedTags.includes(NO_TAGS_VALUE);
-      const regularTagsSelected = selectedTags.filter(
-        (tag) => tag !== NO_TAGS_VALUE
-      );
-      const matchesNoTags = noTagsSelected && task.tags.length === 0;
-      const matchesRegularTags =
-        regularTagsSelected.length > 0 &&
-        regularTagsSelected.some((tag) => task.tags.includes(tag));
-      return matchesNoTags || matchesRegularTags;
-    });
-  }
-  if (excludedTags.length > 0) {
-    filtered = filtered.filter((task) => {
-      // Exclude tasks that have any of the excluded tags
-      return !excludedTags.some((excludedTag) =>
-        task.tags.includes(excludedTag)
-      );
-    });
-  }
-  if (selectedStatuses.length > 0) {
-    filtered = filtered.filter((task) =>
-      selectedStatuses.includes(task.status)
-    );
-  }
-  if (selectedFiles.length > 0) {
-    filtered = filtered.filter((task) => {
-      // Check if task's file path matches any selected file/folder
-      return selectedFiles.some((selectedPath) => {
-        // If selectedPath ends with /, it's a folder filter
-        if (selectedPath.endsWith("/")) {
-          return task.link.startsWith(selectedPath);
-        }
-        // Otherwise it's an exact file match
-        return task.link === selectedPath;
-      });
-    });
-  }
-  return filtered.map((task) => task.id);
-};
 
 export default function TaskMapGraphView({
   settings,
@@ -118,6 +67,7 @@ export default function TaskMapGraphView({
 
   const [hideTags, setHideTags] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
@@ -268,7 +218,8 @@ export default function TaskMapGraphView({
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      activeSearchQuery
     );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
@@ -298,11 +249,14 @@ export default function TaskMapGraphView({
     tasks,
     selectedTags,
     selectedStatuses,
+    excludedTags,
+    selectedFiles,
     settings,
     reactFlowInstance,
     setNodes,
     setEdges,
     handleDeleteTask,
+    activeSearchQuery,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
@@ -396,17 +350,38 @@ export default function TaskMapGraphView({
     [allTags, updateTaskTags]
   );
 
-  const filteredTasks = useMemo(() => {
+  const preSearchFilteredTasks = useMemo(() => {
     const filteredIds = getFilteredNodeIds(
       tasks,
       selectedTags,
       selectedStatuses,
       excludedTags,
-      selectedFiles
+      selectedFiles,
+      ""
     );
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
   }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+
+  const filteredTasks = useMemo(() => {
+    if (!activeSearchQuery.trim()) return preSearchFilteredTasks;
+    const lowerQuery = activeSearchQuery.toLowerCase();
+    return preSearchFilteredTasks.filter(
+      (task) =>
+        task.summary.toLowerCase().includes(lowerQuery) ||
+        task.id.toLowerCase().includes(lowerQuery) ||
+        task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    );
+  }, [preSearchFilteredTasks, activeSearchQuery]);
+
+  const searchResultCount = useMemo(() => {
+    if (!activeSearchQuery.trim()) return null;
+    return filteredTasks.length;
+  }, [activeSearchQuery, filteredTasks]);
+
+  const handleSearch = useCallback((query: string): void => {
+    setActiveSearchQuery(query);
+  }, []);
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
@@ -449,6 +424,9 @@ export default function TaskMapGraphView({
             showTags={settings.showTags}
             hideTags={hideTags}
             setHideTags={toggleHideTags}
+            onSearch={handleSearch}
+            searchResultCount={searchResultCount}
+            suggestionTasks={preSearchFilteredTasks}
           />
           <TaskMinimap />
           <Background />
