@@ -310,6 +310,8 @@ export default function TaskMapGraphView({
     tasks,
     selectedTags,
     selectedStatuses,
+    excludedTags,
+    selectedFiles,
     settings,
     reactFlowInstance,
     setNodes,
@@ -409,25 +411,29 @@ export default function TaskMapGraphView({
     [allTags, updateTaskTags]
   );
 
-  const filteredTasks = useMemo(() => {
+  const preSearchFilteredTasks = useMemo(() => {
     const filteredIds = getFilteredNodeIds(
       tasks,
       selectedTags,
       selectedStatuses,
       excludedTags,
       selectedFiles,
-      activeSearchQuery
+      ""
     );
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
-  }, [
-    tasks,
-    selectedTags,
-    selectedStatuses,
-    excludedTags,
-    selectedFiles,
-    activeSearchQuery,
-  ]);
+  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+
+  const filteredTasks = useMemo(() => {
+    if (!activeSearchQuery.trim()) return preSearchFilteredTasks;
+    const lowerQuery = activeSearchQuery.toLowerCase();
+    return preSearchFilteredTasks.filter(
+      (task) =>
+        task.summary.toLowerCase().includes(lowerQuery) ||
+        task.id.toLowerCase().includes(lowerQuery) ||
+        task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    );
+  }, [preSearchFilteredTasks, activeSearchQuery]);
 
   const handleSearch = useCallback(
     (query: string): number => {
@@ -438,14 +444,14 @@ export default function TaskMapGraphView({
       }
 
       const lowerQuery = query.toLowerCase();
-      return filteredTasks.filter(
+      return preSearchFilteredTasks.filter(
         (task) =>
           task.summary.toLowerCase().includes(lowerQuery) ||
           task.id.toLowerCase().includes(lowerQuery) ||
           task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
       ).length;
     },
-    [filteredTasks]
+    [preSearchFilteredTasks]
   );
 
   return (
@@ -490,7 +496,7 @@ export default function TaskMapGraphView({
             hideTags={hideTags}
             setHideTags={toggleHideTags}
             onSearch={handleSearch}
-            filteredTasks={filteredTasks}
+            suggestionTasks={preSearchFilteredTasks}
           />
           <TaskMinimap />
           <Background />

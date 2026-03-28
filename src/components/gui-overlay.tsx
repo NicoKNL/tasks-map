@@ -21,8 +21,8 @@ interface GuiOverlayProps {
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
-  onSearch: (query: string) => number; // eslint-disable-line no-unused-vars
-  filteredTasks: BaseTask[];
+  onSearch: (_query: string) => number;
+  suggestionTasks: BaseTask[];
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -43,7 +43,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     hideTags = false,
     setHideTags,
     onSearch,
-    filteredTasks,
+    suggestionTasks,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -59,7 +59,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   const suggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const lowerQuery = searchQuery.toLowerCase();
-    return filteredTasks
+    return suggestionTasks
       .filter(
         (task) =>
           task.summary.toLowerCase().includes(lowerQuery) ||
@@ -67,7 +67,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
           task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
       )
       .slice(0, 8);
-  }, [searchQuery, filteredTasks]);
+  }, [searchQuery, suggestionTasks]);
 
   useEffect(() => {
     setSelectedSuggestion(-1);
@@ -103,9 +103,9 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     } else if (e.key === "Enter") {
       if (selectedSuggestion >= 0 && suggestions[selectedSuggestion]) {
         const task = suggestions[selectedSuggestion];
-        setSearchQuery(task.summary);
+        setSearchQuery(task.id);
         setShowSuggestions(false);
-        const count = onSearch(task.summary);
+        const count = onSearch(task.id);
         setSearchResultCount(count);
       } else {
         submitSearch();
@@ -126,9 +126,9 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   };
 
   const handleSelectSuggestion = (task: BaseTask) => {
-    setSearchQuery(task.summary);
+    setSearchQuery(task.id);
     setShowSuggestions(false);
-    const count = onSearch(task.summary);
+    const count = onSearch(task.id);
     setSearchResultCount(count);
   };
 
@@ -183,7 +183,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                 <button
                   className="tasks-map-search-clear"
                   onClick={clearSearch}
-                  title="Clear search"
+                  title={t("search.clear")}
                 >
                   <X size={14} />
                 </button>

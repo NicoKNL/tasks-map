@@ -92,6 +92,7 @@
   },
   "search": {
     "placeholder": "Search tasks...",
+    "clear": "Clear search",
     "results_count": "{{count}} result(s) found",
     "no_results": "No results found"
   },

@@ -92,6 +92,7 @@
   },
   "search": {
     "placeholder": "Taken zoeken...",
+    "clear": "Zoekopdracht wissen",
     "results_count": "{{count}} resultaat/resultaten gevonden",
     "no_results": "Geen resultaten gevonden"
   },
