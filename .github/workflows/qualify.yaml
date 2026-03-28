@@ -52,6 +52,7 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write
     steps:
       - name: Checkout code
