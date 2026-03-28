@@ -245,7 +245,11 @@ export class NoteTask extends BaseTask {
     });
   }
 
-  async addLinkMetadata(vault: Vault, fromTask: BaseTask): Promise<void> {
+  async addLinkMetadata(
+    vault: Vault,
+    fromTask: BaseTask,
+    linkingStyle: "individual" | "csv" | "dataview" = "individual"
+  ): Promise<void> {
     await this.addDependencyToFrontmatter(vault, fromTask);
   }
 
@@ -277,6 +281,78 @@ export class NoteTask extends BaseTask {
   }
 
   /**
+   * Check if a line is within the blockedBy section
+   */
+  private isLineInBlockedBySection(lines: string[], lineIndex: number, frontmatterStart: number, frontmatterEnd: number): boolean {
+    let blockedByLineIndex = -1;
+    for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+      if (lines[i].trim() === 'blockedBy:') {
+        blockedByLineIndex = i;
+        break;
+      }
+    }
+    
+    if (blockedByLineIndex === -1) {
+      return false;
+    }
+    
+    // Check if the line is after blockedBy: and before the next top-level field
+    if (lineIndex <= blockedByLineIndex) {
+      return false;
+    }
+    
+    // Find the next top-level field (not indented or empty)
+    for (let i = lineIndex + 1; i < frontmatterEnd; i++) {
+      const line = lines[i];
+      if (line.trim() !== '' && !line.startsWith(' ') && !line.startsWith('-')) {
+        // This is a top-level field, so our lineIndex is before it
+        return true;
+      }
+    }
+    
+    // If we reach here, the line is at the end of frontmatter, so it's in blockedBy section
+    return true;
+  }
+
+  /**
+   * Detect indentation style of existing blockedBy entries
+   */
+  private detectBlockedByIndentation(lines: string[], frontmatterStart: number, frontmatterEnd: number): { listIndent: number; itemIndent: number } {
+    let blockedByLineIndex = -1;
+    for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+      if (lines[i].trim() === 'blockedBy:') {
+        blockedByLineIndex = i;
+        break;
+      }
+    }
+    
+    if (blockedByLineIndex === -1) {
+      return { listIndent: 2, itemIndent: 4 }; // Default to standard YAML
+    }
+    
+    // Look for existing list items after blockedBy line
+    let listIndent = 2;
+    let itemIndent = 4;
+    
+    for (let i = blockedByLineIndex + 1; i < frontmatterEnd; i++) {
+      const line = lines[i];
+      if (line.trim().startsWith('- uid:')) {
+        // Count leading spaces for list item
+        const leadingSpaces = line.match(/^ */)?.[0].length || 0;
+        listIndent = leadingSpaces;
+        itemIndent = leadingSpaces + 2; // reltype should be indented 2 more spaces
+        break;
+      }
+      // Stop if we hit a non-indented line that's not part of blockedBy
+      if (line.trim() !== '' && !line.startsWith(' ') && !line.startsWith('-')) {
+        break;
+      }
+    }
+    
+    return { listIndent, itemIndent };
+  }
+
+  /**
    * Add a dependency to this note task by updating its frontmatter
    */
   private async addDependencyToFrontmatter(
@@ -296,15 +372,6 @@ export class NoteTask extends BaseTask {
         return fileContent;
       }
 
-      // Extract frontmatter YAML content (excluding the --- delimiters)
-      const frontmatterYaml = lines
-        .slice(frontmatterStart + 1, frontmatterEnd)
-        .join("\n");
-      const bodyContent = lines.slice(frontmatterEnd + 1).join("\n");
-
-      // Parse YAML into an object
-      const frontmatterData = parseYaml(frontmatterYaml) || {};
-
       // Extract task name from path (e.g., "TaskNotes/Tasks/Task2.md" -> "Task2")
       const taskName =
         fromTask.text ||
@@ -312,28 +379,104 @@ export class NoteTask extends BaseTask {
         "";
       const uidValue = `[[${taskName}]]`;
 
-      // Ensure blockedBy array exists
-      if (!frontmatterData.blockedBy) {
-        frontmatterData.blockedBy = [];
-      } else if (!Array.isArray(frontmatterData.blockedBy)) {
-        frontmatterData.blockedBy = [];
+      // Check if the YAML is malformed by parsing it
+      const frontmatterYaml = lines
+        .slice(frontmatterStart + 1, frontmatterEnd)
+        .join("\n");
+      const parsedYaml = parseYaml(frontmatterYaml);
+      const isMalformed = Object.keys(parsedYaml).length === 0 && 
+                         (frontmatterYaml.includes('blockedBy:') || 
+                          frontmatterYaml.includes('- uid:'));
+
+      if (isMalformed) {
+        // Create a clean frontmatter with only essential fields and the new dependency
+        const essentialFields: string[] = [];
+        const bodyContent = lines.slice(frontmatterEnd + 1).join("\n");
+        
+        // Extract essential fields that are not part of blockedBy
+        for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+          const line = lines[i];
+          if (line.trim() === 'blockedBy:' || line.trim().startsWith('- uid:') || line.trim().startsWith('reltype:')) {
+            // Skip blockedBy related lines
+            continue;
+          }
+          if (line.trim() !== '') {
+            essentialFields.push(line);
+          }
+        }
+        
+        // Build new frontmatter
+        const newFrontmatterLines = ['---'];
+        newFrontmatterLines.push(...essentialFields);
+        newFrontmatterLines.push('blockedBy:');
+        newFrontmatterLines.push('  - uid: "' + uidValue + '"');
+        newFrontmatterLines.push('    reltype: FINISHTOSTART');
+        newFrontmatterLines.push('---');
+        
+        return newFrontmatterLines.join("\n") + "\n" + bodyContent;
       }
 
-      // Check if dependency already exists
-      const exists = frontmatterData.blockedBy.some(
-        (dep: DependencyEntry) => dep && dep.uid === uidValue
+      // Check if dependency already exists using line scanning
+      let dependencyExists = false;
+      let blockedByLineIndex = -1;
+      
+      for (let i = frontmatterStart + 1; i < frontmatterEnd; i++) {
+        if (lines[i].trim() === 'blockedBy:') {
+          blockedByLineIndex = i;
+        }
+        if (lines[i].includes(uidValue)) {
+          dependencyExists = true;
+          break;
+        }
+      }
+
+      if (dependencyExists) {
+        return fileContent;
+      }
+
+      // If no blockedBy section exists, create one with default indentation
+      if (blockedByLineIndex === -1) {
+        // Add blockedBy section at the end of frontmatter
+        lines.splice(frontmatterEnd, 0, 
+          'blockedBy:',
+          '  - uid: "' + uidValue + '"',
+          '    reltype: FINISHTOSTART'
+        );
+        return lines.join("\n");
+      }
+
+      // Detect existing indentation style
+      const { listIndent, itemIndent } = this.detectBlockedByIndentation(lines, frontmatterStart, frontmatterEnd);
+      
+      // Find the end of the blockedBy section
+      let insertIndex = blockedByLineIndex + 1;
+      for (let i = blockedByLineIndex + 1; i < frontmatterEnd; i++) {
+        const line = lines[i];
+        // Stop at first non-indented line or empty line after blockedBy
+        if (line.trim() === '' || (!line.startsWith(' ') && !line.startsWith('-') && line.trim() !== '')) {
+          insertIndex = i;
+          break;
+        }
+        // Continue if it's a valid blockedBy entry
+        if (line.trim().startsWith('- uid:') || line.trim().startsWith('reltype:')) {
+          insertIndex = i + 1;
+        } else if (line.trim() !== '') {
+          // Found a line that doesn't belong to blockedBy
+          insertIndex = i;
+          break;
+        }
+      }
+
+      // Insert new dependency with matching indentation
+      const listIndentStr = ' '.repeat(listIndent);
+      const itemIndentStr = ' '.repeat(itemIndent);
+      
+      lines.splice(insertIndex, 0,
+        listIndentStr + '- uid: "' + uidValue + '"',
+        itemIndentStr + 'reltype: FINISHTOSTART'
       );
 
-      if (!exists) {
-        frontmatterData.blockedBy.push({
-          uid: uidValue,
-          reltype: "FINISHTOSTART",
-        });
-      }
-
-      const newFrontmatterYaml = stringifyYaml(frontmatterData);
-
-      return `---\n${newFrontmatterYaml}---\n${bodyContent}`;
+      return lines.join("\n");
     });
   }
 

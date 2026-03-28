@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { TaskStatus } from "src/types/task";
 
 interface TaskBackgroundProps {
@@ -7,17 +7,27 @@ interface TaskBackgroundProps {
   expanded?: boolean;
   debugVisualization?: boolean;
   selected?: boolean;
+  width?: number;
+  height?: number;
   children: React.ReactNode;
+  backgroundColor?: string;
+  onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-export function TaskBackground({
+export const TaskBackground = forwardRef<HTMLDivElement, TaskBackgroundProps>(({
   status,
   starred = false,
   expanded,
   debugVisualization,
   selected = false,
+  width,
+  height,
   children,
-}: TaskBackgroundProps) {
+  backgroundColor,
+  onMouseEnter,
+  onMouseLeave,
+}: TaskBackgroundProps, ref) => {
   const getStatusClass = () => {
     switch (status) {
       case "done":
@@ -42,5 +52,28 @@ export function TaskBackground({
     .filter(Boolean)
     .join(" ");
 
-  return <div className={className}>{children}</div>;
-}
+  const style: React.CSSProperties = {};
+  if (width !== undefined) {
+    style.width = width;
+  }
+  if (height !== undefined) {
+    style.height = height;
+  }
+  if (backgroundColor !== undefined) {
+    style.backgroundColor = backgroundColor;
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={style}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {children}
+    </div>
+  );
+});
+
+TaskBackground.displayName = 'TaskBackground';

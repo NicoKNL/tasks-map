@@ -60,7 +60,30 @@
     "debug_visualization": "Debug visualisatie",
     "debug_visualization_desc": "Toon aanvullende debug-informatie in de grafiekweergave",
     "language": "Taal",
-    "language_desc": "Selecteer de taal voor de plugin-interface"
+    "language_desc": "Selecteer de taal voor de plugin-interface",
+
+    "theme_mode": "Themamodus",
+    "theme_mode_desc": "Kies het visuele thema voor de takenkaart",
+    "theme_light": "Licht",
+    "theme_dark": "Donker",
+    "theme_system": "Volg systeem",
+    "ai_integration": "AI-integratie",
+    "enable_ai": "AI-integratie inschakelen",
+    "enable_ai_desc": "Schakel AI-functies in voor het voorspellen van volgende taken",
+    "ai_provider": "AI-provider",
+    "ai_provider_desc": "Selecteer AI-provider",
+    "ai_model": "Model",
+    "ai_model_desc": "Modelnaam (bijv.gpt-4o-mini, claude-3-5-sonnet, gemini-2.0-flash)",
+    "ai_api_key": "API-sleutel",
+    "ai_api_key_desc": "Uw API-sleutel voor de geselecteerde provider",
+    "ai_base_url": "Basis-URL",
+    "ai_base_url_desc": "Optionele aangepaste basis-URL voor API (standaard: provider-specifiek)",
+    "ai_prompt": "Aangepaste extra vereisten",
+    "ai_prompt_desc": "Optionele aangepaste vereisten om toe te voegen aan de AI-prompt. Het systeemprompt wordt automatisch gegenereerd op basis van uw taalinstelling.",
+    "ai_before_prompt": "Aangepaste vorige taakvereisten",
+    "ai_before_prompt_desc": "Optionele aangepaste vereisten voor het voorspellen van vorige taken. Het systeemprompt wordt automatisch gegenereerd op basis van uw taalinstelling.",
+    "ai_max_generated_tasks": "Max taken om te genereren",
+    "ai_max_generated_tasks_desc": "Maximaal aantal taken om te genereren in batchbewerkingen"
   },
   "filters": {
     "status": "Status",
@@ -68,6 +91,8 @@
     "exclude_labels": "Labels uitsluiten",
     "files_folders": "Bestanden / Mappen",
     "hide_tags_on_nodes": "Tags op knooppunten verbergen",
+    "exclude_isolated_nodes": "Geïsoleerde knooppunten uitsluiten",
+    "create_tasks": "Taak maken",
     "reload_tasks": "Taken opnieuw laden",
     "expand_filters": "Filters uitvouwen",
     "minimize_filters": "Filters minimaliseren",
@@ -85,5 +110,17 @@
   },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
+  },
+  "search_panel": {
+    "search_tasks": "Taken Zoeken",
+    "minimize": "Sluiten",
+    "search_placeholder": "Zoek taken of tags...",
+    "clear": "Zoekopdracht wissen",
+    "no_results": "Geen resultaten gevonden",
+    "results": "resultaten",
+    "previous_result": "Vorig resultaat (Ctrl+Omhoog)",
+    "next_result": "Volgend resultaat (Ctrl+Omlaag)",
+    "collapse_results": "Resultaten inklappen",
+    "expand_results": "Resultaten uitklappen"
   }
 }

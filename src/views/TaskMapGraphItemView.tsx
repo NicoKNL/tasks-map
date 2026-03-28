@@ -15,8 +15,10 @@ const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 // Wrapper component that manages filter state and keys the ReactFlowProvider
 function TaskMapGraphWrapper({
   pluginSettings,
+ initialFilterSettings
 }: {
   pluginSettings: TasksMapSettings;
+    initialFilterSettings?: any;
 }) {
   const [settings, setSettings] = useState<TasksMapSettings>({
     ...pluginSettings,
@@ -28,13 +30,28 @@ function TaskMapGraphWrapper({
     return () =>
       window.removeEventListener("tasks-map:settings-changed", handler);
   }, [pluginSettings]);
+    const [, setIsSearchPanelOpen] = React.useState(false);
 
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [excludedTags, setExcludedTags] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
-    ...ALL_STATUSES,
-  ]);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [excludedTags, setExcludedTags] = useState<string[]>(
+        initialFilterSettings?.excludedTags || []
+    );
+    const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>(
+        initialFilterSettings?.selectedStatuses && initialFilterSettings.selectedStatuses.length > 0
+            ? initialFilterSettings.selectedStatuses
+            : [...ALL_STATUSES]
+    );
+    const [selectedFiles, setSelectedFiles] = useState<string[]>(
+        initialFilterSettings?.selectedFiles || []
+    );
+
+    // 应用其他视图设置
+    useEffect(() => {
+        if (initialFilterSettings) {
+            // 这里可以应用其他视图设置，如hideTags等
+            // 这些设置可能需要通过context或其他方式传递给子组件
+        }
+    }, [initialFilterSettings]);
 
   // Key the ReactFlowProvider on filter state to force complete remount
   const providerKey = useMemo(
@@ -55,6 +72,7 @@ function TaskMapGraphWrapper({
         setSelectedStatuses={setSelectedStatuses}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
+        onSearchClick={() => setIsSearchPanelOpen(true)}
       />
     </ReactFlowProvider>
   );
@@ -88,12 +106,23 @@ export default class TaskMapGraphItemView extends ItemView {
     ).plugins.plugins["tasks-map"] as TasksMapPlugin;
     const settings = plugin?.settings;
 
+    // 获取初始过滤设置
+    const initialFilterSettings = plugin?.getActiveFilterSettings?.();
+
+    // 清除插件中的过滤设置，避免重复使用
+    if (plugin?.clearActiveFilterSettings) {
+      plugin.clearActiveFilterSettings();
+    }
+
     this.root = createRoot(this.containerEl.children[1]);
 
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
-          <TaskMapGraphWrapper pluginSettings={settings} />
+          <TaskMapGraphWrapper
+            pluginSettings={settings}
+            initialFilterSettings={initialFilterSettings}
+          />
         </AppContext.Provider>
       );
     } else {

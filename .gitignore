@@ -4,6 +4,7 @@
 # Intellij
 *.iml
 .idea
+.clinerules
 
 # npm
 node_modules

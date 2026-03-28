@@ -5,10 +5,10 @@ import {
   findTaskLineByIdOrText,
   statusSymbols,
   addDateToTask,
-  removeDateFromTask,
   getTodayDate,
   addSignToTaskInFile,
   removeSignFromTaskInFile,
+  removeDateFromTask,
 } from "../lib/utils";
 import {
   EMOJI_ID_REMOVAL,
@@ -135,10 +135,24 @@ export class DataviewTask extends BaseTask {
 
       if (taskLineIdx === -1) return fileContent;
 
-      // Add star emoji if not present
-      if (!lines[taskLineIdx].includes("⭐")) {
-        lines[taskLineIdx] = lines[taskLineIdx] + " ⭐";
+      const line = lines[taskLineIdx];
+
+      const tasksEmojiRegex = /([🆔⛔⏫🔺🔽⏬📅⏳🛫✅❌➕]|\.\.\.)/u;
+      const tasksEmojiMatch = line.match(tasksEmojiRegex);
+
+      if (tasksEmojiMatch) {
+        // 在Tasks插件emoji之前添加⭐
+        const emojiIndex = line.indexOf(tasksEmojiMatch[0]);
+        // 检查emoji前面是否有空格，决定是否添加空格
+        const hasSpaceBefore = emojiIndex > 0 && line[emojiIndex - 1] === " ";
+        const prefix = hasSpaceBefore ? "⭐ " : " ⭐ ";
+        lines[taskLineIdx] =
+          line.slice(0, emojiIndex) + prefix + line.slice(emojiIndex);
+      } else {
+        // 没有emoji，添加到行末
+        lines[taskLineIdx] = line + " ⭐";
       }
+
       return lines.join("\n");
     });
   }
