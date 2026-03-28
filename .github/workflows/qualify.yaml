@@ -121,3 +121,21 @@ jobs:
 
       - name: Build project
         run: node esbuild.config.mjs production
+
+  docs:
+    name: Docs Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+
+      - name: Install zensical
+        run: pip install zensical
+
+      - name: Build docs
+        run: zensical build --clean
