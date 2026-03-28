@@ -40,7 +40,7 @@ export default function HashEdge({
   // Set positions based on layout direction
   const layoutDirection = data?.layoutDirection || "Horizontal";
   const edgeStyle = data?.edgeStyle || "Bezier";
-  const smoothStepRadius = data?.smoothStepRadius ?? 5;
+  const smoothStepRadius = data?.smoothStepRadius ?? 10;
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
   const targetPosition = isVertical ? Position.Top : Position.Left;

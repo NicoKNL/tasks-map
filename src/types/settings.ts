@@ -28,7 +28,7 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
 
   layoutDirection: "Horizontal",
   edgeStyle: "Bezier",
-  smoothStepRadius: 5,
+  smoothStepRadius: 10,
   linkingStyle: "csv",
 
   debugVisualization: false,

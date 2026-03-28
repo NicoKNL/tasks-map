@@ -940,7 +940,7 @@ export function createEdgesFromTasks(
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",
   debugVisualization: boolean = false,
   edgeStyle: "Bezier" | "Straight" | "SmoothStep" = "Bezier",
-  smoothStepRadius: number = 5
+  smoothStepRadius: number = 10
 ): TaskEdge[] {
   const edges: TaskEdge[] = [];
 
