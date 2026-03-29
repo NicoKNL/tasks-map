@@ -13,10 +13,12 @@ export interface Edge<T = any> {
   data?: T;
 }
 
-export interface Position {
-  x: number;
-  y: number;
-}
+export const Position = {
+  Top: "top",
+  Bottom: "bottom",
+  Left: "left",
+  Right: "right",
+} as const;
 
 export const ReactFlow = jest.fn();
 export const useNodesState = jest.fn();
