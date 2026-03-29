@@ -724,33 +724,11 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-muted);
 }
 
-/* Traversal Mode Selector */
-.tasks-map-traversal-mode {
+/* Traversal Options (checkboxes below search) */
+.tasks-map-traversal-options {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 12px;
   margin-top: 6px;
-}
-
-.tasks-map-traversal-mode-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.tasks-map-traversal-mode-select {
-  flex: 1;
-  font-size: 11px;
-  padding: 2px 4px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  cursor: pointer;
-}
-
-.tasks-map-traversal-mode-select:hover {
-  border-color: var(--interactive-accent);
 }
 
 /* Search Suggestions Dropdown */

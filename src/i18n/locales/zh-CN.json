@@ -95,11 +95,8 @@
     "clear": "清除搜索",
     "results_count": "找到 {{count}} 个结果",
     "no_results": "未找到结果",
-    "traversal_mode": "图遍历",
-    "mode_match": "仅匹配",
-    "mode_upstream": "+ 上游",
-    "mode_downstream": "+ 下游",
-    "mode_both": "+ 双向"
+    "show_dependencies": "显示依赖项",
+    "show_dependents": "显示被依赖项"
   },
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"

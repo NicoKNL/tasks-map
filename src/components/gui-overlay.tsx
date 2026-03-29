@@ -1,7 +1,6 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import { TaskStatus, BaseTask } from "src/types/task";
-import { TraversalMode } from "src/lib/traverse-graph";
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { t } from "../i18n";
@@ -25,8 +24,10 @@ interface GuiOverlayProps {
   onSearch: (_query: string) => void;
   searchResultCount: number | null;
   suggestionTasks: BaseTask[];
-  traversalMode: TraversalMode;
-  setTraversalMode: (_mode: TraversalMode) => void;
+  showDependencies: boolean;
+  setShowDependencies: (_show: boolean) => void;
+  showDependents: boolean;
+  setShowDependents: (_show: boolean) => void;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -49,8 +50,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     onSearch,
     searchResultCount,
     suggestionTasks,
-    traversalMode,
-    setTraversalMode,
+    showDependencies,
+    setShowDependencies,
+    showDependents,
+    setShowDependents,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -196,24 +199,29 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               </span>
             )}
             {searchResultCount !== null && (
-              <div className="tasks-map-traversal-mode">
-                <label className="tasks-map-traversal-mode-label">
-                  {t("search.traversal_mode")}
+              <div className="tasks-map-traversal-options">
+                <label className="tasks-map-gui-overlay-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={showDependencies}
+                    onChange={(e) => setShowDependencies(e.target.checked)}
+                    className="tasks-map-gui-overlay-checkbox-input"
+                  />
+                  <span className="tasks-map-gui-overlay-checkbox-text">
+                    {t("search.show_dependencies")}
+                  </span>
                 </label>
-                <select
-                  className="tasks-map-traversal-mode-select"
-                  value={traversalMode}
-                  onChange={(e) =>
-                    setTraversalMode(e.target.value as TraversalMode)
-                  }
-                >
-                  <option value="match">{t("search.mode_match")}</option>
-                  <option value="upstream">{t("search.mode_upstream")}</option>
-                  <option value="downstream">
-                    {t("search.mode_downstream")}
-                  </option>
-                  <option value="both">{t("search.mode_both")}</option>
-                </select>
+                <label className="tasks-map-gui-overlay-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={showDependents}
+                    onChange={(e) => setShowDependents(e.target.checked)}
+                    className="tasks-map-gui-overlay-checkbox-input"
+                  />
+                  <span className="tasks-map-gui-overlay-checkbox-text">
+                    {t("search.show_dependents")}
+                  </span>
+                </label>
               </div>
             )}
             {showSuggestions && suggestions.length > 0 && (

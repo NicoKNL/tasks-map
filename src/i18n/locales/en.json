@@ -95,11 +95,8 @@
     "clear": "Clear search",
     "results_count": "{{count}} result(s) found",
     "no_results": "No results found",
-    "traversal_mode": "Graph traversal",
-    "mode_match": "Match only",
-    "mode_upstream": "+ Upstream",
-    "mode_downstream": "+ Downstream",
-    "mode_both": "+ Both"
+    "show_dependencies": "Show dependencies",
+    "show_dependents": "Show dependents"
   },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
