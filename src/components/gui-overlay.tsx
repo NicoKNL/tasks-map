@@ -24,6 +24,10 @@ interface GuiOverlayProps {
   onSearch: (_query: string) => void;
   searchResultCount: number | null;
   suggestionTasks: BaseTask[];
+  showDependencies: boolean;
+  setShowDependencies: (_show: boolean) => void;
+  showDependents: boolean;
+  setShowDependents: (_show: boolean) => void;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -46,6 +50,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     onSearch,
     searchResultCount,
     suggestionTasks,
+    showDependencies,
+    setShowDependencies,
+    showDependents,
+    setShowDependents,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -189,6 +197,32 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                   ? t("search.results_count", { count: searchResultCount })
                   : t("search.no_results")}
               </span>
+            )}
+            {searchResultCount !== null && (
+              <div className="tasks-map-traversal-options">
+                <label className="tasks-map-gui-overlay-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={showDependencies}
+                    onChange={(e) => setShowDependencies(e.target.checked)}
+                    className="tasks-map-gui-overlay-checkbox-input"
+                  />
+                  <span className="tasks-map-gui-overlay-checkbox-text">
+                    {t("search.show_dependencies")}
+                  </span>
+                </label>
+                <label className="tasks-map-gui-overlay-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={showDependents}
+                    onChange={(e) => setShowDependents(e.target.checked)}
+                    className="tasks-map-gui-overlay-checkbox-input"
+                  />
+                  <span className="tasks-map-gui-overlay-checkbox-text">
+                    {t("search.show_dependents")}
+                  </span>
+                </label>
+              </div>
             )}
             {showSuggestions && suggestions.length > 0 && (
               <div

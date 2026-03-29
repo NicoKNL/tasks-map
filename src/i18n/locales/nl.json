@@ -94,7 +94,9 @@
     "placeholder": "Taken zoeken...",
     "clear": "Zoekopdracht wissen",
     "results_count": "{{count}} resultaat/resultaten gevonden",
-    "no_results": "Geen resultaten gevonden"
+    "no_results": "Geen resultaten gevonden",
+    "show_dependencies": "Toon afhankelijkheden",
+    "show_dependents": "Toon afhankelijken"
   },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."

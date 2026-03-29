@@ -724,6 +724,13 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-muted);
 }
 
+/* Traversal Options (checkboxes below search) */
+.tasks-map-traversal-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
 /* Search Suggestions Dropdown */
 .tasks-map-search-suggestions {
   position: absolute;
