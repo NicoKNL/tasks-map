@@ -369,15 +369,26 @@ export default function TaskMapGraphView({
   }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
 
   const filteredTasks = useMemo(() => {
-    if (!activeSearchQuery.trim()) return preSearchFilteredTasks;
-    const lowerQuery = activeSearchQuery.toLowerCase();
-    return preSearchFilteredTasks.filter(
-      (task) =>
-        task.summary.toLowerCase().includes(lowerQuery) ||
-        task.id.toLowerCase().includes(lowerQuery) ||
-        task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    const filteredIds = getFilteredNodeIds(
+      tasks,
+      selectedTags,
+      selectedStatuses,
+      excludedTags,
+      selectedFiles,
+      activeSearchQuery,
+      traversalMode
     );
-  }, [preSearchFilteredTasks, activeSearchQuery]);
+    const idSet = new Set(filteredIds);
+    return tasks.filter((t) => idSet.has(t.id));
+  }, [
+    tasks,
+    selectedTags,
+    selectedStatuses,
+    excludedTags,
+    selectedFiles,
+    activeSearchQuery,
+    traversalMode,
+  ]);
 
   const searchResultCount = useMemo(() => {
     if (!activeSearchQuery.trim()) return null;

@@ -311,9 +311,7 @@ describe("traverseGraph", () => {
      */
     function buildCycle(n: number) {
       const ids = Array.from({ length: n }, (_, i) => `C${i}`);
-      const tasks = ids.map((id, i) =>
-        makeTask(id, [ids[(i - 1 + n) % n]])
-      );
+      const tasks = ids.map((id, i) => makeTask(id, [ids[(i - 1 + n) % n]]));
       return { tasks, ids, allowed: allIds(tasks) };
     }
 
