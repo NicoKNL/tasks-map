@@ -1,16 +1,16 @@
 import { BaseTask } from "src/types/base-task";
 import { TaskStatus } from "src/types/task";
+import { traverseGraph, TraversalMode } from "src/lib/traverse-graph";
 
 export const NO_TAGS_VALUE = "__NO_TAGS__";
 
-export const getFilteredNodeIds = (
+const applyNonSearchFilters = (
   tasks: BaseTask[],
   selectedTags: string[],
   selectedStatuses: TaskStatus[],
   excludedTags: string[],
-  selectedFiles: string[],
-  searchQuery: string
-): string[] => {
+  selectedFiles: string[]
+): BaseTask[] => {
   let filtered = tasks;
   if (selectedTags.length > 0) {
     filtered = filtered.filter((task) => {
@@ -47,14 +47,47 @@ export const getFilteredNodeIds = (
       });
     });
   }
-  if (searchQuery.trim()) {
-    const lowerQuery = searchQuery.toLowerCase();
-    filtered = filtered.filter(
-      (task) =>
-        task.summary.toLowerCase().includes(lowerQuery) ||
-        task.id.toLowerCase().includes(lowerQuery) ||
-        task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
-    );
+  return filtered;
+};
+
+const applySearchFilter = (
+  tasks: BaseTask[],
+  searchQuery: string
+): BaseTask[] => {
+  if (!searchQuery.trim()) return tasks;
+  const lowerQuery = searchQuery.toLowerCase();
+  return tasks.filter(
+    (task) =>
+      task.summary.toLowerCase().includes(lowerQuery) ||
+      task.id.toLowerCase().includes(lowerQuery) ||
+      task.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+  );
+};
+
+export const getFilteredNodeIds = (
+  tasks: BaseTask[],
+  selectedTags: string[],
+  selectedStatuses: TaskStatus[],
+  excludedTags: string[],
+  selectedFiles: string[],
+  searchQuery: string,
+  traversalMode: TraversalMode = "match"
+): string[] => {
+  const allowed = applyNonSearchFilters(
+    tasks,
+    selectedTags,
+    selectedStatuses,
+    excludedTags,
+    selectedFiles
+  );
+
+  if (!searchQuery.trim()) {
+    return allowed.map((task) => task.id);
   }
-  return filtered.map((task) => task.id);
+
+  const searchMatched = applySearchFilter(allowed, searchQuery);
+  const seedIds = searchMatched.map((task) => task.id);
+  const allowedIds = new Set(allowed.map((task) => task.id));
+
+  return traverseGraph(seedIds, tasks, allowedIds, traversalMode);
 };
