@@ -21,6 +21,7 @@ import GuiOverlay from "src/components/gui-overlay";
 import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode from "src/components/task-node";
 import { getFilteredNodeIds } from "src/lib/filter-tasks";
+import { TraversalMode } from "src/lib/traverse-graph";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
@@ -68,6 +69,8 @@ export default function TaskMapGraphView({
   const [hideTags, setHideTags] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
+  const [traversalMode, setTraversalMode] =
+    React.useState<TraversalMode>("match");
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
@@ -219,7 +222,8 @@ export default function TaskMapGraphView({
       selectedStatuses,
       excludedTags,
       selectedFiles,
-      activeSearchQuery
+      activeSearchQuery,
+      traversalMode
     );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
@@ -257,6 +261,7 @@ export default function TaskMapGraphView({
     setEdges,
     handleDeleteTask,
     activeSearchQuery,
+    traversalMode,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
@@ -427,6 +432,8 @@ export default function TaskMapGraphView({
             onSearch={handleSearch}
             searchResultCount={searchResultCount}
             suggestionTasks={preSearchFilteredTasks}
+            traversalMode={traversalMode}
+            setTraversalMode={setTraversalMode}
           />
           <TaskMinimap />
           <Background />

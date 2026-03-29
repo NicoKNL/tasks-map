@@ -302,4 +302,93 @@ describe("traverseGraph", () => {
       ).toEqual(["A"]);
     });
   });
+
+  describe("cyclic dependencies of length N", () => {
+    /**
+     * Build a pure cycle of length N:
+     *   C0 → C1 → C2 → … → C(N-1) → C0
+     * Each node depends on the previous one (wrapping around).
+     */
+    function buildCycle(n: number) {
+      const ids = Array.from({ length: n }, (_, i) => `C${i}`);
+      const tasks = ids.map((id, i) =>
+        makeTask(id, [ids[(i - 1 + n) % n]])
+      );
+      return { tasks, ids, allowed: allIds(tasks) };
+    }
+
+    it.each([2, 3, 5, 10, 50])(
+      "cycle of length %i terminates for upstream traversal",
+      (n) => {
+        const { tasks, ids, allowed } = buildCycle(n);
+        const result = traverseGraph(["C0"], tasks, allowed, "upstream");
+        expect(result).toHaveLength(n);
+        expect(result).toEqual(expect.arrayContaining(ids));
+      }
+    );
+
+    it.each([2, 3, 5, 10, 50])(
+      "cycle of length %i terminates for downstream traversal",
+      (n) => {
+        const { tasks, ids, allowed } = buildCycle(n);
+        const result = traverseGraph(["C0"], tasks, allowed, "downstream");
+        expect(result).toHaveLength(n);
+        expect(result).toEqual(expect.arrayContaining(ids));
+      }
+    );
+
+    it.each([2, 3, 5, 10, 50])(
+      "cycle of length %i terminates for both traversal",
+      (n) => {
+        const { tasks, ids, allowed } = buildCycle(n);
+        const result = traverseGraph(["C0"], tasks, allowed, "both");
+        expect(result).toHaveLength(n);
+        expect(result).toEqual(expect.arrayContaining(ids));
+      }
+    );
+
+    it("seeding from any node in a cycle returns all cycle members", () => {
+      const { tasks, ids, allowed } = buildCycle(6);
+      for (const seed of ids) {
+        const result = traverseGraph([seed], tasks, allowed, "both");
+        expect(result).toHaveLength(6);
+        expect(result).toEqual(expect.arrayContaining(ids));
+      }
+    });
+
+    it("cycle with a tail: traversal from tail covers cycle + tail", () => {
+      // T0 → T1 → C0 → C1 → C2 → C0 (tail feeding into a 3-cycle)
+      const cycleTasks = [
+        makeTask("T0", []),
+        makeTask("T1", ["T0"]),
+        makeTask("C0", ["T1", "C2"]),
+        makeTask("C1", ["C0"]),
+        makeTask("C2", ["C1"]),
+      ];
+      const cycleAllowed = allIds(cycleTasks);
+
+      // Upstream from C1 should find: C1 ← C0 ← T1 ← T0, and C0 ← C2 ← C1 (cycle)
+      const upstream = traverseGraph(
+        ["C1"],
+        cycleTasks,
+        cycleAllowed,
+        "upstream"
+      );
+      expect(upstream).toEqual(["T0", "T1", "C0", "C1", "C2"]);
+
+      // Downstream from T0 should reach T1, then the full cycle
+      const downstream = traverseGraph(
+        ["T0"],
+        cycleTasks,
+        cycleAllowed,
+        "downstream"
+      );
+      expect(downstream).toEqual(["T0", "T1", "C0", "C1", "C2"]);
+    });
+
+    it("match mode on a cycle returns only the seed", () => {
+      const { tasks, allowed } = buildCycle(5);
+      expect(traverseGraph(["C0"], tasks, allowed, "match")).toEqual(["C0"]);
+    });
+  });
 });

@@ -1,6 +1,7 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import { TaskStatus, BaseTask } from "src/types/task";
+import { TraversalMode } from "src/lib/traverse-graph";
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { t } from "../i18n";
@@ -24,6 +25,8 @@ interface GuiOverlayProps {
   onSearch: (_query: string) => void;
   searchResultCount: number | null;
   suggestionTasks: BaseTask[];
+  traversalMode: TraversalMode;
+  setTraversalMode: (_mode: TraversalMode) => void;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -46,6 +49,8 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     onSearch,
     searchResultCount,
     suggestionTasks,
+    traversalMode,
+    setTraversalMode,
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
@@ -189,6 +194,27 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                   ? t("search.results_count", { count: searchResultCount })
                   : t("search.no_results")}
               </span>
+            )}
+            {searchResultCount !== null && (
+              <div className="tasks-map-traversal-mode">
+                <label className="tasks-map-traversal-mode-label">
+                  {t("search.traversal_mode")}
+                </label>
+                <select
+                  className="tasks-map-traversal-mode-select"
+                  value={traversalMode}
+                  onChange={(e) =>
+                    setTraversalMode(e.target.value as TraversalMode)
+                  }
+                >
+                  <option value="match">{t("search.mode_match")}</option>
+                  <option value="upstream">{t("search.mode_upstream")}</option>
+                  <option value="downstream">
+                    {t("search.mode_downstream")}
+                  </option>
+                  <option value="both">{t("search.mode_both")}</option>
+                </select>
+              </div>
             )}
             {showSuggestions && suggestions.length > 0 && (
               <div
