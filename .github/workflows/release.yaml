@@ -50,7 +50,7 @@ jobs:
 
       - name: Determine version
         id: semver
-        uses: ronaldphilipsen/semVersie@v2.2.0
+        uses: ronaldphilipsen/semVersie@v2.3.0
         with:
           add-pr-label: "true"
 
