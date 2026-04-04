@@ -21,7 +21,6 @@ import GuiOverlay from "src/components/gui-overlay";
 import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode from "src/components/task-node";
 import { getFilteredNodeIds } from "src/lib/filter-tasks";
-import type { TraversalMode } from "src/lib/traverse-graph";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
@@ -30,31 +29,21 @@ import { t } from "../i18n";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
+import { FilterState } from "src/types/filter-state";
+import type { TraversalMode } from "src/lib/traverse-graph";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
 interface TaskMapGraphViewProps {
   settings: TasksMapSettings;
-  selectedTags: string[];
-  setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
-  excludedTags: string[];
-  setExcludedTags: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedStatuses: TaskStatus[];
-  setSelectedStatuses: React.Dispatch<React.SetStateAction<TaskStatus[]>>;
-  selectedFiles: string[];
-  setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
+  filterState: FilterState;
+  setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
 }
 
 export default function TaskMapGraphView({
   settings,
-  selectedTags,
-  setSelectedTags,
-  excludedTags,
-  setExcludedTags,
-  selectedStatuses,
-  setSelectedStatuses,
-  selectedFiles,
-  setSelectedFiles,
+  filterState,
+  setFilterState,
 }: TaskMapGraphViewProps) {
   const app = useApp();
   const vault = app.vault;
@@ -68,7 +57,6 @@ export default function TaskMapGraphView({
 
   const [hideTags, setHideTags] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
   const [showDependencies, setShowDependencies] = React.useState(false);
   const [showDependents, setShowDependents] = React.useState(false);
 
@@ -225,15 +213,11 @@ export default function TaskMapGraphView({
       settings.smoothStepRadius
     );
 
-    const filteredNodeIds = getFilteredNodeIds(
-      tasks,
-      selectedTags,
-      selectedStatuses,
-      excludedTags,
-      selectedFiles,
-      activeSearchQuery,
-      traversalMode
-    );
+    const filteredNodeIds = getFilteredNodeIds(tasks, {
+      ...filterState,
+      searchQuery: filterState.searchQuery,
+      traversalMode,
+    });
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
     newEdges = newEdges.filter(
@@ -260,16 +244,12 @@ export default function TaskMapGraphView({
     }
   }, [
     tasks,
-    selectedTags,
-    selectedStatuses,
-    excludedTags,
-    selectedFiles,
+    filterState,
     settings,
     reactFlowInstance,
     setNodes,
     setEdges,
     handleDeleteTask,
-    activeSearchQuery,
     traversalMode,
   ]);
 
@@ -365,48 +345,35 @@ export default function TaskMapGraphView({
   );
 
   const preSearchFilteredTasks = useMemo(() => {
-    const filteredIds = getFilteredNodeIds(
-      tasks,
-      selectedTags,
-      selectedStatuses,
-      excludedTags,
-      selectedFiles,
-      ""
-    );
+    const filteredIds = getFilteredNodeIds(tasks, {
+      ...filterState,
+      searchQuery: "",
+      traversalMode: "match",
+    });
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
-  }, [tasks, selectedTags, selectedStatuses, excludedTags, selectedFiles]);
+  }, [tasks, filterState]);
 
   const filteredTasks = useMemo(() => {
-    const filteredIds = getFilteredNodeIds(
-      tasks,
-      selectedTags,
-      selectedStatuses,
-      excludedTags,
-      selectedFiles,
-      activeSearchQuery,
-      traversalMode
-    );
+    const filteredIds = getFilteredNodeIds(tasks, {
+      ...filterState,
+      traversalMode,
+    });
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
-  }, [
-    tasks,
-    selectedTags,
-    selectedStatuses,
-    excludedTags,
-    selectedFiles,
-    activeSearchQuery,
-    traversalMode,
-  ]);
+  }, [tasks, filterState, traversalMode]);
 
   const searchResultCount = useMemo(() => {
-    if (!activeSearchQuery.trim()) return null;
+    if (!filterState.searchQuery.trim()) return null;
     return filteredTasks.length;
-  }, [activeSearchQuery, filteredTasks]);
+  }, [filterState.searchQuery, filteredTasks]);
 
-  const handleSearch = useCallback((query: string): void => {
-    setActiveSearchQuery(query);
-  }, []);
+  const handleSearch = useCallback(
+    (query: string): void => {
+      setFilterState((prev) => ({ ...prev, searchQuery: query }));
+    },
+    [setFilterState]
+  );
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
@@ -435,17 +402,11 @@ export default function TaskMapGraphView({
         >
           <GuiOverlay
             allTags={allTags}
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-            excludedTags={excludedTags}
-            setExcludedTags={setExcludedTags}
+            filterState={filterState}
+            setFilterState={setFilterState}
             allFiles={allFiles}
-            selectedFiles={selectedFiles}
-            setSelectedFiles={setSelectedFiles}
             reloadTasks={reloadTasks}
             allStatuses={ALL_STATUSES}
-            selectedStatuses={selectedStatuses}
-            setSelectedStatuses={setSelectedStatuses}
             showTags={settings.showTags}
             hideTags={hideTags}
             setHideTags={toggleHideTags}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import { ReactFlowProvider } from "reactflow";
@@ -6,11 +6,9 @@ import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
 import { checkDataviewPlugin } from "../lib/utils";
 import TasksMapPlugin from "../main";
-import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
+import { FilterState, DEFAULT_FILTER_STATE } from "src/types/filter-state";
 import { t } from "../i18n";
-
-const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
 // Wrapper component that manages filter state and keys the ReactFlowProvider
 function TaskMapGraphWrapper({
@@ -29,32 +27,16 @@ function TaskMapGraphWrapper({
       window.removeEventListener("tasks-map:settings-changed", handler);
   }, [pluginSettings]);
 
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [excludedTags, setExcludedTags] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([
-    ...ALL_STATUSES,
-  ]);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-
-  // Key the ReactFlowProvider on filter state to force complete remount
-  const providerKey = useMemo(
-    () =>
-      `${selectedTags.join(",")}-${excludedTags.join(",")}-${selectedStatuses.join(",")}-${selectedFiles.join(",")}`,
-    [selectedTags, excludedTags, selectedStatuses, selectedFiles]
-  );
+  const [filterState, setFilterState] = useState<FilterState>({
+    ...DEFAULT_FILTER_STATE,
+  });
 
   return (
-    <ReactFlowProvider key={providerKey}>
+    <ReactFlowProvider>
       <TaskMapGraphView
         settings={settings}
-        selectedTags={selectedTags}
-        setSelectedTags={setSelectedTags}
-        excludedTags={excludedTags}
-        setExcludedTags={setExcludedTags}
-        selectedStatuses={selectedStatuses}
-        setSelectedStatuses={setSelectedStatuses}
-        selectedFiles={selectedFiles}
-        setSelectedFiles={setSelectedFiles}
+        filterState={filterState}
+        setFilterState={setFilterState}
       />
     </ReactFlowProvider>
   );

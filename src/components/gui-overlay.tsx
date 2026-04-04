@@ -1,23 +1,18 @@
 import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import { TaskStatus, BaseTask } from "src/types/task";
+import { FilterState } from "src/types/filter-state";
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { t } from "../i18n";
 
 interface GuiOverlayProps {
   allTags: string[];
-  selectedTags: string[];
-  setSelectedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars
-  excludedTags: string[];
-  setExcludedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars
+  filterState: FilterState;
+  setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
   allFiles: string[];
-  selectedFiles: string[];
-  setSelectedFiles: (files: string[]) => void; // eslint-disable-line no-unused-vars
   reloadTasks: () => void;
   allStatuses: TaskStatus[];
-  selectedStatuses: TaskStatus[];
-  setSelectedStatuses: (statuses: TaskStatus[]) => void; // eslint-disable-line no-unused-vars
   showTags?: boolean;
   hideTags?: boolean;
   setHideTags: () => void;
@@ -33,17 +28,11 @@ interface GuiOverlayProps {
 export default function GuiOverlay(props: GuiOverlayProps) {
   const {
     allTags,
-    selectedTags,
-    setSelectedTags,
-    excludedTags,
-    setExcludedTags,
+    filterState,
+    setFilterState,
     allFiles,
-    selectedFiles,
-    setSelectedFiles,
     reloadTasks,
     allStatuses,
-    selectedStatuses,
-    setSelectedStatuses,
     showTags = true,
     hideTags = false,
     setHideTags,
@@ -57,7 +46,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   } = props;
 
   const [isMinimized, setIsMinimized] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(filterState.searchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -260,8 +249,13 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               </label>
               <MultiSelect
                 options={allStatuses}
-                selected={selectedStatuses}
-                setSelected={setSelectedStatuses}
+                selected={filterState.selectedStatuses}
+                setSelected={(statuses) =>
+                  setFilterState((prev) => ({
+                    ...prev,
+                    selectedStatuses: statuses,
+                  }))
+                }
                 placeholder={t("filters.filter_by_status")}
               />
             </div>
@@ -272,8 +266,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               </label>
               <TagSelect
                 allTags={allTags}
-                selectedTags={selectedTags}
-                setSelectedTags={setSelectedTags}
+                selectedTags={filterState.selectedTags}
+                setSelectedTags={(tags) =>
+                  setFilterState((prev) => ({ ...prev, selectedTags: tags }))
+                }
               />
             </div>
 
@@ -283,8 +279,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               </label>
               <TagSelect
                 allTags={allTags}
-                selectedTags={excludedTags}
-                setSelectedTags={setExcludedTags}
+                selectedTags={filterState.excludedTags}
+                setSelectedTags={(tags) =>
+                  setFilterState((prev) => ({ ...prev, excludedTags: tags }))
+                }
               />
             </div>
 
@@ -294,8 +292,10 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               </label>
               <MultiSelect
                 options={allFiles}
-                selected={selectedFiles}
-                setSelected={setSelectedFiles}
+                selected={filterState.selectedFiles}
+                setSelected={(files) =>
+                  setFilterState((prev) => ({ ...prev, selectedFiles: files }))
+                }
                 placeholder={t("filters.filter_by_file")}
               />
             </div>
