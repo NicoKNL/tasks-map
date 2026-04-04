@@ -19,3 +19,4 @@ Thumbs.db
 # Docs use MkDocs/Zensical admonition syntax (!!! NOTE) which Prettier
 # does not understand and would mangle (strips required indentation).
 docs/
+.opencode/

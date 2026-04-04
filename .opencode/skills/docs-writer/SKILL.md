@@ -56,49 +56,49 @@ Basic admonition — type keyword followed by body indented **4 spaces**:
 
 ```markdown
 !!! note
-Body text here.
+    Body text here.
 ```
 
 With a custom title:
 
 ```markdown
 !!! tip "Pro tip"
-Body text here.
+    Body text here.
 ```
 
 No title (title bar hidden):
 
 ```markdown
 !!! warning ""
-Body text here.
+    Body text here.
 ```
 
 **Collapsible** (closed by default):
 
 ```markdown
 ??? info "Click to expand"
-Body text here.
+    Body text here.
 ```
 
 **Collapsible open by default**:
 
 ```markdown
 ???+ info "Expanded by default"
-Body text here.
+    Body text here.
 ```
 
 **Inline** (floats right, text wraps around):
 
 ```markdown
 !!! info inline end "Side note"
-Body text here.
+    Body text here.
 ```
 
 **Inline left**:
 
 ```markdown
 !!! info inline "Side note"
-Body text here.
+    Body text here.
 ```
 
 Available types: `note`, `abstract`, `info`, `tip`, `success`, `question`,
