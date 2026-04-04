@@ -85,7 +85,8 @@
     "status_done": "Klaar",
     "status_canceled": "Geannuleerd",
     "status_total": "Totaal",
-    "only_starred": "Alleen gemarkeerd"
+    "only_starred": "Alleen gemarkeerd",
+    "title": "Filters"
   },
   "multiselect": {
     "select": "Selecteer...",

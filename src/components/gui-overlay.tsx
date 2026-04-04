@@ -146,234 +146,244 @@ export default function GuiOverlay(props: GuiOverlayProps) {
 
   return (
     <div className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}>
-      <button
-        className="tasks-map-filter-panel-toggle"
-        onClick={toggleMinimized}
-        title={
-          isMinimized
-            ? t("filters.expand_filters")
-            : t("filters.minimize_filters")
-        }
-      >
-        {isMinimized ? <ChevronLeft size={18} /> : <ChevronRight size={12} />}
-      </button>
+      <div className="tasks-map-filter-panel__header">
+        <span className="tasks-map-filter-panel__title">
+          {t("filters.title")}
+        </span>
+        <button
+          className="tasks-map-filter-panel-toggle"
+          onClick={toggleMinimized}
+          title={
+            isMinimized
+              ? t("filters.expand_filters")
+              : t("filters.minimize_filters")
+          }
+        >
+          {isMinimized ? <ChevronLeft size={16} /> : <ChevronRight size={12} />}
+        </button>
+      </div>
 
       {!isMinimized && (
         <>
-          <div className="tasks-map-search-bar">
-            <div className="tasks-map-search-bar-row">
-              <button
-                className="tasks-map-search-icon-button"
-                onClick={submitSearch}
-                title={t("search.placeholder")}
-              >
-                <Search size={14} />
-              </button>
-              <input
-                ref={inputRef}
-                type="text"
-                className="tasks-map-search-input"
-                placeholder={t("search.placeholder")}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-                onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
-                onBlur={() =>
-                  setTimeout(() => {
-                    setShowSuggestions(false);
-                  }, 150)
-                }
-              />
-              {searchQuery && (
+          <div className="tasks-map-filter-panel__content">
+            <div className="tasks-map-search-bar">
+              <div className="tasks-map-search-bar-row">
                 <button
-                  className="tasks-map-search-clear"
-                  onClick={clearSearch}
-                  title={t("search.clear")}
+                  className="tasks-map-search-icon-button"
+                  onClick={submitSearch}
+                  title={t("search.placeholder")}
                 >
-                  <X size={14} />
+                  <Search size={14} />
                 </button>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  className="tasks-map-search-input"
+                  placeholder={t("search.placeholder")}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyDown}
+                  onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
+                  onBlur={() =>
+                    setTimeout(() => {
+                      setShowSuggestions(false);
+                    }, 150)
+                  }
+                />
+                {searchQuery && (
+                  <button
+                    className="tasks-map-search-clear"
+                    onClick={clearSearch}
+                    title={t("search.clear")}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              {searchResultCount !== null && (
+                <span className="tasks-map-search-result-count">
+                  {searchResultCount > 0
+                    ? t("search.results_count", { count: searchResultCount })
+                    : t("search.no_results")}
+                </span>
+              )}
+              {searchResultCount !== null && (
+                <div className="tasks-map-traversal-options">
+                  <label className="tasks-map-gui-overlay-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={showDependencies}
+                      onChange={(e) =>
+                        setFilterState((prev) => ({
+                          ...prev,
+                          traversalMode: toggleTraversal(
+                            e.target.checked,
+                            showDependents
+                          ),
+                        }))
+                      }
+                      className="tasks-map-gui-overlay-checkbox-input"
+                    />
+                    <span className="tasks-map-gui-overlay-checkbox-text">
+                      {t("search.show_dependencies")}
+                    </span>
+                  </label>
+                  <label className="tasks-map-gui-overlay-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={showDependents}
+                      onChange={(e) =>
+                        setFilterState((prev) => ({
+                          ...prev,
+                          traversalMode: toggleTraversal(
+                            showDependencies,
+                            e.target.checked
+                          ),
+                        }))
+                      }
+                      className="tasks-map-gui-overlay-checkbox-input"
+                    />
+                    <span className="tasks-map-gui-overlay-checkbox-text">
+                      {t("search.show_dependents")}
+                    </span>
+                  </label>
+                </div>
+              )}
+              {showSuggestions && suggestions.length > 0 && (
+                <div
+                  className="tasks-map-search-suggestions"
+                  ref={suggestionsRef}
+                >
+                  {suggestions.map((task, index) => (
+                    <div
+                      key={task.id}
+                      className={`tasks-map-search-suggestion ${
+                        index === selectedSuggestion
+                          ? "tasks-map-search-suggestion--active"
+                          : ""
+                      }`}
+                      onMouseDown={() => handleSelectSuggestion(task)}
+                    >
+                      <span className="tasks-map-search-suggestion-summary">
+                        {task.summary}
+                      </span>
+                      {task.tags.length > 0 && (
+                        <span className="tasks-map-search-suggestion-tags">
+                          {task.tags.slice(0, 3).join(", ")}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-            {searchResultCount !== null && (
-              <span className="tasks-map-search-result-count">
-                {searchResultCount > 0
-                  ? t("search.results_count", { count: searchResultCount })
-                  : t("search.no_results")}
-              </span>
-            )}
-            {searchResultCount !== null && (
-              <div className="tasks-map-traversal-options">
-                <label className="tasks-map-gui-overlay-checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={showDependencies}
-                    onChange={(e) =>
-                      setFilterState((prev) => ({
-                        ...prev,
-                        traversalMode: toggleTraversal(
-                          e.target.checked,
-                          showDependents
-                        ),
-                      }))
-                    }
-                    className="tasks-map-gui-overlay-checkbox-input"
-                  />
-                  <span className="tasks-map-gui-overlay-checkbox-text">
-                    {t("search.show_dependencies")}
-                  </span>
+
+            <div className="tasks-map-filter-section">
+              <div className="tasks-map-filter-item">
+                <label className="tasks-map-filter-label">
+                  {t("filters.status")}
                 </label>
-                <label className="tasks-map-gui-overlay-checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={showDependents}
-                    onChange={(e) =>
-                      setFilterState((prev) => ({
-                        ...prev,
-                        traversalMode: toggleTraversal(
-                          showDependencies,
-                          e.target.checked
-                        ),
-                      }))
-                    }
-                    className="tasks-map-gui-overlay-checkbox-input"
-                  />
-                  <span className="tasks-map-gui-overlay-checkbox-text">
-                    {t("search.show_dependents")}
-                  </span>
-                </label>
-              </div>
-            )}
-            {showSuggestions && suggestions.length > 0 && (
-              <div
-                className="tasks-map-search-suggestions"
-                ref={suggestionsRef}
-              >
-                {suggestions.map((task, index) => (
-                  <div
-                    key={task.id}
-                    className={`tasks-map-search-suggestion ${
-                      index === selectedSuggestion
-                        ? "tasks-map-search-suggestion--active"
-                        : ""
-                    }`}
-                    onMouseDown={() => handleSelectSuggestion(task)}
-                  >
-                    <span className="tasks-map-search-suggestion-summary">
-                      {task.summary}
-                    </span>
-                    {task.tags.length > 0 && (
-                      <span className="tasks-map-search-suggestion-tags">
-                        {task.tags.slice(0, 3).join(", ")}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="tasks-map-filter-section">
-            <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">
-                {t("filters.status")}
-              </label>
-              <MultiSelect
-                options={allStatuses}
-                selected={filterState.selectedStatuses}
-                setSelected={(statuses) =>
-                  setFilterState((prev) => ({
-                    ...prev,
-                    selectedStatuses: statuses,
-                  }))
-                }
-                placeholder={t("filters.filter_by_status")}
-              />
-            </div>
-
-            <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">
-                {t("filters.include_labels")}
-              </label>
-              <TagSelect
-                allTags={allTags}
-                selectedTags={filterState.selectedTags}
-                setSelectedTags={(tags) =>
-                  setFilterState((prev) => ({ ...prev, selectedTags: tags }))
-                }
-              />
-            </div>
-
-            <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">
-                {t("filters.exclude_labels")}
-              </label>
-              <TagSelect
-                allTags={allTags}
-                selectedTags={filterState.excludedTags}
-                setSelectedTags={(tags) =>
-                  setFilterState((prev) => ({ ...prev, excludedTags: tags }))
-                }
-              />
-            </div>
-
-            <div className="tasks-map-filter-item">
-              <label className="tasks-map-filter-label">
-                {t("filters.files_folders")}
-              </label>
-              <MultiSelect
-                options={allFiles}
-                selected={filterState.selectedFiles}
-                setSelected={(files) =>
-                  setFilterState((prev) => ({ ...prev, selectedFiles: files }))
-                }
-                placeholder={t("filters.filter_by_file")}
-              />
-            </div>
-
-            <div className="tasks-map-filter-item">
-              <label className="tasks-map-gui-overlay-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={filterState.onlyStarred}
-                  onChange={(e) =>
+                <MultiSelect
+                  options={allStatuses}
+                  selected={filterState.selectedStatuses}
+                  setSelected={(statuses) =>
                     setFilterState((prev) => ({
                       ...prev,
-                      onlyStarred: e.target.checked,
+                      selectedStatuses: statuses,
                     }))
                   }
-                  className="tasks-map-gui-overlay-checkbox-input"
+                  placeholder={t("filters.filter_by_status")}
                 />
-                <span className="tasks-map-gui-overlay-checkbox-text">
-                  {t("filters.only_starred")}
-                </span>
-              </label>
-            </div>
+              </div>
 
-            {showTags && (
+              <div className="tasks-map-filter-item">
+                <label className="tasks-map-filter-label">
+                  {t("filters.include_labels")}
+                </label>
+                <TagSelect
+                  allTags={allTags}
+                  selectedTags={filterState.selectedTags}
+                  setSelectedTags={(tags) =>
+                    setFilterState((prev) => ({ ...prev, selectedTags: tags }))
+                  }
+                />
+              </div>
+
+              <div className="tasks-map-filter-item">
+                <label className="tasks-map-filter-label">
+                  {t("filters.exclude_labels")}
+                </label>
+                <TagSelect
+                  allTags={allTags}
+                  selectedTags={filterState.excludedTags}
+                  setSelectedTags={(tags) =>
+                    setFilterState((prev) => ({ ...prev, excludedTags: tags }))
+                  }
+                />
+              </div>
+
+              <div className="tasks-map-filter-item">
+                <label className="tasks-map-filter-label">
+                  {t("filters.files_folders")}
+                </label>
+                <MultiSelect
+                  options={allFiles}
+                  selected={filterState.selectedFiles}
+                  setSelected={(files) =>
+                    setFilterState((prev) => ({
+                      ...prev,
+                      selectedFiles: files,
+                    }))
+                  }
+                  placeholder={t("filters.filter_by_file")}
+                />
+              </div>
+
               <div className="tasks-map-filter-item">
                 <label className="tasks-map-gui-overlay-checkbox-label">
                   <input
                     type="checkbox"
-                    checked={hideTags}
-                    onChange={handleToggleHideTags}
+                    checked={filterState.onlyStarred}
+                    onChange={(e) =>
+                      setFilterState((prev) => ({
+                        ...prev,
+                        onlyStarred: e.target.checked,
+                      }))
+                    }
                     className="tasks-map-gui-overlay-checkbox-input"
                   />
                   <span className="tasks-map-gui-overlay-checkbox-text">
-                    {t("filters.hide_tags_on_nodes")}
+                    {t("filters.only_starred")}
                   </span>
                 </label>
               </div>
-            )}
-          </div>
 
-          {/* Reload Button */}
-          <div className="tasks-map-filter-actions">
-            <button
-              onClick={reloadTasks}
-              className="tasks-map-gui-overlay-reload-button"
-            >
-              {t("filters.reload_tasks")}
-            </button>
+              {showTags && (
+                <div className="tasks-map-filter-item">
+                  <label className="tasks-map-gui-overlay-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={hideTags}
+                      onChange={handleToggleHideTags}
+                      className="tasks-map-gui-overlay-checkbox-input"
+                    />
+                    <span className="tasks-map-gui-overlay-checkbox-text">
+                      {t("filters.hide_tags_on_nodes")}
+                    </span>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {/* Reload Button */}
+            <div className="tasks-map-filter-actions">
+              <button
+                onClick={reloadTasks}
+                className="tasks-map-gui-overlay-reload-button"
+              >
+                {t("filters.reload_tasks")}
+              </button>
+            </div>
           </div>
         </>
       )}

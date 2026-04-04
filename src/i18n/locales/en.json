@@ -85,7 +85,8 @@
     "status_done": "Done",
     "status_canceled": "Canceled",
     "status_total": "Total",
-    "only_starred": "Starred only"
+    "only_starred": "Starred only",
+    "title": "Filters"
   },
   "multiselect": {
     "select": "Select...",

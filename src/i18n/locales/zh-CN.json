@@ -85,7 +85,8 @@
     "status_done": "已完成",
     "status_canceled": "已取消",
     "status_total": "总计",
-    "only_starred": "仅显示收藏"
+    "only_starred": "仅显示收藏",
+    "title": "筛选"
   },
   "multiselect": {
     "select": "选择...",

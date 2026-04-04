@@ -439,57 +439,55 @@ export default function TaskMapGraphView({
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
-      <div className="tasks-map-layout">
+      <div
+        className="tasks-map-graph-container"
+        ref={containerRef}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+      >
         <UnlinkedTasksPanel tasks={sidebarTasks} />
-        <div
-          className="tasks-map-graph-container"
-          ref={containerRef}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+        {isLoading && (
+          <div className="tasks-map-loading-container">
+            <div className="tasks-map-spinner" />
+            <div className="tasks-map-loading-text">Loading tasks...</div>
+          </div>
+        )}
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          proOptions={{ hideAttribution: true }}
+          minZoom={0.1}
+          fitView
+          onConnect={onConnect}
+          onEdgeClick={onEdgeClick}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
         >
-          {isLoading && (
-            <div className="tasks-map-loading-container">
-              <div className="tasks-map-spinner" />
-              <div className="tasks-map-loading-text">Loading tasks...</div>
-            </div>
+          <GuiOverlay
+            allTags={allTags}
+            filterState={filterState}
+            setFilterState={setFilterState}
+            allFiles={allFiles}
+            reloadTasks={reloadTasks}
+            allStatuses={ALL_STATUSES}
+            showTags={settings.showTags}
+            hideTags={hideTags}
+            setHideTags={toggleHideTags}
+            onSearch={handleSearch}
+            searchResultCount={searchResultCount}
+            suggestionTasks={preSearchFilteredTasks}
+          />
+          <TaskMinimap />
+          <Background />
+          {settings.showStatusCounts && (
+            <StatusCountsOverlay tasks={filteredTasks} />
           )}
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            proOptions={{ hideAttribution: true }}
-            minZoom={0.1}
-            fitView
-            onConnect={onConnect}
-            onEdgeClick={onEdgeClick}
-            onNodeClick={onNodeClick}
-            onPaneClick={onPaneClick}
-          >
-            <GuiOverlay
-              allTags={allTags}
-              filterState={filterState}
-              setFilterState={setFilterState}
-              allFiles={allFiles}
-              reloadTasks={reloadTasks}
-              allStatuses={ALL_STATUSES}
-              showTags={settings.showTags}
-              hideTags={hideTags}
-              setHideTags={toggleHideTags}
-              onSearch={handleSearch}
-              searchResultCount={searchResultCount}
-              suggestionTasks={preSearchFilteredTasks}
-            />
-            <TaskMinimap />
-            <Background />
-            {settings.showStatusCounts && (
-              <StatusCountsOverlay tasks={filteredTasks} />
-            )}
-          </ReactFlow>
-          {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
-        </div>
+        </ReactFlow>
+        {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
       </div>
     </TagsContext.Provider>
   );

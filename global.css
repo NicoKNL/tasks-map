@@ -538,43 +538,66 @@ If your plugin does not need CSS, delete this file.
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
-  padding: 16px;
   min-width: 280px;
+  max-height: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
-  backdrop-filter: blur(8px);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .tasks-map-filter-panel.minimized {
   min-width: unset;
-  padding: 0;
-  width: fit-content;
-  height: fit-content;
+  max-height: unset;
+  overflow: visible;
+}
+
+.tasks-map-filter-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.tasks-map-filter-panel.minimized .tasks-map-filter-panel__header {
+  border-bottom: none;
+  padding: 10px 12px;
+}
+
+.tasks-map-filter-panel__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .tasks-map-filter-panel-toggle {
-  background: transparent;
-  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  border: none;
   cursor: pointer;
   color: var(--text-normal);
   padding: 3px;
   border-radius: 4px;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1;
-  width: 20px;
-  height: 20px;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
 }
 
-.tasks-map-filter-panel.minimized .tasks-map-filter-panel-toggle {
-  position: static;
-  padding: 8px;
-  width: 34px;
-  height: 34px;
+.tasks-map-filter-panel-toggle:hover {
+  background: var(--background-primary-alt);
+}
+
+.tasks-map-filter-panel__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
 
 .tasks-map-filter-panel-toggle:hover {
@@ -911,19 +934,9 @@ If your plugin does not need CSS, delete this file.
   box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black), 0.12) !important;
 }
 
-/* Task Map Layout (sidebar + graph) */
-.tasks-map-layout {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
 /* Task Map Graph View Styles */
 .tasks-map-graph-container {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   height: 100%;
   position: relative;
 }
@@ -1209,27 +1222,29 @@ If your plugin does not need CSS, delete this file.
 
 /* Unlinked Tasks Panel */
 .tasks-map-unlinked-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  bottom: 70px;
+  z-index: 35;
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
-  width: 240px;
-  min-width: 240px;
-  height: 100%;
+  width: 220px;
+  max-height: calc(100% - 86px);
   background: var(--background-secondary);
-  border-right: 1px solid var(--background-modifier-border);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
   overflow: hidden;
-  transition:
-    width 0.2s ease,
-    min-width 0.2s ease;
-  flex-shrink: 0;
 }
 
 .tasks-map-unlinked-panel--collapsed {
-  width: 36px;
-  min-width: 36px;
-  align-items: center;
-  padding-top: 8px;
+  width: auto;
+  max-height: none;
+  bottom: auto;
+  overflow: visible;
 }
-
 .tasks-map-unlinked-panel__header {
   display: flex;
   align-items: center;
@@ -1267,6 +1282,11 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-unlinked-panel__toggle:hover {
   background: var(--background-primary-alt);
+}
+
+.tasks-map-unlinked-panel__count {
+  font-weight: normal;
+  color: var(--text-faint);
 }
 
 .tasks-map-unlinked-panel__filter-row {
