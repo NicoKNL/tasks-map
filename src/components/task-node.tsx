@@ -174,7 +174,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           onStatusChange={setStatus}
         />
         {showPriorities && <TaskPriority priority={task.priority} />}
-        <span ref={summaryRef} className="tasks-map-task-node-summary" />
+        <div className="tasks-map-task-node-header-spacer" />
         <StarButton starred={starred} onClick={handleStarToggle} />
         <LinkButton link={task.link} app={app} taskStatus={status} />
         <TaskMenu
@@ -185,7 +185,11 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
       </div>
 
       <div className="tasks-map-task-node-content">
-        {showTags && (
+        <span ref={summaryRef} className="tasks-map-task-node-summary" />
+      </div>
+
+      {showTags && (
+        <div className="tasks-map-task-node-footer">
           <div className="task-tags-container">
             {tags.map((tag) => (
               <Tag
@@ -219,8 +223,8 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
               </span>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {debugVisualization && (
         <ExpandButton

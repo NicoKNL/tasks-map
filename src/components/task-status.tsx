@@ -1,4 +1,5 @@
 import React from "react";
+import { Circle, CircleDot, CircleCheck, CircleX } from "lucide-react";
 import { BaseTask, TaskStatus } from "src/types/task";
 import { updateTaskStatusInVault } from "src/lib/utils";
 import { useApp } from "src/hooks/hooks";
@@ -9,11 +10,11 @@ interface TaskStatusProps {
   onStatusChange: (newStatus: TaskStatus) => void; // eslint-disable-line no-unused-vars
 }
 
-const statusIcons = {
-  todo: "⬜",
-  in_progress: "🔵",
-  done: "✅",
-  canceled: "❌",
+const statusIcons: Record<TaskStatus, React.ReactElement> = {
+  todo: <Circle size={16} />,
+  in_progress: <CircleDot size={16} />,
+  done: <CircleCheck size={16} />,
+  canceled: <CircleX size={16} />,
 };
 
 export function TaskStatusToggle({
