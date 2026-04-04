@@ -50,7 +50,7 @@ jobs:
 
       - name: Determine version
         id: semver
-        uses: ronaldphilipsen/semVersie@on-push-support
+        uses: ronaldphilipsen/semVersie@on-push-support-rc
         with:
           add-pr-label: ${{ github.event_name == 'pull_request' }}
 
