@@ -8,7 +8,6 @@ export interface FilterState {
   selectedFiles: string[];
   searchQuery: string;
   traversalMode: TraversalMode;
-  onlyStarred: boolean;
 }
 
 export const DEFAULT_FILTER_STATE: FilterState = {
@@ -18,5 +17,4 @@ export const DEFAULT_FILTER_STATE: FilterState = {
   selectedFiles: [],
   searchQuery: "",
   traversalMode: "match",
-  onlyStarred: false,
 };

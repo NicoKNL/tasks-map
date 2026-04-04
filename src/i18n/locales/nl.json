@@ -84,8 +84,7 @@
     "status_in_progress": "Bezig",
     "status_done": "Klaar",
     "status_canceled": "Geannuleerd",
-    "status_total": "Totaal",
-    "only_starred": "Alleen gemarkeerd"
+    "status_total": "Totaal"
   },
   "multiselect": {
     "select": "Selecteer...",

@@ -44,9 +44,6 @@ const applyNonSearchFilters = (
       });
     });
   }
-  if (filter.onlyStarred) {
-    filtered = filtered.filter((task) => task.starred);
-  }
   return filtered;
 };
 
