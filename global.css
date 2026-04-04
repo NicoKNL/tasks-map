@@ -1038,14 +1038,67 @@ If your plugin does not need CSS, delete this file.
   color: var(--tasks-map-color-red);
 }
 
+/* Task Node Handle Styles */
+.react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: none;
+  background: var(--color-base-40);
+}
+
+.react-flow__handle-left {
+  left: -6px;
+}
+
+.react-flow__handle-right {
+  right: -6px;
+}
+
+.react-flow__handle-top {
+  top: -6px;
+}
+
+.react-flow__handle-bottom {
+  bottom: -6px;
+}
+
 /* Hash Edge Styles */
 .tasks-map-hash-edge-interaction {
   cursor: pointer;
 }
 
+.tasks-map-hash-edge-path {
+  stroke: var(--color-base-40);
+  stroke-width: 1.5;
+  fill: none;
+  transition:
+    stroke 0.15s ease,
+    stroke-width 0.15s ease;
+}
+
+.tasks-map-hash-edge-path--selected {
+  stroke: var(--interactive-accent);
+  stroke-width: 2;
+}
+
+.react-flow__edge:hover
+  .tasks-map-hash-edge-path:not(.tasks-map-hash-edge-path--selected) {
+  stroke: var(--interactive-accent);
+  stroke-dasharray: 6 4;
+  animation: tasks-map-edge-march 0.5s linear infinite;
+}
+
+@keyframes tasks-map-edge-march {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
 .tasks-map-hash-edge-text {
   user-select: none;
   pointer-events: none;
+  fill: var(--text-muted);
 }
 
 /* Link Button SVG Styles */

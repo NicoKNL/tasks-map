@@ -1,3 +1,4 @@
+import React, { useRef, useCallback } from "react";
 import {
   EdgeProps,
   getBezierPath,
@@ -35,8 +36,20 @@ export default function HashEdge({
   sourceY,
   targetX,
   targetY,
-  markerEnd,
+  selected,
 }: EdgeProps) {
+  const groupRef = useRef<SVGGElement>(null);
+
+  const handleMouseEnter = useCallback(() => {
+    // groupRef is HashEdge's <g>, its parent is wrapEdge's <g>,
+    // and that parent's parent is the shared <g> holding all edges.
+    const wrapEdgeEl = groupRef.current?.parentNode as Element | null;
+    const edgeContainer = wrapEdgeEl?.parentNode as Element | null;
+    if (edgeContainer && wrapEdgeEl && edgeContainer.lastChild !== wrapEdgeEl) {
+      edgeContainer.appendChild(wrapEdgeEl);
+    }
+  }, []);
+
   // Set positions based on layout direction
   const layoutDirection = data?.layoutDirection || "Horizontal";
   const edgeStyle = data?.edgeStyle || "Bezier";
@@ -59,7 +72,7 @@ export default function HashEdge({
   );
 
   return (
-    <g>
+    <g ref={groupRef} onMouseEnter={handleMouseEnter}>
       {/* Invisible thick path for easier selection */}
       <path
         className="react-flow__edge-interaction tasks-map-hash-edge-interaction"
@@ -70,9 +83,12 @@ export default function HashEdge({
       />
       <path
         id={id}
-        className="react-flow__edge-path"
+        className={
+          selected
+            ? "react-flow__edge-path tasks-map-hash-edge-path tasks-map-hash-edge-path--selected"
+            : "react-flow__edge-path tasks-map-hash-edge-path"
+        }
         d={edgePath}
-        markerEnd={markerEnd}
       />
       {data?.debugVisualization && (
         <text
@@ -80,7 +96,6 @@ export default function HashEdge({
           y={labelY - 8}
           textAnchor="middle"
           fontSize={12}
-          fill="#888"
           className="tasks-map-hash-edge-text"
         >
           {data?.hash}

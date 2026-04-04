@@ -157,88 +157,89 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   };
 
   return (
-    <TaskBackground
-      status={status}
-      starred={starred}
-      expanded={expanded}
-      debugVisualization={debugVisualization}
-      selected={selected}
-    >
+    <div>
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
-
-      <div className="tasks-map-task-node-header">
-        <TaskStatusToggle
-          status={status}
-          task={task}
-          onStatusChange={setStatus}
-        />
-        {showPriorities && <TaskPriority priority={task.priority} />}
-        <div className="tasks-map-task-node-header-spacer" />
-        <StarButton starred={starred} onClick={handleStarToggle} />
-        <LinkButton link={task.link} app={app} taskStatus={status} />
-        <TaskMenu
-          task={task}
-          app={app}
-          onTaskDeleted={() => onDeleteTask?.(task.id)}
-        />
-      </div>
-
-      <div className="tasks-map-task-node-content">
-        <span ref={summaryRef} className="tasks-map-task-node-summary" />
-      </div>
-
-      {showTags && (
-        <div className="tasks-map-task-node-footer">
-          <div className="task-tags-container">
-            {tags.map((tag) => (
-              <Tag
-                key={tag}
-                tag={tag}
-                tagColorMode={tagColorMode}
-                tagColorSeed={tagColorSeed}
-                tagStaticColor={tagStaticColor}
-                onRemove={handleTagRemove}
-              />
-            ))}
-
-            {/* Add tag button/input */}
-            {isAddingTag ? (
-              <div className="nodrag">
-                <TagInput
-                  allTags={allTags}
-                  existingTags={tags}
-                  onAddTag={handleAddTag}
-                  onCancel={handleCancelAddTag}
-                  hasError={tagError}
-                />
-              </div>
-            ) : (
-              <span
-                className="tasks-map-add-tag-button"
-                onClick={() => setIsAddingTag(true)}
-              >
-                <Plus size={10} />
-                Add tag
-              </span>
-            )}
-          </div>
+      <TaskBackground
+        status={status}
+        starred={starred}
+        expanded={expanded}
+        debugVisualization={debugVisualization}
+        selected={selected}
+      >
+        <div className="tasks-map-task-node-header">
+          <TaskStatusToggle
+            status={status}
+            task={task}
+            onStatusChange={setStatus}
+          />
+          {showPriorities && <TaskPriority priority={task.priority} />}
+          <div className="tasks-map-task-node-header-spacer" />
+          <StarButton starred={starred} onClick={handleStarToggle} />
+          <LinkButton link={task.link} app={app} taskStatus={status} />
+          <TaskMenu
+            task={task}
+            app={app}
+            onTaskDeleted={() => onDeleteTask?.(task.id)}
+          />
         </div>
-      )}
 
-      {debugVisualization && (
-        <ExpandButton
-          expanded={expanded}
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded((v) => !v);
-          }}
-        />
-      )}
+        <div className="tasks-map-task-node-content">
+          <span ref={summaryRef} className="tasks-map-task-node-summary" />
+        </div>
 
-      {debugVisualization && expanded && (
-        <TaskDetails task={task} status={status} />
-      )}
-    </TaskBackground>
+        {showTags && (
+          <div className="tasks-map-task-node-footer">
+            <div className="task-tags-container">
+              {tags.map((tag) => (
+                <Tag
+                  key={tag}
+                  tag={tag}
+                  tagColorMode={tagColorMode}
+                  tagColorSeed={tagColorSeed}
+                  tagStaticColor={tagStaticColor}
+                  onRemove={handleTagRemove}
+                />
+              ))}
+
+              {/* Add tag button/input */}
+              {isAddingTag ? (
+                <div className="nodrag">
+                  <TagInput
+                    allTags={allTags}
+                    existingTags={tags}
+                    onAddTag={handleAddTag}
+                    onCancel={handleCancelAddTag}
+                    hasError={tagError}
+                  />
+                </div>
+              ) : (
+                <span
+                  className="tasks-map-add-tag-button"
+                  onClick={() => setIsAddingTag(true)}
+                >
+                  <Plus size={10} />
+                  Add tag
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {debugVisualization && (
+          <ExpandButton
+            expanded={expanded}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((v) => !v);
+            }}
+          />
+        )}
+
+        {debugVisualization && expanded && (
+          <TaskDetails task={task} status={status} />
+        )}
+      </TaskBackground>
+    </div>
   );
 }
