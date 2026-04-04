@@ -38,6 +38,6 @@ Documentation is deployed automatically. On every push to `main`, the [Documenta
 
 ## Adding Pages
 
-1. Create a new `.md` file under the `docs/` directory.
+1. Create a new `.md` file under the `docs/` directory (or a subdirectory).
 2. Add the page to the `nav` section in `zensical.toml`.
 3. Preview locally with `zensical serve` to verify.
