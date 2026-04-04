@@ -10,7 +10,7 @@ If your plugin does not need CSS, delete this file.
 @import "reactflow/dist/style.css";
 
 :root {
-  --tasks-map-color-black-rgb: 0,0,0;
+  --tasks-map-color-black-rgb: 0, 0, 0;
   --tasks-map-color-white: #ffffff;
 }
 
@@ -279,7 +279,7 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-graph-container.hide-tags .task-tag,
 .tasks-map-graph-container.hide-tags .task-tags-container {
-	display: none !important;
+  display: none !important;
 }
 
 .tasks-map-tag.removable {
@@ -790,7 +790,6 @@ If your plugin does not need CSS, delete this file.
   line-height: 1.3;
 }
 
-
 .tasks-map-filter-actions {
   margin-top: 12px;
   padding-top: 12px;
@@ -912,10 +911,21 @@ If your plugin does not need CSS, delete this file.
   box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black), 0.12) !important;
 }
 
-/* Task Map Graph View Styles */
-.tasks-map-graph-container {
+/* Task Map Layout (sidebar + graph) */
+.tasks-map-layout {
+  display: flex;
+  flex-direction: row;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+/* Task Map Graph View Styles */
+.tasks-map-graph-container {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
 }
 
 /* Task Background Styles */
@@ -925,7 +935,7 @@ If your plugin does not need CSS, delete this file.
   width: 250px;
   min-height: 120px;
   max-height: fit-content;
-  box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black-rgb),0.07);
+  box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
   font-weight: 500;
   display: flex;
   flex-direction: column;
@@ -986,9 +996,10 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-task-background--starred {
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
-              0 0 40px rgba(255, 215, 0, 0.4),
-              0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 40px rgba(255, 215, 0, 0.4),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
   animation: tasks-map-pulse-gold 2s ease-in-out infinite;
 }
 
@@ -1009,15 +1020,18 @@ If your plugin does not need CSS, delete this file.
 }
 
 @keyframes tasks-map-pulse-gold {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
-                0 0 40px rgba(255, 215, 0, 0.4),
-                0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(255, 215, 0, 0.6),
+      0 0 40px rgba(255, 215, 0, 0.4),
+      0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
   }
   50% {
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
-                0 0 60px rgba(255, 215, 0, 0.6),
-                0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+    box-shadow:
+      0 0 30px rgba(255, 215, 0, 0.8),
+      0 0 60px rgba(255, 215, 0, 0.6),
+      0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
   }
 }
 
@@ -1076,7 +1090,9 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-add-tag-button {
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .tasks-map-add-tag-button:hover {
@@ -1189,4 +1205,159 @@ If your plugin does not need CSS, delete this file.
 .tasks-map-status-counts-total .tasks-map-status-counts-label,
 .tasks-map-status-counts-total .tasks-map-status-counts-value {
   color: var(--status-counts-total-color, #ffffff);
+}
+
+/* Unlinked Tasks Panel */
+.tasks-map-unlinked-panel {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  min-width: 240px;
+  height: 100%;
+  background: var(--background-secondary);
+  border-right: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+  transition:
+    width 0.2s ease,
+    min-width 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tasks-map-unlinked-panel--collapsed {
+  width: 36px;
+  min-width: 36px;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.tasks-map-unlinked-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.tasks-map-unlinked-panel__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasks-map-unlinked-panel__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-normal);
+  border-radius: 4px;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.tasks-map-unlinked-panel__toggle:hover {
+  background: var(--background-primary-alt);
+}
+
+.tasks-map-unlinked-panel__filter-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.tasks-map-unlinked-panel__filter-input {
+  flex: 1;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-normal);
+  outline: none;
+  min-width: 0;
+}
+
+.tasks-map-unlinked-panel__filter-input:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.tasks-map-unlinked-panel__filter-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.tasks-map-unlinked-panel__filter-clear:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.tasks-map-unlinked-panel__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.tasks-map-unlinked-panel__empty {
+  padding: 16px 12px;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.tasks-map-unlinked-panel__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 12px;
+  cursor: grab;
+  border-radius: 0;
+  user-select: none;
+}
+
+.tasks-map-unlinked-panel__item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.tasks-map-unlinked-panel__item:active {
+  cursor: grabbing;
+}
+
+.tasks-map-unlinked-panel__item-summary {
+  font-size: 12px;
+  color: var(--text-normal);
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.tasks-map-unlinked-panel__item-tags {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

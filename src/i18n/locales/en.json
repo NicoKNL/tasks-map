@@ -99,6 +99,14 @@
     "show_dependencies": "Show dependencies",
     "show_dependents": "Show dependents"
   },
+  "unlinked_panel": {
+    "title": "Unlinked tasks",
+    "filter_placeholder": "Filter tasks...",
+    "empty": "No unlinked tasks",
+    "collapse": "Collapse panel",
+    "expand": "Expand panel",
+    "drag_hint": "Drag a task onto the graph to place it"
+  },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
   }

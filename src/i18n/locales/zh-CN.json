@@ -99,6 +99,14 @@
     "show_dependencies": "显示依赖项",
     "show_dependents": "显示被依赖项"
   },
+  "unlinked_panel": {
+    "title": "未链接的任务",
+    "filter_placeholder": "筛选任务...",
+    "empty": "没有未链接的任务",
+    "collapse": "收起面板",
+    "expand": "展开面板",
+    "drag_hint": "将任务拖到图上以放置它"
+  },
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
   }
