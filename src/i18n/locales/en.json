@@ -108,6 +108,10 @@
     "expand": "Expand panel",
     "drag_hint": "Drag a task onto the graph to place it"
   },
+  "graph": {
+    "no_tasks_hint": "No tasks found in your vault.",
+    "all_unlinked_hint": "Drag tasks from the panel on the left onto the graph to place them here."
+  },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
   }

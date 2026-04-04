@@ -108,6 +108,10 @@
     "expand": "Paneel uitklappen",
     "drag_hint": "Sleep een taak naar de grafiek om hem te plaatsen"
   },
+  "graph": {
+    "no_tasks_hint": "Geen taken gevonden in je vault.",
+    "all_unlinked_hint": "Sleep taken vanuit het paneel aan de linkerkant naar de grafiek om ze hier te plaatsen."
+  },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
   }

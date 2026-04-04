@@ -29,6 +29,7 @@ import { TagsContext } from "src/contexts/context";
 import UnlinkedTasksPanel, {
   DRAG_DATA_KEY,
 } from "src/components/unlinked-tasks-panel";
+import { GraphEmptyState } from "src/components/graph-empty-state";
 import { t } from "../i18n";
 
 import { TaskStatus } from "src/types/task";
@@ -451,6 +452,12 @@ export default function TaskMapGraphView({
             <div className="tasks-map-spinner" />
             <div className="tasks-map-loading-text">Loading tasks...</div>
           </div>
+        )}
+        {!isLoading && tasks.length === 0 && (
+          <GraphEmptyState variant="no_tasks" />
+        )}
+        {!isLoading && tasks.length > 0 && graphTasks.length === 0 && (
+          <GraphEmptyState variant="all_unlinked" />
         )}
         <ReactFlow
           nodes={nodes}

@@ -108,6 +108,10 @@
     "expand": "展开面板",
     "drag_hint": "将任务拖到图上以放置它"
   },
+  "graph": {
+    "no_tasks_hint": "在你的 vault 中未找到任何任务。",
+    "all_unlinked_hint": "将左侧面板中的任务拖到图上以放置它们。"
+  },
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
   }
