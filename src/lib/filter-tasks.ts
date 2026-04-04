@@ -1,21 +1,18 @@
 import { BaseTask } from "src/types/base-task";
-import { TaskStatus } from "src/types/task";
-import { traverseGraph, TraversalMode } from "src/lib/traverse-graph";
+import { traverseGraph } from "src/lib/traverse-graph";
+import { FilterState } from "src/types/filter-state";
 
 export const NO_TAGS_VALUE = "__NO_TAGS__";
 
 const applyNonSearchFilters = (
   tasks: BaseTask[],
-  selectedTags: string[],
-  selectedStatuses: TaskStatus[],
-  excludedTags: string[],
-  selectedFiles: string[]
+  filter: FilterState
 ): BaseTask[] => {
   let filtered = tasks;
-  if (selectedTags.length > 0) {
+  if (filter.selectedTags.length > 0) {
     filtered = filtered.filter((task) => {
-      const noTagsSelected = selectedTags.includes(NO_TAGS_VALUE);
-      const regularTagsSelected = selectedTags.filter(
+      const noTagsSelected = filter.selectedTags.includes(NO_TAGS_VALUE);
+      const regularTagsSelected = filter.selectedTags.filter(
         (tag) => tag !== NO_TAGS_VALUE
       );
       const matchesNoTags = noTagsSelected && task.tags.length === 0;
@@ -25,21 +22,21 @@ const applyNonSearchFilters = (
       return matchesNoTags || matchesRegularTags;
     });
   }
-  if (excludedTags.length > 0) {
+  if (filter.excludedTags.length > 0) {
     filtered = filtered.filter((task) => {
-      return !excludedTags.some((excludedTag) =>
+      return !filter.excludedTags.some((excludedTag) =>
         task.tags.includes(excludedTag)
       );
     });
   }
-  if (selectedStatuses.length > 0) {
+  if (filter.selectedStatuses.length > 0) {
     filtered = filtered.filter((task) =>
-      selectedStatuses.includes(task.status)
+      filter.selectedStatuses.includes(task.status)
     );
   }
-  if (selectedFiles.length > 0) {
+  if (filter.selectedFiles.length > 0) {
     filtered = filtered.filter((task) => {
-      return selectedFiles.some((selectedPath) => {
+      return filter.selectedFiles.some((selectedPath) => {
         if (selectedPath.endsWith("/")) {
           return task.link.startsWith(selectedPath);
         }
@@ -66,28 +63,17 @@ const applySearchFilter = (
 
 export const getFilteredNodeIds = (
   tasks: BaseTask[],
-  selectedTags: string[],
-  selectedStatuses: TaskStatus[],
-  excludedTags: string[],
-  selectedFiles: string[],
-  searchQuery: string,
-  traversalMode: TraversalMode = "match"
+  filter: FilterState
 ): string[] => {
-  const allowed = applyNonSearchFilters(
-    tasks,
-    selectedTags,
-    selectedStatuses,
-    excludedTags,
-    selectedFiles
-  );
+  const allowed = applyNonSearchFilters(tasks, filter);
 
-  if (!searchQuery.trim()) {
+  if (!filter.searchQuery.trim()) {
     return allowed.map((task) => task.id);
   }
 
-  const searchMatched = applySearchFilter(allowed, searchQuery);
+  const searchMatched = applySearchFilter(allowed, filter.searchQuery);
   const seedIds = searchMatched.map((task) => task.id);
   const allowedIds = new Set(allowed.map((task) => task.id));
 
-  return traverseGraph(seedIds, tasks, allowedIds, traversalMode);
+  return traverseGraph(seedIds, tasks, allowedIds, filter.traversalMode);
 };

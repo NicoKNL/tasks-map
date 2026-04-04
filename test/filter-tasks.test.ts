@@ -1,6 +1,7 @@
 import { getFilteredNodeIds, NO_TAGS_VALUE } from "../src/lib/filter-tasks";
 import { NoteTask } from "../src/types/note-task";
 import { TaskStatus } from "../src/types/task";
+import { FilterState, DEFAULT_FILTER_STATE } from "../src/types/filter-state";
 
 function makeTask(overrides: {
   id: string;
@@ -8,6 +9,7 @@ function makeTask(overrides: {
   tags?: string[];
   status?: TaskStatus;
   link?: string;
+  incomingLinks?: string[];
 }): NoteTask {
   return new NoteTask({
     id: overrides.id,
@@ -17,9 +19,13 @@ function makeTask(overrides: {
     status: overrides.status ?? "todo",
     priority: "",
     link: overrides.link ?? `tasks/${overrides.id}.md`,
-    incomingLinks: [],
+    incomingLinks: overrides.incomingLinks ?? [],
     starred: false,
   });
+}
+
+function filter(overrides: Partial<FilterState> = {}): FilterState {
+  return { ...DEFAULT_FILTER_STATE, ...overrides };
 }
 
 describe("getFilteredNodeIds", () => {
@@ -63,42 +69,40 @@ describe("getFilteredNodeIds", () => {
 
   describe("no filters", () => {
     it("returns all task IDs when no filters are applied", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "");
+      const result = getFilteredNodeIds(tasks, filter());
       expect(result).toEqual(["T1", "T2", "T3", "T4", "T5"]);
     });
   });
 
   describe("tag filtering", () => {
     it("filters by a single selected tag", () => {
-      const result = getFilteredNodeIds(tasks, ["auth"], [], [], [], "");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedTags: ["auth"] })
+      );
       expect(result).toEqual(["T1", "T5"]);
     });
 
     it("filters by multiple selected tags (OR logic)", () => {
       const result = getFilteredNodeIds(
         tasks,
-        ["frontend", "testing"],
-        [],
-        [],
-        [],
-        ""
+        filter({ selectedTags: ["frontend", "testing"] })
       );
       expect(result).toEqual(["T1", "T3"]);
     });
 
     it("filters by NO_TAGS_VALUE to find untagged tasks", () => {
-      const result = getFilteredNodeIds(tasks, [NO_TAGS_VALUE], [], [], [], "");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedTags: [NO_TAGS_VALUE] })
+      );
       expect(result).toEqual(["T4"]);
     });
 
     it("combines NO_TAGS_VALUE with regular tags", () => {
       const result = getFilteredNodeIds(
         tasks,
-        [NO_TAGS_VALUE, "testing"],
-        [],
-        [],
-        [],
-        ""
+        filter({ selectedTags: [NO_TAGS_VALUE, "testing"] })
       );
       expect(result).toEqual(["T3", "T4"]);
     });
@@ -106,18 +110,17 @@ describe("getFilteredNodeIds", () => {
 
   describe("excluded tags", () => {
     it("excludes tasks with a specific tag", () => {
-      const result = getFilteredNodeIds(tasks, [], [], ["auth"], [], "");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ excludedTags: ["auth"] })
+      );
       expect(result).toEqual(["T2", "T3", "T4"]);
     });
 
     it("excludes tasks matching any excluded tag", () => {
       const result = getFilteredNodeIds(
         tasks,
-        [],
-        [],
-        ["auth", "testing"],
-        [],
-        ""
+        filter({ excludedTags: ["auth", "testing"] })
       );
       expect(result).toEqual(["T2", "T4"]);
     });
@@ -125,18 +128,17 @@ describe("getFilteredNodeIds", () => {
 
   describe("status filtering", () => {
     it("filters by a single status", () => {
-      const result = getFilteredNodeIds(tasks, [], ["done"], [], [], "");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedStatuses: ["done"] })
+      );
       expect(result).toEqual(["T3"]);
     });
 
     it("filters by multiple statuses", () => {
       const result = getFilteredNodeIds(
         tasks,
-        [],
-        ["todo", "in_progress"],
-        [],
-        [],
-        ""
+        filter({ selectedStatuses: ["todo", "in_progress"] })
       );
       expect(result).toEqual(["T1", "T2", "T5"]);
     });
@@ -144,23 +146,25 @@ describe("getFilteredNodeIds", () => {
 
   describe("file/folder filtering", () => {
     it("filters by exact file path", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], ["ops/T4.md"], "");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedFiles: ["ops/T4.md"] })
+      );
       expect(result).toEqual(["T4"]);
     });
 
     it("filters by folder (trailing slash)", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], ["src/tasks/"], "");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedFiles: ["src/tasks/"] })
+      );
       expect(result).toEqual(["T1", "T2", "T5"]);
     });
 
     it("matches multiple file paths", () => {
       const result = getFilteredNodeIds(
         tasks,
-        [],
-        [],
-        [],
-        ["ops/T4.md", "tests/T3.md"],
-        ""
+        filter({ selectedFiles: ["ops/T4.md", "tests/T3.md"] })
       );
       expect(result).toEqual(["T3", "T4"]);
     });
@@ -168,55 +172,66 @@ describe("getFilteredNodeIds", () => {
 
   describe("search query", () => {
     it("matches by summary (case-insensitive)", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "login");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ searchQuery: "login" })
+      );
       expect(result).toEqual(["T1"]);
     });
 
     it("matches by task ID", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "T3");
+      const result = getFilteredNodeIds(tasks, filter({ searchQuery: "T3" }));
       expect(result).toEqual(["T3"]);
     });
 
     it("matches by tag text", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "backend");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ searchQuery: "backend" })
+      );
       expect(result).toEqual(["T2", "T5"]);
     });
 
     it("is case-insensitive", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "BUILD");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ searchQuery: "BUILD" })
+      );
       expect(result).toEqual(["T1"]);
     });
 
     it("matches partial strings", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "auth");
+      const result = getFilteredNodeIds(tasks, filter({ searchQuery: "auth" }));
       expect(result).toEqual(["T1", "T5"]);
     });
 
     it("ignores whitespace-only queries", () => {
-      const result = getFilteredNodeIds(tasks, [], [], [], [], "   ");
+      const result = getFilteredNodeIds(tasks, filter({ searchQuery: "   " }));
       expect(result).toEqual(["T1", "T2", "T3", "T4", "T5"]);
     });
   });
 
   describe("combined filters", () => {
     it("applies tag filter + search together", () => {
-      const result = getFilteredNodeIds(tasks, ["auth"], [], [], [], "login");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedTags: ["auth"], searchQuery: "login" })
+      );
       expect(result).toEqual(["T1"]);
     });
 
     it("applies status + search together", () => {
-      const result = getFilteredNodeIds(tasks, [], ["todo"], [], [], "auth");
+      const result = getFilteredNodeIds(
+        tasks,
+        filter({ selectedStatuses: ["todo"], searchQuery: "auth" })
+      );
       expect(result).toEqual(["T1", "T5"]);
     });
 
     it("applies excluded tags + search together", () => {
       const result = getFilteredNodeIds(
         tasks,
-        [],
-        [],
-        ["frontend"],
-        [],
-        "auth"
+        filter({ excludedTags: ["frontend"], searchQuery: "auth" })
       );
       expect(result).toEqual(["T5"]);
     });
@@ -224,11 +239,7 @@ describe("getFilteredNodeIds", () => {
     it("applies file filter + search together", () => {
       const result = getFilteredNodeIds(
         tasks,
-        [],
-        [],
-        [],
-        ["src/tasks/"],
-        "database"
+        filter({ selectedFiles: ["src/tasks/"], searchQuery: "database" })
       );
       expect(result).toEqual(["T2"]);
     });
@@ -236,13 +247,84 @@ describe("getFilteredNodeIds", () => {
     it("returns empty when filters eliminate all tasks", () => {
       const result = getFilteredNodeIds(
         tasks,
-        ["frontend"],
-        ["done"],
-        [],
-        [],
-        ""
+        filter({ selectedTags: ["frontend"], selectedStatuses: ["done"] })
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("search with traversal modes", () => {
+    // Graph: T1 -> T2 -> T3 (T2 depends on T1, T3 depends on T2)
+    const linkedTasks = [
+      makeTask({
+        id: "T1",
+        summary: "Root task",
+        tags: ["root"],
+        status: "todo",
+        link: "tasks/T1.md",
+        incomingLinks: [],
+      }),
+      makeTask({
+        id: "T2",
+        summary: "Middle task",
+        tags: ["middle"],
+        status: "in_progress",
+        link: "tasks/T2.md",
+        incomingLinks: ["T1"],
+      }),
+      makeTask({
+        id: "T3",
+        summary: "Leaf task",
+        tags: ["leaf"],
+        status: "done",
+        link: "tasks/T3.md",
+        incomingLinks: ["T2"],
+      }),
+    ];
+
+    it("match mode returns only search-matched nodes", () => {
+      const result = getFilteredNodeIds(
+        linkedTasks,
+        filter({ searchQuery: "Middle", traversalMode: "match" })
+      );
+      expect(result).toEqual(["T2"]);
+    });
+
+    it("upstream mode includes transitive dependencies", () => {
+      const result = getFilteredNodeIds(
+        linkedTasks,
+        filter({ searchQuery: "Leaf", traversalMode: "upstream" })
+      );
+      expect(result).toEqual(["T1", "T2", "T3"]);
+    });
+
+    it("downstream mode includes transitive dependents", () => {
+      const result = getFilteredNodeIds(
+        linkedTasks,
+        filter({ searchQuery: "Root", traversalMode: "downstream" })
+      );
+      expect(result).toEqual(["T1", "T2", "T3"]);
+    });
+
+    it("both mode includes upstream and downstream", () => {
+      const result = getFilteredNodeIds(
+        linkedTasks,
+        filter({ searchQuery: "Middle", traversalMode: "both" })
+      );
+      expect(result).toEqual(["T1", "T2", "T3"]);
+    });
+
+    it("traversal respects non-search filters", () => {
+      const result = getFilteredNodeIds(
+        linkedTasks,
+        filter({
+          searchQuery: "Leaf",
+          traversalMode: "upstream",
+          selectedStatuses: ["done", "in_progress"],
+        })
+      );
+      // T1 is "todo" so filtered out; traversal can't reach through it
+      expect(result).toEqual(["T2", "T3"]);
     });
   });
 });
