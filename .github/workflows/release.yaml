@@ -4,11 +4,13 @@ on:
   pull_request:
     types:
       - opened
-      - closed
       - edited
       - labeled
       - unlabeled
       - synchronize
+    branches:
+      - main
+  push:
     branches:
       - main
 
@@ -52,18 +54,17 @@ jobs:
         id: semver
         uses: ronaldphilipsen/semVersie@v2.3.0
         with:
-          add-pr-label: "true"
+          add-pr-label: ${{ github.event_name == 'pull_request' }}
 
   release:
-    if: needs.version.outputs.release == 'true'
+    if: github.event_name == 'push' && needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
     needs: version
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Ensure we're on the main branch after the PR is merged
-          ref: ${{ github.event.pull_request.base.ref }}
+          ref: main
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Set up Python
@@ -94,7 +95,7 @@ jobs:
         run: |
           git add -A
           git commit -m "chore: release version ${{ needs.version.outputs.version }}"
-          git push origin ${{ github.event.pull_request.base.ref }}
+          git push origin main
           git tag ${{ needs.version.outputs.version }}
           git push origin ${{ needs.version.outputs.version }}
 
@@ -102,8 +103,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_TITLE=$(gh pr view ${{ github.event.pull_request.number }} --json title -q '.title')
-          PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body -q '.body')
+          PR_NUMBER=$(gh pr list --state merged --base main --json number,mergeCommit --jq ".[] | select(.mergeCommit.oid == \"${{ github.sha }}\") | .number")
+          PR_TITLE=$(gh pr view $PR_NUMBER --json title -q '.title')
+          PR_BODY=$(gh pr view $PR_NUMBER --json body -q '.body')
           RELEASE_NOTES="## ${PR_TITLE}
 
           ${PR_BODY}"
@@ -115,7 +117,7 @@ jobs:
   docs:
     name: Deploy Docs
     needs: changeset
-    if: needs.changeset.outputs.docs == 'true' && github.event.pull_request.merged == true
+    if: needs.changeset.outputs.docs == 'true' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -126,8 +128,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v6
