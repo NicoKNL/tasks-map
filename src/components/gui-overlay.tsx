@@ -2,6 +2,7 @@ import MultiSelect from "./multi-select";
 import TagSelect from "./tag-select";
 import { TaskStatus, BaseTask } from "src/types/task";
 import { FilterState } from "src/types/filter-state";
+import type { TraversalMode } from "src/lib/traverse-graph";
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { t } from "../i18n";
@@ -19,10 +20,6 @@ interface GuiOverlayProps {
   onSearch: (_query: string) => void;
   searchResultCount: number | null;
   suggestionTasks: BaseTask[];
-  showDependencies: boolean;
-  setShowDependencies: (_show: boolean) => void;
-  showDependents: boolean;
-  setShowDependents: (_show: boolean) => void;
 }
 
 export default function GuiOverlay(props: GuiOverlayProps) {
@@ -39,15 +36,32 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     onSearch,
     searchResultCount,
     suggestionTasks,
-    showDependencies,
-    setShowDependencies,
-    showDependents,
-    setShowDependents,
   } = props;
+
+  const showDependencies =
+    filterState.traversalMode === "upstream" ||
+    filterState.traversalMode === "both";
+  const showDependents =
+    filterState.traversalMode === "downstream" ||
+    filterState.traversalMode === "both";
+
+  const toggleTraversal = (
+    upstream: boolean,
+    downstream: boolean
+  ): TraversalMode => {
+    if (upstream && downstream) return "both";
+    if (upstream) return "upstream";
+    if (downstream) return "downstream";
+    return "match";
+  };
 
   const [isMinimized, setIsMinimized] = useState(false);
   const [searchQuery, setSearchQuery] = useState(filterState.searchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    setSearchQuery(filterState.searchQuery);
+  }, [filterState.searchQuery]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -193,7 +207,15 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                   <input
                     type="checkbox"
                     checked={showDependencies}
-                    onChange={(e) => setShowDependencies(e.target.checked)}
+                    onChange={(e) =>
+                      setFilterState((prev) => ({
+                        ...prev,
+                        traversalMode: toggleTraversal(
+                          e.target.checked,
+                          showDependents
+                        ),
+                      }))
+                    }
                     className="tasks-map-gui-overlay-checkbox-input"
                   />
                   <span className="tasks-map-gui-overlay-checkbox-text">
@@ -204,7 +226,15 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                   <input
                     type="checkbox"
                     checked={showDependents}
-                    onChange={(e) => setShowDependents(e.target.checked)}
+                    onChange={(e) =>
+                      setFilterState((prev) => ({
+                        ...prev,
+                        traversalMode: toggleTraversal(
+                          showDependencies,
+                          e.target.checked
+                        ),
+                      }))
+                    }
                     className="tasks-map-gui-overlay-checkbox-input"
                   />
                   <span className="tasks-map-gui-overlay-checkbox-text">

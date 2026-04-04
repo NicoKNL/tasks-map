@@ -10,7 +10,7 @@ import { TasksMapSettings } from "src/types/settings";
 import { FilterState, DEFAULT_FILTER_STATE } from "src/types/filter-state";
 import { t } from "../i18n";
 
-// Wrapper component that manages filter state and keys the ReactFlowProvider
+// Wrapper component that manages settings updates and filter state for the graph view
 function TaskMapGraphWrapper({
   pluginSettings,
 }: {

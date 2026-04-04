@@ -30,7 +30,6 @@ import { t } from "../i18n";
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
-import type { TraversalMode } from "src/lib/traverse-graph";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -57,17 +56,6 @@ export default function TaskMapGraphView({
 
   const [hideTags, setHideTags] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [showDependencies, setShowDependencies] = React.useState(false);
-  const [showDependents, setShowDependents] = React.useState(false);
-
-  const traversalMode: TraversalMode =
-    showDependencies && showDependents
-      ? "both"
-      : showDependencies
-        ? "upstream"
-        : showDependents
-          ? "downstream"
-          : "match";
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
@@ -213,11 +201,7 @@ export default function TaskMapGraphView({
       settings.smoothStepRadius
     );
 
-    const filteredNodeIds = getFilteredNodeIds(tasks, {
-      ...filterState,
-      searchQuery: filterState.searchQuery,
-      traversalMode,
-    });
+    const filteredNodeIds = getFilteredNodeIds(tasks, filterState);
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
     newEdges = newEdges.filter(
@@ -250,7 +234,6 @@ export default function TaskMapGraphView({
     setNodes,
     setEdges,
     handleDeleteTask,
-    traversalMode,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
@@ -355,13 +338,10 @@ export default function TaskMapGraphView({
   }, [tasks, filterState]);
 
   const filteredTasks = useMemo(() => {
-    const filteredIds = getFilteredNodeIds(tasks, {
-      ...filterState,
-      traversalMode,
-    });
+    const filteredIds = getFilteredNodeIds(tasks, filterState);
     const idSet = new Set(filteredIds);
     return tasks.filter((t) => idSet.has(t.id));
-  }, [tasks, filterState, traversalMode]);
+  }, [tasks, filterState]);
 
   const searchResultCount = useMemo(() => {
     if (!filterState.searchQuery.trim()) return null;
@@ -413,10 +393,6 @@ export default function TaskMapGraphView({
             onSearch={handleSearch}
             searchResultCount={searchResultCount}
             suggestionTasks={preSearchFilteredTasks}
-            showDependencies={showDependencies}
-            setShowDependencies={setShowDependencies}
-            showDependents={showDependents}
-            setShowDependents={setShowDependents}
           />
           <TaskMinimap />
           <Background />
