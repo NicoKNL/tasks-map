@@ -10,7 +10,10 @@ nav = [
     "getting-started/usage.md",
     "getting-started/settings.md",
   ] },
-  { "Contributing" = "contributing.md" },
+  { "Contributing" = [
+    "contributing/index.md",
+    "contributing/opencode.md",
+  ] },
   { "Documentation" = "documentation.md" },
   { "License" = "license.md" },
 ]
