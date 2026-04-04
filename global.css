@@ -12,18 +12,21 @@ If your plugin does not need CSS, delete this file.
 :root {
   --tasks-map-color-black-rgb: 0, 0, 0;
   --tasks-map-color-white: #ffffff;
+  --tasks-map-color-green: #2d8a3e;
+  --tasks-map-color-green-rgb: 45, 138, 62;
+  --tasks-map-color-blue: #2674b5;
+  --tasks-map-color-blue-rgb: 38, 116, 181;
+  --tasks-map-color-red: #c0392b;
+  --tasks-map-color-red-rgb: 192, 57, 43;
 }
 
 .theme-dark {
-  --tasks-map-task-completed-green: #1e3821;
-  --tasks-map-task-in-progress-blue: #1c5e8e;
-  --tasks-map-task-canceled-red: #5c1a1a;
-}
-
-.theme-light {
-  --tasks-map-task-completed-green: #6de27b;
-  --tasks-map-task-in-progress-blue: #77b4d3;
-  --tasks-map-task-canceled-red: #ff6b6b;
+  --tasks-map-color-green: #4caf62;
+  --tasks-map-color-green-rgb: 76, 175, 98;
+  --tasks-map-color-blue: #5ba4d4;
+  --tasks-map-color-blue-rgb: 91, 164, 212;
+  --tasks-map-color-red: #e05c5c;
+  --tasks-map-color-red-rgb: 224, 92, 92;
 }
 
 /* Expand Button Styles */
@@ -104,56 +107,68 @@ If your plugin does not need CSS, delete this file.
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border: none;
-  background: transparent;
+  align-self: stretch;
+  padding: 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--tasks-map-node-divider) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
   cursor: pointer;
-  width: 28px;
-  height: 28px;
-  align-self: flex-start;
-  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  height: auto;
+  outline: none;
 }
 
 .tasks-map-link-button--success {
-  color: var(--tasks-map-task-completed-green);
+  color: var(--tasks-map-color-green);
 }
 
 .tasks-map-link-button--error {
-  color: var(--tasks-map-task-canceled-red);
+  color: var(--tasks-map-color-red);
 }
 
 .tasks-map-link-button--normal {
-  color: inherit;
+  color: var(--text-muted);
 }
 
 .tasks-map-link-button:hover {
-  background: rgba(var(--tasks-map-color-black-rgb), 0.1);
+  background: var(--tasks-map-node-hover) !important;
 }
 
 /* Task Menu Styles */
 .tasks-map-task-menu {
   position: relative;
   display: flex;
-  align-items: center;
-  align-self: flex-start;
+  align-items: stretch;
+  align-self: stretch;
 }
 
 .tasks-map-task-menu-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border: none;
-  background: transparent;
+  align-self: stretch;
+  padding: 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--tasks-map-node-divider) !important;
+  border-radius: 0 var(--radius-m) 0 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
   cursor: pointer;
-  width: 20px;
-  height: 28px;
+  flex-shrink: 0;
   color: var(--text-muted);
-  border-radius: 4px;
+  height: auto;
+  outline: none;
 }
 
 .tasks-map-task-menu-button:hover {
-  background: rgba(var(--tasks-map-color-black-rgb), 0.1);
+  background: var(--tasks-map-node-hover) !important;
   color: var(--text-normal);
 }
 
@@ -213,31 +228,80 @@ If your plugin does not need CSS, delete this file.
 /* Task Node Styles */
 .tasks-map-task-node-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
+  align-items: stretch;
+  min-height: 40px;
+  border-bottom: 1px solid var(--tasks-map-node-divider);
+  color: var(--text-muted);
+  width: calc(100% + 24px);
+  margin-left: -12px;
+  margin-right: -12px;
+  margin-top: -12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+  border-radius: var(--radius-m) var(--radius-m) 0 0;
 }
 
-.tasks-map-star-button {
-  background: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
+.tasks-map-task-node-header-spacer {
+  flex: 1;
+}
+
+.tasks-map-task-node-summary {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+  margin-bottom: 6px;
+}
+
+.tasks-map-task-node-header-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
-  transition: color 0.2s ease;
-  margin-left: auto;
-  box-shadow: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+  align-self: stretch;
+  padding: 0 10px;
   appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--tasks-map-node-divider) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--tasks-map-node-bg) !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  height: auto;
+  outline: none;
+  transition: color 0.2s ease;
+}
+
+.tasks-map-task-node-header-button:hover {
+  background: var(--tasks-map-node-hover) !important;
+}
+
+.tasks-map-star-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--tasks-map-node-divider) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  height: auto;
+  outline: none;
+  margin: 0;
+  transition: color 0.2s ease;
 }
 
 .tasks-map-star-button:hover {
+  background: var(--tasks-map-node-hover) !important;
   color: rgb(255, 215, 0);
 }
 
@@ -248,6 +312,18 @@ If your plugin does not need CSS, delete this file.
 .tasks-map-task-node-content {
   position: relative;
   flex: 1;
+  padding-bottom: 4px;
+}
+
+.tasks-map-task-node-footer {
+  border-top: 1px solid var(--tasks-map-node-divider);
+  width: calc(100% + 24px);
+  margin-left: -12px;
+  margin-right: -12px;
+  margin-bottom: -12px;
+  padding: 8px 12px;
+  border-radius: 0 0 var(--radius-m) var(--radius-m);
+  flex-shrink: 0;
 }
 
 /* Task Details Styles */
@@ -278,7 +354,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-graph-container.hide-tags .task-tag,
-.tasks-map-graph-container.hide-tags .task-tags-container {
+.tasks-map-graph-container.hide-tags .task-tags-container,
+.tasks-map-graph-container.hide-tags .tasks-map-task-node-footer {
   display: none !important;
 }
 
@@ -475,15 +552,10 @@ If your plugin does not need CSS, delete this file.
   gap: 4px;
   min-height: 24px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
 }
 
 .task-tags-container:hover .tasks-map-add-tag-button {
   opacity: 1;
-}
-
-.tasks-map-task-node-summary {
-  flex: 1;
 }
 
 /* Inline code styling for task summaries */
@@ -899,25 +971,84 @@ If your plugin does not need CSS, delete this file.
 
 /* Task Priority Styles */
 .tasks-map-task-priority {
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 8px;
+  font-size: 14px;
   line-height: 1;
-  cursor: pointer;
+  cursor: default;
+  border-left: 1px solid var(--tasks-map-node-divider);
+  flex-shrink: 0;
 }
 
 /* Task Status Styles */
 .tasks-map-status-container {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  align-items: stretch;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-radius: var(--radius-m) 0 0 0;
+  overflow: hidden;
 }
 
 .tasks-map-task-status-toggle {
-  width: 22px;
-  height: 22px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: stretch;
+  width: 40px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.tasks-map-task-status-toggle:hover {
+  background: var(--tasks-map-node-hover);
+  color: var(--text-normal);
+}
+
+.tasks-map-task-background--todo .tasks-map-task-status-toggle {
+  color: var(--text-muted);
+}
+
+.tasks-map-task-background--in-progress .tasks-map-task-status-toggle {
+  color: var(--tasks-map-color-blue);
+}
+
+.tasks-map-task-background--done .tasks-map-task-status-toggle {
+  color: var(--tasks-map-color-green);
+}
+
+.tasks-map-task-background--canceled .tasks-map-task-status-toggle {
+  color: var(--tasks-map-color-red);
+}
+
+/* Task Node Handle Styles */
+.react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: none;
+  background: var(--color-base-40);
+}
+
+.react-flow__handle-left {
+  left: -6px;
+}
+
+.react-flow__handle-right {
+  right: -6px;
+}
+
+.react-flow__handle-top {
+  top: -6px;
+}
+
+.react-flow__handle-bottom {
+  bottom: -6px;
 }
 
 /* Hash Edge Styles */
@@ -925,9 +1056,37 @@ If your plugin does not need CSS, delete this file.
   cursor: pointer;
 }
 
+.tasks-map-hash-edge-path {
+  stroke: var(--color-base-40);
+  stroke-width: 1.5;
+  fill: none;
+  transition:
+    stroke 0.15s ease,
+    stroke-width 0.15s ease;
+}
+
+.tasks-map-hash-edge-path--selected {
+  stroke: var(--interactive-accent);
+  stroke-width: 2;
+}
+
+.react-flow__edge:hover
+  .tasks-map-hash-edge-path:not(.tasks-map-hash-edge-path--selected) {
+  stroke: var(--interactive-accent);
+  stroke-dasharray: 6 4;
+  animation: tasks-map-edge-march 0.5s linear infinite;
+}
+
+@keyframes tasks-map-edge-march {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
 .tasks-map-hash-edge-text {
   user-select: none;
   pointer-events: none;
+  fill: var(--text-muted);
 }
 
 /* Link Button SVG Styles */
@@ -975,46 +1134,107 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-task-background--todo {
+  --tasks-map-node-bg: var(--background-secondary);
+  --tasks-map-node-divider: rgba(var(--tasks-map-color-black-rgb), 0.1);
+  --tasks-map-node-hover: var(--background-modifier-hover);
   background: var(--background-secondary);
   border: 1px solid rgba(var(--tasks-map-color-black-rgb), 0.1);
+  border-left: 4px solid transparent;
   color: var(--text-normal);
 }
 
 .tasks-map-task-background--done {
-  background: var(--tasks-map-task-completed-green);
-  border: 1px solid var(--tasks-map-color-green);
-  color: var(--text-success);
+  --tasks-map-node-bg: var(--background-secondary);
+  --tasks-map-node-divider: rgba(var(--tasks-map-color-green-rgb), 0.3);
+  --tasks-map-node-hover: var(--background-modifier-hover);
+  background: var(--background-secondary);
+  background-image: linear-gradient(
+    to right,
+    rgba(var(--tasks-map-color-green-rgb), 0.18) 0%,
+    rgba(var(--tasks-map-color-green-rgb), 0.08) 50%,
+    transparent 100%
+  );
+  border: 1px solid rgba(var(--tasks-map-color-green-rgb), 0.3);
+  border-left: 4px solid var(--tasks-map-color-green);
+  color: var(--text-normal);
 }
 
 .tasks-map-task-background--in-progress {
-  background: var(--tasks-map-task-in-progress-blue);
-  border: 1px solid var(--tasks-map-color-blue);
-  color: var(--tasks-map-color-blue);
+  --tasks-map-node-bg: var(--background-secondary);
+  --tasks-map-node-divider: rgba(var(--tasks-map-color-blue-rgb), 0.3);
+  --tasks-map-node-hover: var(--background-modifier-hover);
+  background: var(--background-secondary);
+  background-image: linear-gradient(
+    to right,
+    rgba(var(--tasks-map-color-blue-rgb), 0.18) 0%,
+    rgba(var(--tasks-map-color-blue-rgb), 0.08) 50%,
+    transparent 100%
+  );
+  border: 1px solid rgba(var(--tasks-map-color-blue-rgb), 0.3);
+  border-left: 4px solid var(--tasks-map-color-blue);
+  color: var(--text-normal);
 }
 
 .tasks-map-task-background--canceled {
-  background: var(--tasks-map-task-canceled-red);
-  border: 1px solid var(--tasks-map-color-red);
-  color: var(--text-error);
+  --tasks-map-node-bg: var(--background-secondary);
+  --tasks-map-node-divider: rgba(var(--tasks-map-color-red-rgb), 0.3);
+  --tasks-map-node-hover: var(--background-modifier-hover);
+  background: var(--background-secondary);
+  background-image: linear-gradient(
+    to right,
+    rgba(var(--tasks-map-color-red-rgb), 0.18) 0%,
+    rgba(var(--tasks-map-color-red-rgb), 0.08) 50%,
+    transparent 100%
+  );
+  border: 1px solid rgba(var(--tasks-map-color-red-rgb), 0.3);
+  border-left: 4px solid var(--tasks-map-color-red);
+  color: var(--text-muted);
 }
 
 /* Hover and Selected States */
 .tasks-map-task-background:hover {
-  outline: 2px solid rgba(var(--tasks-map-color-black-rgb), 0.15);
-  outline-offset: -2px;
+  box-shadow:
+    0 0 0 2px rgba(var(--tasks-map-color-black-rgb), 0.2),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
 }
 
 .tasks-map-task-background--selected {
-  outline: 2px solid rgba(var(--tasks-map-color-black-rgb), 0.15);
-  outline-offset: -2px;
+  box-shadow:
+    0 0 0 2px rgba(var(--tasks-map-color-black-rgb), 0.2),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
 }
 
 .theme-dark .tasks-map-task-background:hover {
-  outline-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.25),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
 }
 
 .theme-dark .tasks-map-task-background--selected {
-  outline-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.25),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+}
+
+.tasks-map-task-background--done:hover,
+.tasks-map-task-background--done.tasks-map-task-background--selected {
+  box-shadow:
+    0 0 0 2px rgba(var(--tasks-map-color-green-rgb), 0.4),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+}
+
+.tasks-map-task-background--in-progress:hover,
+.tasks-map-task-background--in-progress.tasks-map-task-background--selected {
+  box-shadow:
+    0 0 0 2px rgba(var(--tasks-map-color-blue-rgb), 0.4),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
+}
+
+.tasks-map-task-background--canceled:hover,
+.tasks-map-task-background--canceled.tasks-map-task-background--selected {
+  box-shadow:
+    0 0 0 2px rgba(var(--tasks-map-color-red-rgb), 0.4),
+    0 2px 8px rgba(var(--tasks-map-color-black-rgb), 0.07);
 }
 
 .tasks-map-task-background--starred {
@@ -1217,15 +1437,15 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tasks-map-status-counts-dot--in_progress {
-  background: var(--tasks-map-task-in-progress-blue);
+  background: var(--tasks-map-color-blue);
 }
 
 .tasks-map-status-counts-dot--done {
-  background: var(--tasks-map-task-completed-green);
+  background: var(--tasks-map-color-green);
 }
 
 .tasks-map-status-counts-dot--canceled {
-  background: var(--tasks-map-task-canceled-red);
+  background: var(--tasks-map-color-red);
 }
 
 .tasks-map-status-counts-label {
