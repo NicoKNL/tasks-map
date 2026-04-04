@@ -10,6 +10,7 @@ function makeTask(overrides: {
   status?: TaskStatus;
   link?: string;
   incomingLinks?: string[];
+  starred?: boolean;
 }): NoteTask {
   return new NoteTask({
     id: overrides.id,
@@ -20,7 +21,7 @@ function makeTask(overrides: {
     priority: "",
     link: overrides.link ?? `tasks/${overrides.id}.md`,
     incomingLinks: overrides.incomingLinks ?? [],
-    starred: false,
+    starred: overrides.starred ?? false,
   });
 }
 
@@ -250,6 +251,69 @@ describe("getFilteredNodeIds", () => {
         filter({ selectedTags: ["frontend"], selectedStatuses: ["done"] })
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("starred filtering", () => {
+    const starredTasks = [
+      makeTask({ id: "T1", summary: "Starred task A", starred: true }),
+      makeTask({ id: "T2", summary: "Unstarred task B", starred: false }),
+      makeTask({ id: "T3", summary: "Starred task C", starred: true }),
+      makeTask({ id: "T4", summary: "Unstarred task D", starred: false }),
+    ];
+
+    it("returns all tasks when onlyStarred is false", () => {
+      const result = getFilteredNodeIds(
+        starredTasks,
+        filter({ onlyStarred: false })
+      );
+      expect(result).toEqual(["T1", "T2", "T3", "T4"]);
+    });
+
+    it("returns only starred tasks when onlyStarred is true", () => {
+      const result = getFilteredNodeIds(
+        starredTasks,
+        filter({ onlyStarred: true })
+      );
+      expect(result).toEqual(["T1", "T3"]);
+    });
+
+    it("returns empty when onlyStarred is true and no tasks are starred", () => {
+      const unstarredTasks = [
+        makeTask({ id: "T1", starred: false }),
+        makeTask({ id: "T2", starred: false }),
+      ];
+      const result = getFilteredNodeIds(
+        unstarredTasks,
+        filter({ onlyStarred: true })
+      );
+      expect(result).toEqual([]);
+    });
+
+    it("combines onlyStarred with status filter", () => {
+      const mixed = [
+        makeTask({ id: "T1", starred: true, status: "todo" }),
+        makeTask({ id: "T2", starred: true, status: "done" }),
+        makeTask({ id: "T3", starred: false, status: "todo" }),
+      ];
+      const result = getFilteredNodeIds(
+        mixed,
+        filter({ onlyStarred: true, selectedStatuses: ["done"] })
+      );
+      expect(result).toEqual(["T2"]);
+    });
+
+    it("combines onlyStarred with search query", () => {
+      const mixed = [
+        makeTask({ id: "T1", summary: "Deploy app", starred: true }),
+        makeTask({ id: "T2", summary: "Deploy app", starred: false }),
+        makeTask({ id: "T3", summary: "Write tests", starred: true }),
+      ];
+      const result = getFilteredNodeIds(
+        mixed,
+        filter({ onlyStarred: true, searchQuery: "deploy" })
+      );
+      expect(result).toEqual(["T1"]);
     });
   });
 

@@ -330,6 +330,25 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               />
             </div>
 
+            <div className="tasks-map-filter-item">
+              <label className="tasks-map-gui-overlay-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={filterState.onlyStarred}
+                  onChange={(e) =>
+                    setFilterState((prev) => ({
+                      ...prev,
+                      onlyStarred: e.target.checked,
+                    }))
+                  }
+                  className="tasks-map-gui-overlay-checkbox-input"
+                />
+                <span className="tasks-map-gui-overlay-checkbox-text">
+                  {t("filters.only_starred")}
+                </span>
+              </label>
+            </div>
+
             {showTags && (
               <div className="tasks-map-filter-item">
                 <label className="tasks-map-gui-overlay-checkbox-label">
