@@ -84,8 +84,7 @@
     "status_in_progress": "In Progress",
     "status_done": "Done",
     "status_canceled": "Canceled",
-    "status_total": "Total",
-    "only_starred": "Starred only"
+    "status_total": "Total"
   },
   "multiselect": {
     "select": "Select...",
