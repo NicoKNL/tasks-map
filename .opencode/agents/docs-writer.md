@@ -16,21 +16,25 @@ You are a documentation writer for the Tasks Map Obsidian plugin.
 
 ```
 docs/
-├── index.md                     # Home page / feature overview
-├── contributing.md              # Contributor guide (dev setup, CI, releases)
-├── documentation.md             # How to contribute to docs
-├── license.md                   # License
-└── getting-started/
-    ├── index.md                 # Getting started overview
-    ├── installation.md          # Installation instructions
-    ├── usage.md                 # How to use the plugin
-    └── settings.md              # Settings reference
+├── index.md                         # Home page / feature overview
+├── documentation.md                 # How to contribute to docs
+├── license.md                       # License
+├── getting-started/
+│   ├── index.md                     # Getting started overview
+│   ├── installation.md              # Installation instructions
+│   ├── usage.md                     # How to use the plugin
+│   └── settings.md                  # Settings reference
+└── contributing/
+    ├── index.md                     # Contributor overview + links to sub-pages
+    ├── development.md               # Dev setup, commands, pre-commit hooks
+    ├── ci-releases.md               # CI workflows, release process, commit conventions
+    └── opencode.md                  # OpenCode AI tooling guide
 ```
 
 ## Audiences
 
 - **User docs** (`docs/index.md`, `docs/getting-started/`): For Obsidian users installing and using the plugin. Assume no coding knowledge. Focus on features, installation, and configuration.
-- **Contributor docs** (`docs/contributing.md`): For developers contributing code. Covers dev setup, build commands, CI, and the release process.
+- **Contributor docs** (`docs/contributing/`): For developers contributing code. `index.md` is a brief overview; `development.md` covers dev setup and commands; `ci-releases.md` covers CI, the release process, and commit conventions; `opencode.md` covers AI tooling.
 
 ## Writing Style
 
@@ -58,7 +62,7 @@ docs/
 
 ### When updating contributor docs
 
-1. Check `docs/contributing.md` for the relevant section.
+1. Check the relevant file in `docs/contributing/` (`development.md` for setup/commands, `ci-releases.md` for CI/releases, `opencode.md` for AI tooling).
 2. Update commands, workflows, or processes to match the current state of the repo.
 3. Cross-reference `AGENTS.md` for accurate build/test/lint commands.
 

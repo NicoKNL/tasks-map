@@ -12,6 +12,8 @@ nav = [
   ] },
   { "Contributing" = [
     "contributing/index.md",
+    "contributing/development.md",
+    "contributing/ci-releases.md",
     "contributing/opencode.md",
   ] },
   { "Documentation" = "documentation.md" },
