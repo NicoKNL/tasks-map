@@ -1158,6 +1158,28 @@ If your plugin does not need CSS, delete this file.
   }
 }
 
+/* Graph Empty State */
+.tasks-map-graph-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+  max-width: 320px;
+  text-align: center;
+}
+
+.tasks-map-graph-empty-state__message {
+  font-size: 14px;
+  color: var(--text-faint);
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Status Counts Overlay */
 .tasks-map-status-counts-overlay {
   position: absolute;
