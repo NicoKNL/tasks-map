@@ -8,6 +8,7 @@ import {
   createEdgesFromTasks,
   checkDataviewPlugin,
   estimateNodeDimensions,
+  getUnlinkedTasks,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
 
@@ -410,5 +411,51 @@ describe("checkDataviewPlugin", () => {
     expect(result.isLoaded).toBe(true);
     expect(result.isReady).toBe(true);
     expect(result.getMessage()).toBeNull();
+  });
+});
+
+describe("getUnlinkedTasks", () => {
+  it("returns a task with no incoming links that is not referenced by others", () => {
+    const task = makeTask({ id: "a", incomingLinks: [] });
+    expect(getUnlinkedTasks([task])).toEqual([task]);
+  });
+
+  it("excludes a task that has incoming links", () => {
+    const task = makeTask({ id: "a", incomingLinks: ["b"] });
+    expect(getUnlinkedTasks([task])).toEqual([]);
+  });
+
+  it("excludes a task that is referenced as an incoming link by another task", () => {
+    const taskA = makeTask({ id: "a", incomingLinks: [] });
+    const taskB = makeTask({ id: "b", incomingLinks: ["a"] });
+    // taskA is referenced by taskB, so taskA is linked
+    expect(getUnlinkedTasks([taskA, taskB])).toEqual([]);
+  });
+
+  it("returns only tasks with no connections in a mixed list", () => {
+    const isolated = makeTask({ id: "iso", incomingLinks: [] });
+    const source = makeTask({ id: "src", incomingLinks: [] });
+    const dependent = makeTask({ id: "dep", incomingLinks: ["src"] });
+    const result = getUnlinkedTasks([isolated, source, dependent]);
+    expect(result).toEqual([isolated]);
+  });
+
+  it("returns an empty array when all tasks are empty", () => {
+    expect(getUnlinkedTasks([])).toEqual([]);
+  });
+
+  describe("edge cases", () => {
+    it("handles a task whose id appears in its own incomingLinks", () => {
+      const selfRef = makeTask({ id: "self", incomingLinks: ["self"] });
+      // has an incoming link → not unlinked
+      expect(getUnlinkedTasks([selfRef])).toEqual([]);
+    });
+
+    it("handles multiple isolated tasks all being returned", () => {
+      const a = makeTask({ id: "a", incomingLinks: [] });
+      const b = makeTask({ id: "b", incomingLinks: [] });
+      const result = getUnlinkedTasks([a, b]);
+      expect(result).toEqual([a, b]);
+    });
   });
 });

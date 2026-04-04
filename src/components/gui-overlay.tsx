@@ -151,8 +151,13 @@ export default function GuiOverlay(props: GuiOverlayProps) {
           {t("filters.title")}
         </span>
         <button
-          className="tasks-map-filter-panel-toggle"
+          className="tasks-map-filter-panel__header-icon"
           onClick={toggleMinimized}
+          aria-label={
+            isMinimized
+              ? t("filters.expand_filters")
+              : t("filters.minimize_filters")
+          }
           title={
             isMinimized
               ? t("filters.expand_filters")

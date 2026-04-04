@@ -904,7 +904,12 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
  * - not referenced as a dependency by any other task
  */
 export function getUnlinkedTasks(tasks: BaseTask[]): BaseTask[] {
-  const referencedIds = new Set(tasks.flatMap((t) => t.incomingLinks));
+  const referencedIds = new Set<string>();
+  for (const task of tasks) {
+    for (const link of task.incomingLinks) {
+      referencedIds.add(link);
+    }
+  }
   return tasks.filter(
     (t) => t.incomingLinks.length === 0 && !referencedIds.has(t.id)
   );

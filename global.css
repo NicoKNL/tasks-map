@@ -554,54 +554,63 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-filter-panel__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px 8px;
+  align-items: stretch;
   border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  width: 100%;
   flex-shrink: 0;
 }
 
 .tasks-map-filter-panel.minimized .tasks-map-filter-panel__header {
   border-bottom: none;
-  padding: 10px 12px;
 }
 
 .tasks-map-filter-panel__title {
+  flex: 1;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
+  padding: 10px 12px;
+}
+
+.tasks-map-filter-panel__header-icon {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--background-modifier-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--background-secondary) !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  height: auto;
+}
+
+.tasks-map-filter-panel__header-icon:hover {
+  background: var(--background-modifier-hover) !important;
+}
+
+.tasks-map-filter-panel.minimized .tasks-map-filter-panel__header-icon {
+  border-radius: 0 8px 8px 0 !important;
+  padding: 10px;
 }
 
 .tasks-map-filter-panel-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text-normal);
-  padding: 3px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-}
-
-.tasks-map-filter-panel-toggle:hover {
-  background: var(--background-primary-alt);
+  display: none;
 }
 
 .tasks-map-filter-panel__content {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-}
-
-.tasks-map-filter-panel-toggle:hover {
-  background: var(--background-primary-alt);
 }
 
 .tasks-map-filter-panel-content {
@@ -1247,14 +1256,19 @@ If your plugin does not need CSS, delete this file.
 }
 .tasks-map-unlinked-panel__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px 8px;
+  align-items: stretch;
   border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  width: 100%;
   flex-shrink: 0;
 }
 
+.tasks-map-unlinked-panel--collapsed .tasks-map-unlinked-panel__header {
+  border-bottom: none;
+}
+
 .tasks-map-unlinked-panel__title {
+  flex: 1;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
@@ -1263,25 +1277,34 @@ If your plugin does not need CSS, delete this file.
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 10px 12px;
 }
 
-.tasks-map-unlinked-panel__toggle {
+.tasks-map-unlinked-panel__header-icon {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 3px;
-  border: none;
-  background: transparent;
+  align-self: stretch;
+  padding: 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--background-modifier-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--background-secondary) !important;
   cursor: pointer;
-  color: var(--text-normal);
-  border-radius: 4px;
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  color: var(--text-muted);
+  height: auto;
 }
 
-.tasks-map-unlinked-panel__toggle:hover {
-  background: var(--background-primary-alt);
+.tasks-map-unlinked-panel__header-icon:hover {
+  background: var(--background-modifier-hover) !important;
+}
+
+.tasks-map-unlinked-panel--collapsed .tasks-map-unlinked-panel__header-icon {
+  border-radius: 0 8px 8px 0 !important;
+  padding: 10px;
 }
 
 .tasks-map-unlinked-panel__count {
@@ -1300,12 +1323,12 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-unlinked-panel__filter-input {
   flex: 1;
-  background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary) !important;
+  border: 1px solid var(--background-modifier-border) !important;
   border-radius: 5px;
   padding: 4px 8px;
   font-size: 12px;
-  color: var(--text-normal);
+  color: var(--text-normal) !important;
   outline: none;
   min-width: 0;
 }

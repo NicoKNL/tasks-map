@@ -60,8 +60,13 @@ export default function UnlinkedTasksPanel({ tasks }: UnlinkedTasksPanelProps) {
           )}
         </span>
         <button
-          className="tasks-map-unlinked-panel__toggle"
+          className="tasks-map-unlinked-panel__header-icon"
           onClick={toggleCollapsed}
+          aria-label={
+            isCollapsed
+              ? t("unlinked_panel.expand")
+              : t("unlinked_panel.collapse")
+          }
           title={
             isCollapsed
               ? t("unlinked_panel.expand")
@@ -86,6 +91,7 @@ export default function UnlinkedTasksPanel({ tasks }: UnlinkedTasksPanelProps) {
               <button
                 className="tasks-map-unlinked-panel__filter-clear"
                 onClick={clearFilter}
+                aria-label={t("search.clear")}
                 title={t("search.clear")}
               >
                 <X size={12} />
