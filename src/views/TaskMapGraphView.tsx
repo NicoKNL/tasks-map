@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo, useRef } from "react";
 import ReactFlow, {
   Background,
   useNodesState,
@@ -15,6 +15,7 @@ import {
   removeLinkSignsBetweenTasks,
   createNodesFromTasks,
   createEdgesFromTasks,
+  getUnlinkedTasks,
 } from "src/lib/utils";
 import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
@@ -25,6 +26,9 @@ import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
 import { DeleteEdgeButton } from "src/components/delete-edge-button";
 import { TagsContext } from "src/contexts/context";
+import UnlinkedTasksPanel, {
+  DRAG_DATA_KEY,
+} from "src/components/unlinked-tasks-panel";
 import { t } from "../i18n";
 
 import { TaskStatus } from "src/types/task";
@@ -56,6 +60,15 @@ export default function TaskMapGraphView({
 
   const [hideTags, setHideTags] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Tracks which unlinked task IDs have been dropped onto the canvas this session
+  const [droppedTaskIds, setDroppedTaskIds] = React.useState<Set<string>>(
+    new Set()
+  );
+  // Stores the drop position for each dropped task (bypasses dagre layout)
+  const droppedNodePositions = useRef<Map<string, { x: number; y: number }>>(
+    new Map()
+  );
 
   const toggleHideTags = useCallback(() => {
     setHideTags((prev) => !prev);
@@ -118,6 +131,9 @@ export default function TaskMapGraphView({
 
   const reloadTasks = useCallback(() => {
     setIsLoading(true);
+    // Reset dropped state on reload so unlinked tasks return to sidebar
+    setDroppedTaskIds(new Set());
+    droppedNodePositions.current = new Map();
     // Use setTimeout to allow the loading UI to render before heavy computation
     setTimeout(() => {
       const newTasks = getAllTasks(app);
@@ -181,9 +197,26 @@ export default function TaskMapGraphView({
     setTaskTagsRegistry(newRegistry);
   }, [tasks]);
 
+  // Compute which tasks are unlinked (no connections at all)
+  const allUnlinkedTasks = useMemo(() => getUnlinkedTasks(tasks), [tasks]);
+
+  // Tasks visible in the sidebar: unlinked and not yet dropped onto the canvas
+  const sidebarTasks = useMemo(
+    () => allUnlinkedTasks.filter((t) => !droppedTaskIds.has(t.id)),
+    [allUnlinkedTasks, droppedTaskIds]
+  );
+
+  // Tasks that are linked OR have been dropped onto the canvas this session
+  const graphTasks = useMemo(() => {
+    const unlinkedIds = new Set(allUnlinkedTasks.map((t) => t.id));
+    return tasks.filter(
+      (t) => !unlinkedIds.has(t.id) || droppedTaskIds.has(t.id)
+    );
+  }, [tasks, allUnlinkedTasks, droppedTaskIds]);
+
   useEffect(() => {
     let newNodes = createNodesFromTasks(
-      tasks,
+      graphTasks,
       settings.layoutDirection,
       settings.showPriorities,
       settings.showTags,
@@ -194,14 +227,14 @@ export default function TaskMapGraphView({
       handleDeleteTask
     );
     let newEdges = createEdgesFromTasks(
-      tasks,
+      graphTasks,
       settings.layoutDirection,
       settings.debugVisualization,
       settings.edgeStyle,
       settings.smoothStepRadius
     );
 
-    const filteredNodeIds = getFilteredNodeIds(tasks, filterState);
+    const filteredNodeIds = getFilteredNodeIds(graphTasks, filterState);
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
     newEdges = newEdges.filter(
@@ -209,14 +242,25 @@ export default function TaskMapGraphView({
         filteredNodeIds.includes(e.source) && filteredNodeIds.includes(e.target)
     );
 
-    const layoutedNodes = getLayoutedElements(
-      newNodes,
+    // Separate dropped (unlinked) nodes from linked nodes for layout
+    const droppedNodes = newNodes.filter((n) => droppedTaskIds.has(n.id));
+    const linkedNodes = newNodes.filter((n) => !droppedTaskIds.has(n.id));
+
+    // Run dagre layout only on linked nodes
+    const layoutedLinkedNodes = getLayoutedElements(
+      linkedNodes,
       newEdges,
       settings.layoutDirection,
       settings.showTags
     );
 
-    setNodes(layoutedNodes);
+    // Apply stored drop positions to dropped nodes (bypass dagre)
+    const layoutedDroppedNodes = droppedNodes.map((n) => {
+      const pos = droppedNodePositions.current.get(n.id);
+      return pos ? { ...n, position: pos } : n;
+    });
+
+    setNodes([...layoutedLinkedNodes, ...layoutedDroppedNodes]);
     setEdges(newEdges);
 
     if (skipFitViewRef.current) {
@@ -227,13 +271,14 @@ export default function TaskMapGraphView({
       }, 1000);
     }
   }, [
-    tasks,
+    graphTasks,
     filterState,
     settings,
     reactFlowInstance,
     setNodes,
     setEdges,
     handleDeleteTask,
+    droppedTaskIds,
   ]);
 
   const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
@@ -319,6 +364,43 @@ export default function TaskMapGraphView({
     ]
   );
 
+  // Handle drop of an unlinked task from the sidebar onto the graph canvas
+  const onDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      const taskId = event.dataTransfer.getData(DRAG_DATA_KEY);
+      if (!taskId) return;
+
+      const task = tasks.find((t) => t.id === taskId);
+      if (!task) return;
+
+      // Convert screen coordinates to ReactFlow canvas coordinates
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // Store the position so the node appears exactly at the drop point
+      droppedNodePositions.current.set(taskId, position);
+
+      // Prevent fitView from zooming out after a sidebar drop
+      skipFitViewRef.current = true;
+
+      // Mark task as dropped — triggers graph re-render with the new node
+      setDroppedTaskIds((prev) => {
+        const next = new Set(prev);
+        next.add(taskId);
+        return next;
+      });
+    },
+    [tasks, reactFlowInstance]
+  );
+
+  const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
   const tagsContextValue = useMemo(
     () => ({
       allTags,
@@ -328,20 +410,20 @@ export default function TaskMapGraphView({
   );
 
   const preSearchFilteredTasks = useMemo(() => {
-    const filteredIds = getFilteredNodeIds(tasks, {
+    const filteredIds = getFilteredNodeIds(graphTasks, {
       ...filterState,
       searchQuery: "",
       traversalMode: "match",
     });
     const idSet = new Set(filteredIds);
-    return tasks.filter((t) => idSet.has(t.id));
-  }, [tasks, filterState]);
+    return graphTasks.filter((t) => idSet.has(t.id));
+  }, [graphTasks, filterState]);
 
   const filteredTasks = useMemo(() => {
-    const filteredIds = getFilteredNodeIds(tasks, filterState);
+    const filteredIds = getFilteredNodeIds(graphTasks, filterState);
     const idSet = new Set(filteredIds);
-    return tasks.filter((t) => idSet.has(t.id));
-  }, [tasks, filterState]);
+    return graphTasks.filter((t) => idSet.has(t.id));
+  }, [graphTasks, filterState]);
 
   const searchResultCount = useMemo(() => {
     if (!filterState.searchQuery.trim()) return null;
@@ -357,8 +439,13 @@ export default function TaskMapGraphView({
 
   return (
     <TagsContext.Provider value={tagsContextValue}>
-      {}
-      <div className="tasks-map-graph-container" ref={containerRef}>
+      <div
+        className="tasks-map-graph-container"
+        ref={containerRef}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+      >
+        <UnlinkedTasksPanel tasks={sidebarTasks} />
         {isLoading && (
           <div className="tasks-map-loading-container">
             <div className="tasks-map-spinner" />

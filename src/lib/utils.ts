@@ -898,6 +898,23 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
   return links;
 }
 
+/**
+ * Returns tasks that have no connections at all:
+ * - no incoming links (no dependencies)
+ * - not referenced as a dependency by any other task
+ */
+export function getUnlinkedTasks(tasks: BaseTask[]): BaseTask[] {
+  const referencedIds = new Set<string>();
+  for (const task of tasks) {
+    for (const link of task.incomingLinks) {
+      referencedIds.add(link);
+    }
+  }
+  return tasks.filter(
+    (t) => t.incomingLinks.length === 0 && !referencedIds.has(t.id)
+  );
+}
+
 export function createNodesFromTasks(
   tasks: BaseTask[],
   layoutDirection: "Horizontal" | "Vertical" = "Horizontal",

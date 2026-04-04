@@ -77,9 +77,16 @@ Use it when source code changes need documentation updates:
 @docs-writer update the settings reference to document the new defaultGroupBy option
 ```
 
-## Skill: `obsidian-plugin`
+## Skills
 
-Skills are loaded on demand with the `skill` tool inside OpenCode. The `obsidian-plugin` skill (`.opencode/skills/obsidian-plugin/SKILL.md`) provides detailed patterns and conventions for:
+Skills are loaded on demand with the `skill` tool inside OpenCode. Each skill
+injects domain-specific instructions into the agent's context.
+
+### `obsidian-plugin`
+
+File: `.opencode/skills/obsidian-plugin/SKILL.md`
+
+Provides patterns and conventions for:
 
 - Plugin lifecycle (`onload`, `onunload`)
 - Obsidian views and leaf management
@@ -89,4 +96,19 @@ Skills are loaded on demand with the `skill` tool inside OpenCode. The `obsidian
 - Settings tab patterns
 - i18n setup
 
-The skill is loaded automatically by OpenCode when a task involves Obsidian plugin patterns, without needing an explicit invocation.
+Loaded automatically when a task involves Obsidian plugin patterns.
+
+### `docs-writer`
+
+File: `.opencode/skills/docs-writer/SKILL.md`
+
+Provides Zensical / Material for MkDocs syntax reference and writing conventions
+for this project's documentation, including:
+
+- Admonitions (note, tip, warning, collapsible, inline)
+- Code blocks with titles, line numbers, and highlighted lines
+- Content tabs
+- Page frontmatter
+- Tone, structure, and formatting conventions
+
+Loaded automatically when the `@docs-writer` agent writes or updates docs pages.

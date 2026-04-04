@@ -85,7 +85,8 @@
     "status_done": "Klaar",
     "status_canceled": "Geannuleerd",
     "status_total": "Totaal",
-    "only_starred": "Alleen gemarkeerd"
+    "only_starred": "Alleen gemarkeerd",
+    "title": "Filters"
   },
   "multiselect": {
     "select": "Selecteer...",
@@ -98,6 +99,14 @@
     "no_results": "Geen resultaten gevonden",
     "show_dependencies": "Toon afhankelijkheden",
     "show_dependents": "Toon afhankelijken"
+  },
+  "unlinked_panel": {
+    "title": "Niet-gekoppelde taken",
+    "filter_placeholder": "Taken filteren...",
+    "empty": "Geen niet-gekoppelde taken",
+    "collapse": "Paneel inklappen",
+    "expand": "Paneel uitklappen",
+    "drag_hint": "Sleep een taak naar de grafiek om hem te plaatsen"
   },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
