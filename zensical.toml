@@ -8,6 +8,7 @@ nav = [
     "getting-started/index.md",
     "getting-started/installation.md",
     "getting-started/usage.md",
+    "getting-started/unlinked-tasks-panel.md",
     "getting-started/settings.md",
   ] },
   { "Contributing" = [
