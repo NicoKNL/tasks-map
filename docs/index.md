@@ -4,7 +4,7 @@
 
 # Tasks Map
 
-**Tasks Map** is a minimal Obsidian plugin that visualizes your tasks as an interactive graph. It supports both **inline checkbox tasks** (`- [ ] task text`) via Dataview and **file-based tasks** (NoteTask) where an entire note becomes a task through frontmatter metadata. Each task is represented as a node, with edges showing relationships.
+**Tasks Map** is an Obsidian plugin that visualizes your tasks as an interactive graph. It supports both **inline checkbox tasks** (`- [ ] task text`) via Dataview and **file-based tasks** (NoteTask) where an entire note becomes a task through frontmatter metadata. Each task is represented as a node, with edges showing relationships.
 
 ![Tasks Map Example](https://raw.githubusercontent.com/NicoKNL/tasks-map/main/.github/images/example.png)
 
