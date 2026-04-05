@@ -37,6 +37,7 @@ import TasksMapPlugin from "../main";
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
+import { EmbedConfig, DEFAULT_EMBED_CONFIG } from "src/types/embed-config";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -45,6 +46,7 @@ interface TaskMapGraphViewProps {
   filterState: FilterState;
   setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
   plugin: TasksMapPlugin;
+  embedConfig?: EmbedConfig;
 }
 
 export default function TaskMapGraphView({
@@ -52,7 +54,9 @@ export default function TaskMapGraphView({
   filterState,
   setFilterState,
   plugin,
+  embedConfig,
 }: TaskMapGraphViewProps) {
+  const embed = { ...DEFAULT_EMBED_CONFIG, ...embedConfig };
   const app = useApp();
   const vault = app.vault;
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -471,7 +475,7 @@ export default function TaskMapGraphView({
         onDrop={onDrop}
         onDragOver={onDragOver}
       >
-        <UnlinkedTasksPanel tasks={sidebarTasks} />
+        {embed.showUnlinkedPanel && <UnlinkedTasksPanel tasks={sidebarTasks} />}
         {isLoading && (
           <div className="tasks-map-loading-container">
             <div className="tasks-map-spinner" />
@@ -500,32 +504,37 @@ export default function TaskMapGraphView({
           onPaneClick={onPaneClick}
         >
           <div className="tasks-map-panels-stack">
-            <FilterPresetsPanel
-              presets={settings.filterPresets}
-              filterState={filterState}
-              onApply={(filter) => setFilterState(filter)}
-              onSave={handleSavePreset}
-              onRename={handleRenamePreset}
-              onDelete={handleDeletePreset}
-            />
-            <GuiOverlay
-              allTags={allTags}
-              filterState={filterState}
-              setFilterState={setFilterState}
-              allFiles={allFiles}
-              reloadTasks={reloadTasks}
-              allStatuses={ALL_STATUSES}
-              showTags={settings.showTags}
-              hideTags={hideTags}
-              setHideTags={toggleHideTags}
-              onSearch={handleSearch}
-              searchResultCount={searchResultCount}
-              suggestionTasks={preSearchFilteredTasks}
-            />
+            {embed.showPresetsPanel && (
+              <FilterPresetsPanel
+                presets={settings.filterPresets}
+                filterState={filterState}
+                plugin={plugin}
+                onApply={(filter) => setFilterState(filter)}
+                onSave={handleSavePreset}
+                onRename={handleRenamePreset}
+                onDelete={handleDeletePreset}
+              />
+            )}
+            {embed.showFilterPanel && (
+              <GuiOverlay
+                allTags={allTags}
+                filterState={filterState}
+                setFilterState={setFilterState}
+                allFiles={allFiles}
+                reloadTasks={reloadTasks}
+                allStatuses={ALL_STATUSES}
+                showTags={settings.showTags}
+                hideTags={hideTags}
+                setHideTags={toggleHideTags}
+                onSearch={handleSearch}
+                searchResultCount={searchResultCount}
+                suggestionTasks={preSearchFilteredTasks}
+              />
+            )}
           </div>
-          <TaskMinimap />
+          {embed.showMinimap && <TaskMinimap />}
           <Background />
-          {settings.showStatusCounts && (
+          {settings.showStatusCounts && embed.showStatusCounts && (
             <StatusCountsOverlay tasks={filteredTasks} />
           )}
         </ReactFlow>
