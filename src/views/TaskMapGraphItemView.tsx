@@ -95,6 +95,19 @@ export default class TaskMapGraphItemView extends ItemView {
     ).plugins.plugins["tasks-map"] as TasksMapPlugin;
 
     if (!plugin) {
+      this.root.render(
+        <div className="tasks-map-centered-message-container">
+          <div className="tasks-map-centered-message-content">
+            <div className="tasks-map-message-icon">⚠️</div>
+            <h3 className="tasks-map-message-title">
+              {t("view.plugin_not_found")}
+            </h3>
+            <p className="tasks-map-message-description">
+              {t("view.plugin_not_found_description")}
+            </p>
+          </div>
+        </div>
+      );
       return;
     }
 

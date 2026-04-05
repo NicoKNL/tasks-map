@@ -14,7 +14,9 @@
     "dataview_required": "Tasks Map requires the Dataview plugin to be installed and enabled.",
     "dataview_not_installed": "The Dataview plugin is not currently installed.",
     "dataview_disabled": "The Dataview plugin is installed but not enabled.",
-    "visit_community_plugins": "Visit the Community Plugins section in Settings to install or enable Dataview."
+    "visit_community_plugins": "Visit the Community Plugins section in Settings to install or enable Dataview.",
+    "plugin_not_found": "Unable to load Tasks Map",
+    "plugin_not_found_description": "The Tasks Map plugin instance could not be resolved. Try closing and reopening the view."
   },
   "settings": {
     "display_options": "Display Options",

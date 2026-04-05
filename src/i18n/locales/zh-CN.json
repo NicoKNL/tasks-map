@@ -14,7 +14,9 @@
     "dataview_required": "任务地图需要安装并启用 Dataview 插件。",
     "dataview_not_installed": "当前未安装 Dataview 插件。",
     "dataview_disabled": "Dataview 插件已安装但未启用。",
-    "visit_community_plugins": "请访问设置中的社区插件部分以安装或启用 Dataview。"
+    "visit_community_plugins": "请访问设置中的社区插件部分以安装或启用 Dataview。",
+    "plugin_not_found": "无法加载任务地图",
+    "plugin_not_found_description": "无法解析任务地图插件实例。请尝试关闭并重新打开视图。"
   },
   "settings": {
     "display_options": "显示选项",

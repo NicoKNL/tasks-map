@@ -26,6 +26,7 @@ export default function FilterPresetBar({
 }: FilterPresetBarProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newName, setNewName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
@@ -75,11 +76,16 @@ export default function FilterPresetBar({
 
   const handleSaveConfirm = useCallback(async () => {
     const trimmed = newName.trim();
-    if (!trimmed) return;
-    await onSave(trimmed, filterState);
-    setIsSaving(false);
-    setNewName("");
-  }, [newName, filterState, onSave]);
+    if (!trimmed || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onSave(trimmed, filterState);
+      setIsSaving(false);
+      setNewName("");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [newName, filterState, onSave, isSubmitting]);
 
   const handleSaveCancel = useCallback(() => {
     setIsSaving(false);
@@ -102,13 +108,18 @@ export default function FilterPresetBar({
   }, [selectedPreset]);
 
   const handleRenameConfirm = useCallback(async () => {
-    if (!selectedId) return;
+    if (!selectedId || isSubmitting) return;
     const trimmed = renameValue.trim();
     if (!trimmed) return;
-    await onRename(selectedId, trimmed);
-    setIsRenaming(false);
-    setRenameValue("");
-  }, [selectedId, renameValue, onRename]);
+    setIsSubmitting(true);
+    try {
+      await onRename(selectedId, trimmed);
+      setIsRenaming(false);
+      setRenameValue("");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [selectedId, renameValue, onRename, isSubmitting]);
 
   const handleRenameCancel = useCallback(() => {
     setIsRenaming(false);
@@ -255,7 +266,7 @@ export default function FilterPresetBar({
             onClick={() => void handleRenameConfirm()}
             title={t("presets.confirm_rename")}
             aria-label={t("presets.confirm_rename")}
-            disabled={!renameValue.trim()}
+            disabled={!renameValue.trim() || isSubmitting}
           >
             <Check size={13} />
           </button>
@@ -286,7 +297,7 @@ export default function FilterPresetBar({
             onClick={() => void handleSaveConfirm()}
             title={t("presets.confirm_save")}
             aria-label={t("presets.confirm_save")}
-            disabled={!newName.trim()}
+            disabled={!newName.trim() || isSubmitting}
           >
             <Check size={13} />
           </button>
