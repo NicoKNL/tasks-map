@@ -3,11 +3,13 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { FilterPreset } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
 import FilterPresetBar from "./filter-preset-bar";
+import TasksMapPlugin from "../main";
 import { t } from "../i18n";
 
 interface FilterPresetsPanelProps {
   presets: FilterPreset[];
   filterState: FilterState;
+  plugin: TasksMapPlugin;
   onApply: (_filter: FilterState) => void;
   onSave: (_name: string, _filter: FilterState) => Promise<void>;
   onRename: (_id: string, _name: string) => Promise<void>;
@@ -17,6 +19,7 @@ interface FilterPresetsPanelProps {
 export default function FilterPresetsPanel({
   presets,
   filterState,
+  plugin,
   onApply,
   onSave,
   onRename,
@@ -59,6 +62,7 @@ export default function FilterPresetsPanel({
           <FilterPresetBar
             presets={presets}
             filterState={filterState}
+            plugin={plugin}
             onApply={onApply}
             onSave={onSave}
             onRename={onRename}

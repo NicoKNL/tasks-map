@@ -4,7 +4,8 @@
     "description": "A graph view of your tasks"
   },
   "commands": {
-    "open_map_view": "Open map view"
+    "open_map_view": "Open map view",
+    "insert_filter_as_code_block": "Insert current filter as embedded Tasks Map"
   },
   "ribbon": {
     "open_tasks_map": "Open tasks map view"
@@ -130,6 +131,13 @@
     "cancel": "Cancel",
     "apply": "Apply preset: {{name}}",
     "rename": "Rename preset",
-    "delete": "Delete preset"
+    "delete": "Delete preset",
+    "insert_into_note": "Insert into note"
+  },
+  "embed": {
+    "pick_note_placeholder": "Choose a note...",
+    "dataview_required": "Tasks Map requires the Dataview plugin.",
+    "plugin_not_found": "Tasks Map plugin could not be loaded.",
+    "invalid_json": "This Tasks Map embed contains invalid JSON. Re-insert it using the command palette to fix it."
   }
 }

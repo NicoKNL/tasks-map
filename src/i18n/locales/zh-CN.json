@@ -4,7 +4,8 @@
     "description": "任务的图形视图"
   },
   "commands": {
-    "open_map_view": "打开地图视图"
+    "open_map_view": "打开地图视图",
+    "insert_filter_as_code_block": "将当前筛选器插入为嵌入式任务地图"
   },
   "ribbon": {
     "open_tasks_map": "打开任务地图视图"
@@ -130,6 +131,13 @@
     "cancel": "取消",
     "apply": "应用预设：{{name}}",
     "rename": "重命名预设",
-    "delete": "删除预设"
+    "delete": "删除预设",
+    "insert_into_note": "插入笔记"
+  },
+  "embed": {
+    "pick_note_placeholder": "选择笔记...",
+    "dataview_required": "任务地图需要 Dataview 插件。",
+    "plugin_not_found": "无法加载任务地图插件。",
+    "invalid_json": "此任务地图嵌入块包含无效的 JSON。请通过命令面板重新插入以修复。"
   }
 }
