@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { BaseTask } from "src/types/task";
 import { t } from "../i18n";
 
@@ -73,7 +73,7 @@ export default function UnlinkedTasksPanel({ tasks }: UnlinkedTasksPanelProps) {
               : t("unlinked_panel.collapse")
           }
         >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </button>
       </div>
 

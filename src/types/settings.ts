@@ -1,4 +1,11 @@
 import { Language } from "../i18n";
+import { FilterState } from "./filter-state";
+
+export interface FilterPreset {
+  id: string;
+  name: string;
+  filter: FilterState;
+}
 
 export interface TasksMapSettings {
   showPriorities: boolean;
@@ -19,6 +26,9 @@ export interface TasksMapSettings {
 
   // Language setting
   language: Language;
+
+  // Filter presets
+  filterPresets: FilterPreset[];
 }
 
 export const DEFAULT_SETTINGS: TasksMapSettings = {
@@ -40,4 +50,7 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
 
   // Language default
   language: "en",
+
+  // Filter presets default
+  filterPresets: [],
 };

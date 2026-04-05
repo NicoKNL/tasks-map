@@ -114,5 +114,20 @@
   },
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
+  },
+  "presets": {
+    "panel_title": "已保存的筛选器",
+    "expand_panel": "展开预设面板",
+    "collapse_panel": "收起预设面板",
+    "save_current": "保存当前筛选器",
+    "name_placeholder": "预设名称...",
+    "placeholder": "应用预设...",
+    "no_presets": "没有保存的预设",
+    "confirm_save": "确认",
+    "confirm_rename": "确认重命名",
+    "cancel": "取消",
+    "apply": "应用预设：{{name}}",
+    "rename": "重命名预设",
+    "delete": "删除预设"
   }
 }

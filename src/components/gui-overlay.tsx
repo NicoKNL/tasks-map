@@ -4,7 +4,7 @@ import { TaskStatus, BaseTask } from "src/types/task";
 import { FilterState } from "src/types/filter-state";
 import type { TraversalMode } from "src/lib/traverse-graph";
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { t } from "../i18n";
 
 interface GuiOverlayProps {
@@ -164,7 +164,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
               : t("filters.minimize_filters")
           }
         >
-          {isMinimized ? <ChevronLeft size={16} /> : <ChevronRight size={12} />}
+          {isMinimized ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </button>
       </div>
 

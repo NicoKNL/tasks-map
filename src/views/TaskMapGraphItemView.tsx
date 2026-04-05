@@ -13,19 +13,21 @@ import { t } from "../i18n";
 // Wrapper component that manages settings updates and filter state for the graph view
 function TaskMapGraphWrapper({
   pluginSettings,
+  plugin,
 }: {
   pluginSettings: TasksMapSettings;
+  plugin: TasksMapPlugin;
 }) {
   const [settings, setSettings] = useState<TasksMapSettings>({
     ...pluginSettings,
   });
 
   useEffect(() => {
-    const handler = () => setSettings({ ...pluginSettings });
+    const handler = () => setSettings({ ...plugin.settings });
     window.addEventListener("tasks-map:settings-changed", handler);
     return () =>
       window.removeEventListener("tasks-map:settings-changed", handler);
-  }, [pluginSettings]);
+  }, [plugin]);
 
   const [filterState, setFilterState] = useState<FilterState>({
     ...DEFAULT_FILTER_STATE,
@@ -37,6 +39,7 @@ function TaskMapGraphWrapper({
         settings={settings}
         filterState={filterState}
         setFilterState={setFilterState}
+        plugin={plugin}
       />
     </ReactFlowProvider>
   );
@@ -75,7 +78,7 @@ export default class TaskMapGraphItemView extends ItemView {
     if (dataviewCheck.isReady) {
       this.root.render(
         <AppContext.Provider value={this.app}>
-          <TaskMapGraphWrapper pluginSettings={settings} />
+          <TaskMapGraphWrapper pluginSettings={settings} plugin={plugin} />
         </AppContext.Provider>
       );
     } else {
