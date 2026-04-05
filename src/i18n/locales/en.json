@@ -14,7 +14,9 @@
     "dataview_required": "Tasks Map requires the Dataview plugin to be installed and enabled.",
     "dataview_not_installed": "The Dataview plugin is not currently installed.",
     "dataview_disabled": "The Dataview plugin is installed but not enabled.",
-    "visit_community_plugins": "Visit the Community Plugins section in Settings to install or enable Dataview."
+    "visit_community_plugins": "Visit the Community Plugins section in Settings to install or enable Dataview.",
+    "plugin_not_found": "Unable to load Tasks Map",
+    "plugin_not_found_description": "The Tasks Map plugin instance could not be resolved. Try closing and reopening the view."
   },
   "settings": {
     "display_options": "Display Options",
@@ -114,5 +116,20 @@
   },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
+  },
+  "presets": {
+    "panel_title": "Saved Filters",
+    "expand_panel": "Expand presets panel",
+    "collapse_panel": "Collapse presets panel",
+    "save_current": "Save current filter",
+    "name_placeholder": "Preset name...",
+    "placeholder": "Apply a preset...",
+    "no_presets": "No saved presets",
+    "confirm_save": "Confirm",
+    "confirm_rename": "Confirm rename",
+    "cancel": "Cancel",
+    "apply": "Apply preset: {{name}}",
+    "rename": "Rename preset",
+    "delete": "Delete preset"
   }
 }

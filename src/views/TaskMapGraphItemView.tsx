@@ -13,19 +13,21 @@ import { t } from "../i18n";
 // Wrapper component that manages settings updates and filter state for the graph view
 function TaskMapGraphWrapper({
   pluginSettings,
+  plugin,
 }: {
   pluginSettings: TasksMapSettings;
+  plugin: TasksMapPlugin;
 }) {
   const [settings, setSettings] = useState<TasksMapSettings>({
     ...pluginSettings,
   });
 
   useEffect(() => {
-    const handler = () => setSettings({ ...pluginSettings });
+    const handler = () => setSettings({ ...plugin.settings });
     window.addEventListener("tasks-map:settings-changed", handler);
     return () =>
       window.removeEventListener("tasks-map:settings-changed", handler);
-  }, [pluginSettings]);
+  }, [plugin]);
 
   const [filterState, setFilterState] = useState<FilterState>({
     ...DEFAULT_FILTER_STATE,
@@ -37,6 +39,7 @@ function TaskMapGraphWrapper({
         settings={settings}
         filterState={filterState}
         setFilterState={setFilterState}
+        plugin={plugin}
       />
     </ReactFlowProvider>
   );
@@ -62,23 +65,9 @@ export default class TaskMapGraphItemView extends ItemView {
   async onOpen() {
     const dataviewCheck = checkDataviewPlugin(this.app);
 
-    // Get the plugin instance to access settings
-    const plugin = (
-      this.app as unknown as {
-        plugins: { plugins: Record<string, TasksMapPlugin> };
-      }
-    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
-    const settings = plugin?.settings;
-
     this.root = createRoot(this.containerEl.children[1]);
 
-    if (dataviewCheck.isReady) {
-      this.root.render(
-        <AppContext.Provider value={this.app}>
-          <TaskMapGraphWrapper pluginSettings={settings} />
-        </AppContext.Provider>
-      );
-    } else {
+    if (!dataviewCheck.isReady) {
       this.root.render(
         <div className="tasks-map-centered-message-container">
           <div className="tasks-map-centered-message-content">
@@ -95,7 +84,38 @@ export default class TaskMapGraphItemView extends ItemView {
           </div>
         </div>
       );
+      return;
     }
+
+    // Get the plugin instance to access settings
+    const plugin = (
+      this.app as unknown as {
+        plugins: { plugins: Record<string, TasksMapPlugin> };
+      }
+    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
+
+    if (!plugin) {
+      this.root.render(
+        <div className="tasks-map-centered-message-container">
+          <div className="tasks-map-centered-message-content">
+            <div className="tasks-map-message-icon">⚠️</div>
+            <h3 className="tasks-map-message-title">
+              {t("view.plugin_not_found")}
+            </h3>
+            <p className="tasks-map-message-description">
+              {t("view.plugin_not_found_description")}
+            </p>
+          </div>
+        </div>
+      );
+      return;
+    }
+
+    this.root.render(
+      <AppContext.Provider value={this.app}>
+        <TaskMapGraphWrapper pluginSettings={plugin.settings} plugin={plugin} />
+      </AppContext.Provider>
+    );
   }
 
   async onClose() {

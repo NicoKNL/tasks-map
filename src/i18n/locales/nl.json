@@ -14,7 +14,9 @@
     "dataview_required": "Taken Kaart vereist dat de Dataview-plugin is geïnstalleerd en ingeschakeld.",
     "dataview_not_installed": "De Dataview-plugin is momenteel niet geïnstalleerd.",
     "dataview_disabled": "De Dataview-plugin is geïnstalleerd maar niet ingeschakeld.",
-    "visit_community_plugins": "Ga naar het gedeelte Community Plugins in Instellingen om Dataview te installeren of in te schakelen."
+    "visit_community_plugins": "Ga naar het gedeelte Community Plugins in Instellingen om Dataview te installeren of in te schakelen.",
+    "plugin_not_found": "Taken Kaart kan niet worden geladen",
+    "plugin_not_found_description": "De instantie van de Taken Kaart-plugin kon niet worden gevonden. Probeer de weergave te sluiten en opnieuw te openen."
   },
   "settings": {
     "display_options": "Weergaveopties",
@@ -114,5 +116,20 @@
   },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
+  },
+  "presets": {
+    "panel_title": "Opgeslagen filters",
+    "expand_panel": "Voorinstellingen paneel uitklappen",
+    "collapse_panel": "Voorinstellingen paneel inklappen",
+    "save_current": "Huidig filter opslaan",
+    "name_placeholder": "Naam van voorinstelling...",
+    "placeholder": "Voorinstelling toepassen...",
+    "no_presets": "Geen opgeslagen voorinstellingen",
+    "confirm_save": "Bevestigen",
+    "confirm_rename": "Hernoemen bevestigen",
+    "cancel": "Annuleren",
+    "apply": "Voorinstelling toepassen: {{name}}",
+    "rename": "Voorinstelling hernoemen",
+    "delete": "Voorinstelling verwijderen"
   }
 }

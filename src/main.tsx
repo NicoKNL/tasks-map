@@ -1,12 +1,20 @@
 import { WorkspaceLeaf, Plugin } from "obsidian";
 
 import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
-import { TasksMapSettings, DEFAULT_SETTINGS } from "./types/settings";
+import {
+  TasksMapSettings,
+  DEFAULT_SETTINGS,
+  FilterPreset,
+} from "./types/settings";
 import { TasksMapSettingTab } from "./settings/settings-tab";
 import { initI18n, changeLanguage, t } from "./i18n";
+import { FilterState } from "./types/filter-state";
 
 export default class TasksMapPlugin extends Plugin {
-  settings: TasksMapSettings = DEFAULT_SETTINGS;
+  settings: TasksMapSettings = {
+    ...DEFAULT_SETTINGS,
+    filterPresets: [...DEFAULT_SETTINGS.filterPresets],
+  };
 
   async onload() {
     // Load settings
@@ -46,6 +54,30 @@ export default class TasksMapPlugin extends Plugin {
     changeLanguage(this.settings.language);
     // Notify open views of settings change
     window.dispatchEvent(new Event("tasks-map:settings-changed"));
+  }
+
+  async savePreset(name: string, filter: FilterState): Promise<void> {
+    const preset: FilterPreset = {
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      filter,
+    };
+    this.settings.filterPresets = [...this.settings.filterPresets, preset];
+    await this.saveSettings();
+  }
+
+  async renamePreset(id: string, name: string): Promise<void> {
+    this.settings.filterPresets = this.settings.filterPresets.map((p) =>
+      p.id === id ? { ...p, name: name.trim() } : p
+    );
+    await this.saveSettings();
+  }
+
+  async deletePreset(id: string): Promise<void> {
+    this.settings.filterPresets = this.settings.filterPresets.filter(
+      (p) => p.id !== id
+    );
+    await this.saveSettings();
   }
 
   async activateViewInMainArea() {

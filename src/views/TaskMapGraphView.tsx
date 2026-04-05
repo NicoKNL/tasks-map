@@ -19,6 +19,7 @@ import {
 } from "src/lib/utils";
 import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
+import FilterPresetsPanel from "src/components/filter-presets-panel";
 import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode from "src/components/task-node";
 import { getFilteredNodeIds } from "src/lib/filter-tasks";
@@ -31,6 +32,7 @@ import UnlinkedTasksPanel, {
 } from "src/components/unlinked-tasks-panel";
 import { GraphEmptyState } from "src/components/graph-empty-state";
 import { t } from "../i18n";
+import TasksMapPlugin from "../main";
 
 import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
@@ -42,12 +44,14 @@ interface TaskMapGraphViewProps {
   settings: TasksMapSettings;
   filterState: FilterState;
   setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
+  plugin: TasksMapPlugin;
 }
 
 export default function TaskMapGraphView({
   settings,
   filterState,
   setFilterState,
+  plugin,
 }: TaskMapGraphViewProps) {
   const app = useApp();
   const vault = app.vault;
@@ -438,6 +442,27 @@ export default function TaskMapGraphView({
     [setFilterState]
   );
 
+  const handleSavePreset = useCallback(
+    async (name: string, filter: FilterState): Promise<void> => {
+      await plugin.savePreset(name, filter);
+    },
+    [plugin]
+  );
+
+  const handleRenamePreset = useCallback(
+    async (id: string, name: string): Promise<void> => {
+      await plugin.renamePreset(id, name);
+    },
+    [plugin]
+  );
+
+  const handleDeletePreset = useCallback(
+    async (id: string): Promise<void> => {
+      await plugin.deletePreset(id);
+    },
+    [plugin]
+  );
+
   return (
     <TagsContext.Provider value={tagsContextValue}>
       <div
@@ -474,20 +499,30 @@ export default function TaskMapGraphView({
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
         >
-          <GuiOverlay
-            allTags={allTags}
-            filterState={filterState}
-            setFilterState={setFilterState}
-            allFiles={allFiles}
-            reloadTasks={reloadTasks}
-            allStatuses={ALL_STATUSES}
-            showTags={settings.showTags}
-            hideTags={hideTags}
-            setHideTags={toggleHideTags}
-            onSearch={handleSearch}
-            searchResultCount={searchResultCount}
-            suggestionTasks={preSearchFilteredTasks}
-          />
+          <div className="tasks-map-panels-stack">
+            <FilterPresetsPanel
+              presets={settings.filterPresets}
+              filterState={filterState}
+              onApply={(filter) => setFilterState(filter)}
+              onSave={handleSavePreset}
+              onRename={handleRenamePreset}
+              onDelete={handleDeletePreset}
+            />
+            <GuiOverlay
+              allTags={allTags}
+              filterState={filterState}
+              setFilterState={setFilterState}
+              allFiles={allFiles}
+              reloadTasks={reloadTasks}
+              allStatuses={ALL_STATUSES}
+              showTags={settings.showTags}
+              hideTags={hideTags}
+              setHideTags={toggleHideTags}
+              onSearch={handleSearch}
+              searchResultCount={searchResultCount}
+              suggestionTasks={preSearchFilteredTasks}
+            />
+          </div>
           <TaskMinimap />
           <Background />
           {settings.showStatusCounts && (

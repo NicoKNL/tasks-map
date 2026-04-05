@@ -600,12 +600,23 @@ If your plugin does not need CSS, delete this file.
   pointer-events: auto;
 }
 
-/* Filter Panel Styles */
-.tasks-map-filter-panel {
+/* Panels stack — positions both filter + presets panels top-right */
+.tasks-map-panels-stack {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 35;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100% - 32px);
+  /* Allow children to shrink/scroll independently */
+  align-items: stretch;
+}
+
+/* Filter Panel Styles */
+.tasks-map-filter-panel {
   pointer-events: auto;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
@@ -769,11 +780,14 @@ If your plugin does not need CSS, delete this file.
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
   border-radius: 4px;
   flex-shrink: 0;
   width: 28px;
@@ -784,7 +798,8 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-search-icon-button:hover {
   color: var(--text-normal);
-  background: var(--background-modifier-hover);
+  background: var(--background-modifier-hover) !important;
+  box-shadow: none !important;
 }
 
 .tasks-map-search-input {
@@ -797,6 +812,8 @@ If your plugin does not need CSS, delete this file.
   outline: none;
   min-width: 0;
   border-radius: 4px;
+  height: 28px;
+  box-sizing: border-box;
 }
 
 .tasks-map-search-input::placeholder {
@@ -807,18 +824,26 @@ If your plugin does not need CSS, delete this file.
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 2px;
+  padding: 0;
   border-radius: 4px;
   flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
 }
 
 .tasks-map-search-clear:hover {
   color: var(--text-normal);
-  background: var(--background-modifier-hover);
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .tasks-map-search-result-count {
@@ -926,19 +951,23 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-gui-overlay-reload-button {
   width: 100%;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 13px;
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-faint);
+  border: none !important;
   cursor: pointer;
-  transition: opacity 0.2s ease;
 }
 
 .tasks-map-gui-overlay-reload-button:hover {
-  opacity: 0.9;
+  color: var(--text-muted);
+  background: var(--background-modifier-hover) !important;
+  box-shadow: none !important;
 }
 
 /* Legacy styles - kept for backward compatibility */
@@ -1645,4 +1674,185 @@ If your plugin does not need CSS, delete this file.
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Filter Preset Section */
+.tasks-map-preset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tasks-map-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tasks-map-preset-select-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.tasks-map-preset-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tasks-map-preset-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  color: var(--text-faint);
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.tasks-map-preset-action-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover) !important;
+  box-shadow: none !important;
+}
+
+.tasks-map-preset-action-btn--danger:hover {
+  color: var(--text-error);
+  background: rgba(var(--tasks-map-color-red-rgb), 0.12) !important;
+}
+
+.tasks-map-preset-action-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tasks-map-preset-inline-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  padding: 4px 6px;
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.tasks-map-preset-text-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--text-normal);
+  min-width: 0;
+  padding: 0;
+}
+
+.tasks-map-preset-text-input::placeholder {
+  color: var(--text-faint);
+}
+
+.tasks-map-preset-save-btn {
+  width: 100%;
+  padding: 6px 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-faint);
+  cursor: pointer;
+  text-align: center;
+}
+
+.tasks-map-preset-save-btn:hover {
+  color: var(--text-muted);
+  background: var(--background-modifier-hover) !important;
+  box-shadow: none !important;
+}
+
+/* Presets Panel */
+.tasks-map-presets-panel {
+  pointer-events: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(var(--tasks-map-color-black-rgb), 0.15);
+  overflow: hidden;
+}
+
+.tasks-map-presets-panel--collapsed {
+  min-width: unset;
+  overflow: visible;
+}
+
+.tasks-map-presets-panel__header {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.tasks-map-presets-panel--collapsed .tasks-map-presets-panel__header {
+  border-bottom: none;
+}
+
+.tasks-map-presets-panel__title {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  padding: 10px 12px;
+}
+
+.tasks-map-presets-panel__header-icon {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none !important;
+  border-left: 1px solid var(--background-modifier-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--background-secondary) !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  height: auto;
+}
+
+.tasks-map-presets-panel__header-icon:hover {
+  background: var(--background-modifier-hover) !important;
+}
+
+.tasks-map-presets-panel--collapsed .tasks-map-presets-panel__header-icon {
+  border-radius: 0 8px 8px 0 !important;
+  padding: 10px;
+}
+
+.tasks-map-presets-panel__content {
+  padding: 12px;
 }
