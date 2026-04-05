@@ -65,23 +65,9 @@ export default class TaskMapGraphItemView extends ItemView {
   async onOpen() {
     const dataviewCheck = checkDataviewPlugin(this.app);
 
-    // Get the plugin instance to access settings
-    const plugin = (
-      this.app as unknown as {
-        plugins: { plugins: Record<string, TasksMapPlugin> };
-      }
-    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
-    const settings = plugin?.settings;
-
     this.root = createRoot(this.containerEl.children[1]);
 
-    if (dataviewCheck.isReady) {
-      this.root.render(
-        <AppContext.Provider value={this.app}>
-          <TaskMapGraphWrapper pluginSettings={settings} plugin={plugin} />
-        </AppContext.Provider>
-      );
-    } else {
+    if (!dataviewCheck.isReady) {
       this.root.render(
         <div className="tasks-map-centered-message-container">
           <div className="tasks-map-centered-message-content">
@@ -98,7 +84,25 @@ export default class TaskMapGraphItemView extends ItemView {
           </div>
         </div>
       );
+      return;
     }
+
+    // Get the plugin instance to access settings
+    const plugin = (
+      this.app as unknown as {
+        plugins: { plugins: Record<string, TasksMapPlugin> };
+      }
+    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
+
+    if (!plugin) {
+      return;
+    }
+
+    this.root.render(
+      <AppContext.Provider value={this.app}>
+        <TaskMapGraphWrapper pluginSettings={plugin.settings} plugin={plugin} />
+      </AppContext.Provider>
+    );
   }
 
   async onClose() {

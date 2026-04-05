@@ -224,6 +224,7 @@ export default function FilterPresetBar({
               className="tasks-map-preset-action-btn"
               onClick={handleRenameClick}
               title={t("presets.rename")}
+              aria-label={t("presets.rename")}
             >
               <Pencil size={13} />
             </button>
@@ -231,6 +232,7 @@ export default function FilterPresetBar({
               className="tasks-map-preset-action-btn tasks-map-preset-action-btn--danger"
               onClick={() => void handleDelete()}
               title={t("presets.delete")}
+              aria-label={t("presets.delete")}
             >
               <Trash2 size={13} />
             </button>
@@ -252,6 +254,7 @@ export default function FilterPresetBar({
             className="tasks-map-preset-action-btn"
             onClick={() => void handleRenameConfirm()}
             title={t("presets.confirm_rename")}
+            aria-label={t("presets.confirm_rename")}
             disabled={!renameValue.trim()}
           >
             <Check size={13} />
@@ -260,6 +263,7 @@ export default function FilterPresetBar({
             className="tasks-map-preset-action-btn"
             onClick={handleRenameCancel}
             title={t("presets.cancel")}
+            aria-label={t("presets.cancel")}
           >
             <X size={13} />
           </button>
@@ -281,6 +285,7 @@ export default function FilterPresetBar({
             className="tasks-map-preset-action-btn"
             onClick={() => void handleSaveConfirm()}
             title={t("presets.confirm_save")}
+            aria-label={t("presets.confirm_save")}
             disabled={!newName.trim()}
           >
             <Check size={13} />
@@ -289,6 +294,7 @@ export default function FilterPresetBar({
             className="tasks-map-preset-action-btn"
             onClick={handleSaveCancel}
             title={t("presets.cancel")}
+            aria-label={t("presets.cancel")}
           >
             <X size={13} />
           </button>

@@ -606,14 +606,13 @@ If your plugin does not need CSS, delete this file.
   top: 16px;
   right: 16px;
   z-index: 35;
-  pointer-events: auto;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-height: calc(100% - 32px);
   /* Allow children to shrink/scroll independently */
   align-items: stretch;
-  min-width: 280px;
 }
 
 /* Filter Panel Styles */
@@ -1678,15 +1677,6 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Filter Preset Section */
-.tasks-map-preset-bar-section {
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 .tasks-map-preset-section {
   display: flex;
   flex-direction: column;

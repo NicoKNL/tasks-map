@@ -11,7 +11,10 @@ import { initI18n, changeLanguage, t } from "./i18n";
 import { FilterState } from "./types/filter-state";
 
 export default class TasksMapPlugin extends Plugin {
-  settings: TasksMapSettings = DEFAULT_SETTINGS;
+  settings: TasksMapSettings = {
+    ...DEFAULT_SETTINGS,
+    filterPresets: [...DEFAULT_SETTINGS.filterPresets],
+  };
 
   async onload() {
     // Load settings
