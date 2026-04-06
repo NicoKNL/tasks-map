@@ -22,12 +22,13 @@ module.exports = {
     '^lucide-react$': '<rootDir>/test/mocks/lucide-react.ts',
     '^react-select/creatable$': '<rootDir>/test/mocks/react-select.ts',
   },
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: {
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
+        rootDir: '.',
       },
-    },
+    }],
   },
 };

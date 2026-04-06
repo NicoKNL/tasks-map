@@ -15,6 +15,7 @@
     "isolatedModules": true,
     "strictNullChecks": true,
     "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0",
     "lib": [
       "DOM",
       "ES5",
