@@ -137,7 +137,7 @@
   "embed": {
     "pick_note_placeholder": "选择笔记...",
     "dataview_required": "任务地图需要 Dataview 插件。",
-    "plugin_not_found": "无法加载任务地图插件。",
-    "invalid_json": "此任务地图嵌入块包含无效的 JSON。请通过命令面板重新插入以修复。"
+    "invalid_json": "此任务地图嵌入块包含无效的 JSON。请通过命令面板重新插入以修复。",
+    "legacy_format": "此任务地图嵌入块使用过时的格式。请通过命令面板重新插入以迁移。"
   }
 }

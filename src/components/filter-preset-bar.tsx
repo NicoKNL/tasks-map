@@ -3,7 +3,7 @@ import Select, { SingleValue } from "react-select";
 import { Check, FileDown, Pencil, Trash2, X } from "lucide-react";
 import { FilterPreset } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
-import TasksMapPlugin from "../main";
+import type TasksMapPlugin from "../main";
 import { t } from "../i18n";
 
 interface FilterPresetBarProps {

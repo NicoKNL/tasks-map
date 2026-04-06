@@ -1,6 +1,12 @@
 import React from "react";
-import { WorkspaceLeaf, Plugin, TFile, FuzzySuggestModal } from "obsidian";
-import { createRoot, Root } from "react-dom/client";
+import {
+  WorkspaceLeaf,
+  Plugin,
+  TFile,
+  FuzzySuggestModal,
+  MarkdownRenderChild,
+} from "obsidian";
+import { createRoot } from "react-dom/client";
 
 import TaskMapGraphItemView, { VIEW_TYPE } from "./views/TaskMapGraphItemView";
 import TaskMapGraphEmbedView, {
@@ -51,9 +57,6 @@ export default class TasksMapPlugin extends Plugin {
     filterPresets: [...DEFAULT_SETTINGS.filterPresets],
   };
 
-  // Track embed roots so they can be unmounted on processor cleanup
-  private embedRoots: Root[] = [];
-
   async onload() {
     // Load settings
     await this.loadSettings();
@@ -92,11 +95,16 @@ export default class TasksMapPlugin extends Plugin {
     // Register the tasks-map fenced code block processor
     this.registerMarkdownCodeBlockProcessor(
       EMBED_CODE_BLOCK,
-      (source, el, _ctx) => {
+      (source, el, ctx) => {
         const dataviewCheck = checkDataviewPlugin(this.app);
 
         const root = createRoot(el);
-        this.embedRoots.push(root);
+
+        // Register cleanup via MarkdownRenderChild so the root is unmounted
+        // when the embed is removed or the preview re-renders
+        const child = new MarkdownRenderChild(el);
+        child.onunload = () => root.unmount();
+        ctx.addChild(child);
 
         if (!dataviewCheck.isReady) {
           root.render(
@@ -107,8 +115,13 @@ export default class TasksMapPlugin extends Plugin {
 
         const parsed = filterStateFromSource(source);
 
-        if (parsed === null) {
+        if (parsed.kind === "invalid") {
           root.render(<TaskMapEmbedError message={t("embed.invalid_json")} />);
+          return;
+        }
+
+        if (parsed.kind === "legacy") {
+          root.render(<TaskMapEmbedError message={t("embed.legacy_format")} />);
           return;
         }
 
@@ -191,7 +204,11 @@ export default class TasksMapPlugin extends Plugin {
   }
 
   private getCurrentFilterState(): FilterState {
-    // Fall back to an empty filter if no active view is found
+    const leaf = this.app.workspace.getMostRecentLeaf();
+    if (leaf?.view instanceof TaskMapGraphItemView) {
+      return leaf.view.getFilterState();
+    }
+    // Fall back to an empty filter if no active Tasks Map view is found
     return { ...DEFAULT_FILTER_STATE };
   }
 
@@ -213,8 +230,6 @@ export default class TasksMapPlugin extends Plugin {
   }
 
   async onunload() {
-    // Unmount all embed React roots to prevent leaks
-    this.embedRoots.forEach((root) => root.unmount());
-    this.embedRoots = [];
+    // Embed roots are cleaned up individually via MarkdownRenderChild
   }
 }

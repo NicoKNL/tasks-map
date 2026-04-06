@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { FilterPreset } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
 import FilterPresetBar from "./filter-preset-bar";
-import TasksMapPlugin from "../main";
+import type TasksMapPlugin from "../main";
 import { t } from "../i18n";
 
 interface FilterPresetsPanelProps {

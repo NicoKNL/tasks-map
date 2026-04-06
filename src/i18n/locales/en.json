@@ -137,7 +137,7 @@
   "embed": {
     "pick_note_placeholder": "Choose a note...",
     "dataview_required": "Tasks Map requires the Dataview plugin.",
-    "plugin_not_found": "Tasks Map plugin could not be loaded.",
-    "invalid_json": "This Tasks Map embed contains invalid JSON. Re-insert it using the command palette to fix it."
+    "invalid_json": "This Tasks Map embed contains invalid JSON. Re-insert it using the command palette to fix it.",
+    "legacy_format": "This Tasks Map embed uses an outdated format. Re-insert it using the command palette to migrate it."
   }
 }

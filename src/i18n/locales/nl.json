@@ -137,7 +137,7 @@
   "embed": {
     "pick_note_placeholder": "Kies een notitie...",
     "dataview_required": "Taken Kaart vereist de Dataview-plugin.",
-    "plugin_not_found": "Taken Kaart-plugin kon niet worden geladen.",
-    "invalid_json": "Dit Taken Kaart-blok bevat ongeldige JSON. Voeg het opnieuw in via het opdrachtenpalet om het te herstellen."
+    "invalid_json": "Dit Taken Kaart-blok bevat ongeldige JSON. Voeg het opnieuw in via het opdrachtenpalet om het te herstellen.",
+    "legacy_format": "Dit Taken Kaart-blok gebruikt een verouderd formaat. Voeg het opnieuw in via het opdrachtenpalet om het te migreren."
   }
 }
