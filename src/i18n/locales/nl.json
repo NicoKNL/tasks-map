@@ -4,7 +4,8 @@
     "description": "Een grafische weergave van je taken"
   },
   "commands": {
-    "open_map_view": "Kaartweergave openen"
+    "open_map_view": "Kaartweergave openen",
+    "insert_filter_as_code_block": "Huidig filter invoegen als ingesloten Taken Kaart"
   },
   "ribbon": {
     "open_tasks_map": "Taken kaartweergave openen"
@@ -130,6 +131,13 @@
     "cancel": "Annuleren",
     "apply": "Voorinstelling toepassen: {{name}}",
     "rename": "Voorinstelling hernoemen",
-    "delete": "Voorinstelling verwijderen"
+    "delete": "Voorinstelling verwijderen",
+    "insert_into_note": "Invoegen in notitie"
+  },
+  "embed": {
+    "pick_note_placeholder": "Kies een notitie...",
+    "dataview_required": "Taken Kaart vereist de Dataview-plugin.",
+    "invalid_json": "Dit Taken Kaart-blok bevat ongeldige JSON. Voeg het opnieuw in via het opdrachtenpalet om het te herstellen.",
+    "legacy_format": "Dit Taken Kaart-blok gebruikt een verouderd formaat. Voeg het opnieuw in via het opdrachtenpalet om het te migreren."
   }
 }

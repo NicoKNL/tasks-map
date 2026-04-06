@@ -91,3 +91,5 @@ Both checkboxes can be active at the same time.
 ### Reload Tasks
 
 Click **Reload Tasks** to re-read all tasks from the vault. Use this after making changes to notes outside the graph view.
+
+You can also embed a Tasks Map directly in a note — see [Embedding a Tasks Map](embedding.md).

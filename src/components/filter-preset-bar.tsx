@@ -1,13 +1,15 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Select, { SingleValue } from "react-select";
-import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, FileDown, Pencil, Trash2, X } from "lucide-react";
 import { FilterPreset } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
+import type TasksMapPlugin from "../main";
 import { t } from "../i18n";
 
 interface FilterPresetBarProps {
   presets: FilterPreset[];
   filterState: FilterState;
+  plugin: TasksMapPlugin;
   onApply: (_filter: FilterState) => void;
   onSave: (_name: string, _filter: FilterState) => Promise<void>;
   onRename: (_id: string, _name: string) => Promise<void>;
@@ -19,6 +21,7 @@ type PresetOption = { value: string; label: string };
 export default function FilterPresetBar({
   presets,
   filterState,
+  plugin,
   onApply,
   onSave,
   onRename,
@@ -140,6 +143,11 @@ export default function FilterPresetBar({
     setSelectedId(null);
   }, [selectedId, onDelete]);
 
+  const handleInsert = useCallback(() => {
+    if (!selectedPreset) return;
+    plugin.insertPresetIntoNote(selectedPreset);
+  }, [selectedPreset, plugin]);
+
   const options: PresetOption[] = presets.map((p) => ({
     value: p.id,
     label: p.name,
@@ -231,6 +239,14 @@ export default function FilterPresetBar({
 
         {selectedPreset && !isRenaming && !isSaving && (
           <div className="tasks-map-preset-actions">
+            <button
+              className="tasks-map-preset-action-btn"
+              onClick={handleInsert}
+              title={t("presets.insert_into_note")}
+              aria-label={t("presets.insert_into_note")}
+            >
+              <FileDown size={13} />
+            </button>
             <button
               className="tasks-map-preset-action-btn"
               onClick={handleRenameClick}

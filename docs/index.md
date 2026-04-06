@@ -8,6 +8,9 @@
 
 ![Tasks Map Example](https://raw.githubusercontent.com/NicoKNL/tasks-map/main/.github/images/example.png)
 
+!!! note
+    Tasks Map is currently pre-v1.0. Interfaces such as the embed format, filter field names, and settings may change between releases before v1.0 is reached.
+
 ## Features
 
 - **Graph Visualization:** See all your tasks as draggable nodes in a React Flow graph.

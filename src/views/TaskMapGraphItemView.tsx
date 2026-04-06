@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import { ReactFlowProvider } from "reactflow";
@@ -14,9 +14,11 @@ import { t } from "../i18n";
 function TaskMapGraphWrapper({
   pluginSettings,
   plugin,
+  onFilterStateChange,
 }: {
   pluginSettings: TasksMapSettings;
   plugin: TasksMapPlugin;
+  onFilterStateChange: (_state: FilterState) => void;
 }) {
   const [settings, setSettings] = useState<TasksMapSettings>({
     ...pluginSettings,
@@ -33,12 +35,23 @@ function TaskMapGraphWrapper({
     ...DEFAULT_FILTER_STATE,
   });
 
+  const handleSetFilterState = useCallback(
+    (state: FilterState | ((_prev: FilterState) => FilterState)) => {
+      setFilterState((prev) => {
+        const next = typeof state === "function" ? state(prev) : state;
+        onFilterStateChange(next);
+        return next;
+      });
+    },
+    [onFilterStateChange]
+  );
+
   return (
     <ReactFlowProvider>
       <TaskMapGraphView
         settings={settings}
         filterState={filterState}
-        setFilterState={setFilterState}
+        setFilterState={handleSetFilterState}
         plugin={plugin}
       />
     </ReactFlowProvider>
@@ -49,6 +62,7 @@ export const VIEW_TYPE = "tasks-map-graph-view";
 
 export default class TaskMapGraphItemView extends ItemView {
   root: Root | null = null;
+  private filterState: FilterState = { ...DEFAULT_FILTER_STATE };
 
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
@@ -60,6 +74,11 @@ export default class TaskMapGraphItemView extends ItemView {
 
   getDisplayText() {
     return t("view.title");
+  }
+
+  /** Returns the current filter state of the open Tasks Map view. */
+  getFilterState(): FilterState {
+    return structuredClone(this.filterState);
   }
 
   async onOpen() {
@@ -113,7 +132,13 @@ export default class TaskMapGraphItemView extends ItemView {
 
     this.root.render(
       <AppContext.Provider value={this.app}>
-        <TaskMapGraphWrapper pluginSettings={plugin.settings} plugin={plugin} />
+        <TaskMapGraphWrapper
+          pluginSettings={plugin.settings}
+          plugin={plugin}
+          onFilterStateChange={(state) => {
+            this.filterState = state;
+          }}
+        />
       </AppContext.Provider>
     );
   }
