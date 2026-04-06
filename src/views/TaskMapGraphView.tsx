@@ -31,6 +31,7 @@ import UnlinkedTasksPanel, {
   DRAG_DATA_KEY,
 } from "src/components/unlinked-tasks-panel";
 import { GraphEmptyState } from "src/components/graph-empty-state";
+import ControlsPanel from "src/components/controls-panel";
 import { t } from "../i18n";
 import TasksMapPlugin from "../main";
 
@@ -68,6 +69,9 @@ export default function TaskMapGraphView({
   const skipFitViewRef = React.useRef(false);
 
   const [hideTags, setHideTags] = React.useState(false);
+  const [hideUnlinkedTasks, setHideUnlinkedTasks] = React.useState(
+    embed.hideUnlinkedTasks
+  );
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Tracks which unlinked task IDs have been dropped onto the canvas this session
@@ -221,12 +225,14 @@ export default function TaskMapGraphView({
   }, [allUnlinkedTasks, droppedTaskIds, filterState]);
 
   // Tasks that are linked OR have been dropped onto the canvas this session
+  // OR all tasks when hideUnlinkedTasks is disabled (unlinked appear as isolated nodes)
   const graphTasks = useMemo(() => {
+    if (!hideUnlinkedTasks) return tasks;
     const unlinkedIds = new Set(allUnlinkedTasks.map((t) => t.id));
     return tasks.filter(
       (t) => !unlinkedIds.has(t.id) || droppedTaskIds.has(t.id)
     );
-  }, [tasks, allUnlinkedTasks, droppedTaskIds]);
+  }, [tasks, allUnlinkedTasks, droppedTaskIds, hideUnlinkedTasks]);
 
   useEffect(() => {
     let newNodes = createNodesFromTasks(
@@ -480,7 +486,9 @@ export default function TaskMapGraphView({
         onDrop={onDrop}
         onDragOver={onDragOver}
       >
-        {embed.showUnlinkedPanel && <UnlinkedTasksPanel tasks={sidebarTasks} />}
+        {embed.showUnlinkedPanel && hideUnlinkedTasks && (
+          <UnlinkedTasksPanel tasks={sidebarTasks} />
+        )}
         {isLoading && (
           <div className="tasks-map-loading-container">
             <div className="tasks-map-spinner" />
@@ -526,16 +534,21 @@ export default function TaskMapGraphView({
                 filterState={filterState}
                 setFilterState={setFilterState}
                 allFiles={allFiles}
-                reloadTasks={reloadTasks}
                 allStatuses={ALL_STATUSES}
-                showTags={settings.showTags}
-                hideTags={hideTags}
-                setHideTags={toggleHideTags}
                 onSearch={handleSearch}
                 searchResultCount={searchResultCount}
                 suggestionTasks={preSearchFilteredTasks}
               />
             )}
+            <ControlsPanel
+              showTags={settings.showTags}
+              hideTags={hideTags}
+              setHideTags={toggleHideTags}
+              reloadTasks={reloadTasks}
+              showUnlinkedPanel={embed.showUnlinkedPanel}
+              hideUnlinkedTasks={hideUnlinkedTasks}
+              setHideUnlinkedTasks={setHideUnlinkedTasks}
+            />
           </div>
           {embed.showMinimap && <TaskMinimap />}
           <Background />

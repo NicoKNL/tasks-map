@@ -78,6 +78,7 @@
     "exclude_labels": "Exclude labels",
     "files_folders": "Files / Folders",
     "hide_tags_on_nodes": "Hide tags on nodes",
+    "hide_unlinked_tasks": "Hide unlinked tasks",
     "reload_tasks": "Reload tasks",
     "expand_filters": "Expand filters",
     "minimize_filters": "Minimize filters",
@@ -90,6 +91,11 @@
     "status_total": "Total",
     "only_starred": "Starred only",
     "title": "Filters"
+  },
+  "controls": {
+    "title": "View",
+    "expand": "Expand view controls",
+    "minimize": "Minimize view controls"
   },
   "multiselect": {
     "select": "Select...",

@@ -610,6 +610,7 @@ If your plugin does not need CSS, delete this file.
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 360px;
   max-height: calc(100% - 32px);
   /* Allow children to shrink/scroll independently */
   align-items: stretch;
@@ -621,7 +622,6 @@ If your plugin does not need CSS, delete this file.
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
-  min-width: 280px;
   max-height: calc(100% - 32px);
   display: flex;
   flex-direction: column;

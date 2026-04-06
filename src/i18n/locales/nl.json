@@ -78,6 +78,7 @@
     "exclude_labels": "Labels uitsluiten",
     "files_folders": "Bestanden / Mappen",
     "hide_tags_on_nodes": "Tags op knooppunten verbergen",
+    "hide_unlinked_tasks": "Niet-gekoppelde taken verbergen",
     "reload_tasks": "Taken opnieuw laden",
     "expand_filters": "Filters uitvouwen",
     "minimize_filters": "Filters minimaliseren",
@@ -90,6 +91,11 @@
     "status_total": "Totaal",
     "only_starred": "Alleen gemarkeerd",
     "title": "Filters"
+  },
+  "controls": {
+    "title": "Weergave",
+    "expand": "Weergavebediening uitvouwen",
+    "minimize": "Weergavebediening minimaliseren"
   },
   "multiselect": {
     "select": "Selecteer...",

@@ -132,6 +132,10 @@ function coerceEmbedConfig(raw: Record<string, unknown>): EmbedConfig {
       raw.showUnlinkedPanel,
       DEFAULT_EMBED_CONFIG.showUnlinkedPanel
     ),
+    hideUnlinkedTasks: coerceBool(
+      raw.hideUnlinkedTasks,
+      DEFAULT_EMBED_CONFIG.hideUnlinkedTasks
+    ),
     showStatusCounts: coerceBool(
       raw.showStatusCounts,
       DEFAULT_EMBED_CONFIG.showStatusCounts
