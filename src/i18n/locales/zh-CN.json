@@ -78,6 +78,7 @@
     "exclude_labels": "排除标签",
     "files_folders": "文件 / 文件夹",
     "hide_tags_on_nodes": "隐藏节点上的标签",
+    "hide_unlinked_tasks": "隐藏未链接的任务",
     "reload_tasks": "重新加载任务",
     "expand_filters": "展开筛选器",
     "minimize_filters": "最小化筛选器",
@@ -90,6 +91,11 @@
     "status_total": "总计",
     "only_starred": "仅显示收藏",
     "title": "筛选"
+  },
+  "controls": {
+    "title": "视图",
+    "expand": "展开视图控制",
+    "minimize": "最小化视图控制"
   },
   "multiselect": {
     "select": "选择...",

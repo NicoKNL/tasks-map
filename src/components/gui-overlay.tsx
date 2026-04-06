@@ -12,11 +12,7 @@ interface GuiOverlayProps {
   filterState: FilterState;
   setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
   allFiles: string[];
-  reloadTasks: () => void;
   allStatuses: TaskStatus[];
-  showTags?: boolean;
-  hideTags?: boolean;
-  setHideTags: () => void;
   onSearch: (_query: string) => void;
   searchResultCount: number | null;
   suggestionTasks: BaseTask[];
@@ -28,11 +24,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
     filterState,
     setFilterState,
     allFiles,
-    reloadTasks,
     allStatuses,
-    showTags = true,
-    hideTags = false,
-    setHideTags,
     onSearch,
     searchResultCount,
     suggestionTasks,
@@ -82,10 +74,6 @@ export default function GuiOverlay(props: GuiOverlayProps) {
   useEffect(() => {
     setSelectedSuggestion(-1);
   }, [suggestions]);
-
-  const handleToggleHideTags = () => {
-    setHideTags();
-  };
 
   const toggleMinimized = () => {
     setIsMinimized((prev) => !prev);
@@ -362,32 +350,6 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                   </span>
                 </label>
               </div>
-
-              {showTags && (
-                <div className="tasks-map-filter-item">
-                  <label className="tasks-map-gui-overlay-checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={hideTags}
-                      onChange={handleToggleHideTags}
-                      className="tasks-map-gui-overlay-checkbox-input"
-                    />
-                    <span className="tasks-map-gui-overlay-checkbox-text">
-                      {t("filters.hide_tags_on_nodes")}
-                    </span>
-                  </label>
-                </div>
-              )}
-            </div>
-
-            {/* Reload Button */}
-            <div className="tasks-map-filter-actions">
-              <button
-                onClick={reloadTasks}
-                className="tasks-map-gui-overlay-reload-button"
-              >
-                {t("filters.reload_tasks")}
-              </button>
             </div>
           </div>
         </>
