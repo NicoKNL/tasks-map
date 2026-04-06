@@ -209,11 +209,16 @@ export default function TaskMapGraphView({
   // Compute which tasks are unlinked (no connections at all)
   const allUnlinkedTasks = useMemo(() => getUnlinkedTasks(tasks), [tasks]);
 
-  // Tasks visible in the sidebar: unlinked and not yet dropped onto the canvas
-  const sidebarTasks = useMemo(
-    () => allUnlinkedTasks.filter((t) => !droppedTaskIds.has(t.id)),
-    [allUnlinkedTasks, droppedTaskIds]
-  );
+  // Tasks visible in the sidebar: unlinked, not yet dropped, and matching the active filter
+  const sidebarTasks = useMemo(() => {
+    const undroppedUnlinked = allUnlinkedTasks.filter(
+      (t) => !droppedTaskIds.has(t.id)
+    );
+    const filteredIds = new Set(
+      getFilteredNodeIds(undroppedUnlinked, filterState)
+    );
+    return undroppedUnlinked.filter((t) => filteredIds.has(t.id));
+  }, [allUnlinkedTasks, droppedTaskIds, filterState]);
 
   // Tasks that are linked OR have been dropped onto the canvas this session
   const graphTasks = useMemo(() => {
