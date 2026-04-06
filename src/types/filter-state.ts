@@ -14,7 +14,7 @@ export interface FilterState {
 export const DEFAULT_FILTER_STATE: FilterState = {
   selectedTags: [],
   excludedTags: [],
-  selectedStatuses: ["todo", "in_progress", "done", "canceled"],
+  selectedStatuses: [],
   selectedFiles: [],
   searchQuery: "",
   traversalMode: "match",
