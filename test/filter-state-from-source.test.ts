@@ -180,6 +180,30 @@ describe("filterStateFromSource", () => {
       if (result.kind !== "ok") return;
       expect(result.filter.traversalMode).toBe("upstream");
     });
+
+    it("falls back to default selectedStatuses when array contains an unknown status", () => {
+      const source = JSON.stringify({
+        filter: { selectedStatuses: ["todo", "unknown_status"] },
+        config: {},
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.filter.selectedStatuses).toEqual(
+        DEFAULT_FILTER_STATE.selectedStatuses
+      );
+    });
+
+    it("accepts a valid selectedStatuses array", () => {
+      const source = JSON.stringify({
+        filter: { selectedStatuses: ["todo", "done"] },
+        config: {},
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.filter.selectedStatuses).toEqual(["todo", "done"]);
+    });
   });
 
   describe("edge cases", () => {

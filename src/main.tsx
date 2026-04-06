@@ -219,8 +219,7 @@ export default class TasksMapPlugin extends Plugin {
   ): Promise<void> {
     const payload = JSON.stringify({ filter, config }, null, 2);
     const block = `\n\`\`\`${EMBED_CODE_BLOCK}\n${payload}\n\`\`\`\n`;
-    const existing = await this.app.vault.read(file);
-    await this.app.vault.modify(file, existing + block);
+    await this.app.vault.process(file, (content) => content + block);
   }
 
   async activateViewInMainArea() {

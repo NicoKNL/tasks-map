@@ -78,7 +78,7 @@ export default class TaskMapGraphItemView extends ItemView {
 
   /** Returns the current filter state of the open Tasks Map view. */
   getFilterState(): FilterState {
-    return { ...this.filterState };
+    return structuredClone(this.filterState);
   }
 
   async onOpen() {
