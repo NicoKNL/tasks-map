@@ -139,7 +139,12 @@ function coerceEmbedConfig(raw: Record<string, unknown>): EmbedConfig {
   };
 }
 
-const VALID_TRAVERSAL_MODES = ["match", "upstream", "downstream"] as const;
+const VALID_TRAVERSAL_MODES = [
+  "match",
+  "upstream",
+  "downstream",
+  "both",
+] as const;
 type TraversalMode = (typeof VALID_TRAVERSAL_MODES)[number];
 
 function isValidTraversalMode(value: unknown): value is TraversalMode {

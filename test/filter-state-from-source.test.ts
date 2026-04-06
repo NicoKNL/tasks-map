@@ -181,6 +181,17 @@ describe("filterStateFromSource", () => {
       expect(result.filter.traversalMode).toBe("upstream");
     });
 
+    it('accepts "both" as a valid traversalMode value', () => {
+      const source = JSON.stringify({
+        filter: { traversalMode: "both" },
+        config: {},
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.filter.traversalMode).toBe("both");
+    });
+
     it("falls back to default selectedStatuses when array contains an unknown status", () => {
       const source = JSON.stringify({
         filter: { selectedStatuses: ["todo", "unknown_status"] },
