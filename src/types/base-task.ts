@@ -1,6 +1,8 @@
 import { App, Vault } from "obsidian";
 import { TaskStatus } from "./task";
 
+export type TaskInsertPosition = "before" | "after";
+
 /**
  * Abstract base class for tasks.
  * Each task type (dataview, note) extends this class and implements its own behavior.
@@ -47,7 +49,11 @@ export abstract class BaseTask {
   /**
    * Add a new task line to the vault
    */
-  abstract addTaskLine(_newTaskLine: string, _app: App): Promise<void>;
+  abstract addTaskLine(
+    _newTaskLine: string,
+    _app: App,
+    _position?: TaskInsertPosition
+  ): Promise<void>;
 
   /**
    * Delete the task from the vault

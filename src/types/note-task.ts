@@ -1,6 +1,7 @@
 import { App, Vault, parseYaml, stringifyYaml } from "obsidian";
 import { BaseTask } from "./base-task";
 import { TaskStatus } from "./task";
+import { TaskInsertPosition } from "./base-task";
 
 interface DependencyEntry {
   uid: string;
@@ -54,7 +55,11 @@ export class NoteTask extends BaseTask {
     });
   }
 
-  async addTaskLine(newTaskLine: string, app: App): Promise<void> {
+  async addTaskLine(
+    newTaskLine: string,
+    app: App,
+    _position: TaskInsertPosition = "after"
+  ): Promise<void> {
     if (!this.link) {
       console.log("!task.link: ", newTaskLine);
       return;
@@ -231,8 +236,6 @@ export class NoteTask extends BaseTask {
             if (tagMatch && tagMatch[1] === tagToRemove) {
               // Found the tag, remove it
               lines.splice(i, 1);
-              // eslint-disable-next-line no-useless-assignment
-              frontmatterEnd--; // TODO: refactor to avoid reassignment (no-useless-assignment)
               break;
             }
             i++;

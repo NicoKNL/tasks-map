@@ -1,6 +1,7 @@
 import { App, Vault } from "obsidian";
 import { BaseTask } from "./base-task";
 import { TaskStatus } from "./task";
+import { TaskInsertPosition } from "./base-task";
 import {
   findTaskLineByIdOrText,
   statusSymbols,
@@ -71,7 +72,11 @@ export class DataviewTask extends BaseTask {
     });
   }
 
-  async addTaskLine(newTaskLine: string, app: App): Promise<void> {
+  async addTaskLine(
+    newTaskLine: string,
+    app: App,
+    position: TaskInsertPosition = "after"
+  ): Promise<void> {
     if (!this.link) {
       console.log("!task.link: ", newTaskLine);
       return;
@@ -96,7 +101,10 @@ export class DataviewTask extends BaseTask {
         return fileContent;
       }
 
-      const insertIdx = Math.min(taskLineIdx + 1, lines.length);
+      const insertIdx =
+        position === "before"
+          ? taskLineIdx
+          : Math.min(taskLineIdx + 1, lines.length);
       lines.splice(insertIdx, 0, newTaskLine);
 
       return lines.join("\n");

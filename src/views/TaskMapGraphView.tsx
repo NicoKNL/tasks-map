@@ -16,6 +16,10 @@ import {
   createNodesFromTasks,
   createEdgesFromTasks,
   getUnlinkedTasks,
+  addTaskLineToVault,
+  deleteTaskFromVault,
+  getTasksApi,
+  parseTaskLine,
 } from "src/lib/utils";
 import { BaseTask } from "src/types/task";
 import GuiOverlay from "src/components/gui-overlay";
@@ -39,6 +43,7 @@ import { TaskStatus } from "src/types/task";
 import { TasksMapSettings } from "src/types/settings";
 import { FilterState } from "src/types/filter-state";
 import { EmbedConfig, DEFAULT_EMBED_CONFIG } from "src/types/embed-config";
+import { TaskInsertPosition } from "src/types/base-task";
 
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
@@ -67,6 +72,10 @@ export default function TaskMapGraphView({
   const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
   const skipFitViewRef = React.useRef(false);
+  const connectStartRef = React.useRef<{
+    nodeId: string;
+    handleType: "source" | "target";
+  } | null>(null);
 
   const [hideTags, setHideTags] = React.useState(false);
   const [hideUnlinkedTasks, setHideUnlinkedTasks] = React.useState(
@@ -384,6 +393,143 @@ export default function TaskMapGraphView({
     ]
   );
 
+  const createUpdatedTask = useCallback(
+    (task: BaseTask, incomingLinks: string[]) =>
+      Object.assign(Object.create(Object.getPrototypeOf(task)), task, {
+        incomingLinks,
+      }) as BaseTask,
+    []
+  );
+
+  const createConnectedTask = useCallback(
+    async (
+      anchorTask: BaseTask,
+      position: TaskInsertPosition,
+      relation: "before" | "after"
+    ) => {
+      if (!vault || anchorTask.type !== "dataview") {
+        return;
+      }
+
+      const tasksApi = getTasksApi(app);
+      if (!tasksApi) {
+        console.error("Tasks plugin not found or API not available");
+        return;
+      }
+
+      const taskLine = await tasksApi.createTaskLineModal();
+      if (!taskLine?.trim()) {
+        return;
+      }
+
+      const newTask = parseTaskLine(taskLine, anchorTask.link);
+      if (!newTask || newTask.type !== anchorTask.type) {
+        return;
+      }
+
+      try {
+        await addTaskLineToVault(anchorTask, taskLine, app, position);
+
+        if (relation === "after") {
+          await addLinkSignsBetweenTasks(
+            vault,
+            anchorTask,
+            newTask,
+            settings.linkingStyle
+          );
+        } else {
+          await addLinkSignsBetweenTasks(
+            vault,
+            newTask,
+            anchorTask,
+            settings.linkingStyle
+          );
+        }
+
+        skipFitViewRef.current = true;
+        setTasks((prevTasks) => {
+          const nextTasks =
+            relation === "after"
+              ? prevTasks
+              : prevTasks.map((task) =>
+                  task.id === anchorTask.id
+                    ? createUpdatedTask(task, [...task.incomingLinks, newTask.id])
+                    : task
+                );
+
+          if (relation === "after") {
+            newTask.incomingLinks = [...newTask.incomingLinks, anchorTask.id];
+          }
+
+          return [...nextTasks, newTask];
+        });
+      } catch (error) {
+        console.error("Failed to create connected task:", error);
+
+        try {
+          await deleteTaskFromVault(newTask, app);
+        } catch (rollbackError) {
+          console.error("Failed to rollback created task:", rollbackError);
+        }
+      }
+    },
+    [app, createUpdatedTask, settings.linkingStyle, vault]
+  );
+
+  const onConnectStart = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (_event: any, params: any) => {
+      if (!params?.nodeId || !params?.handleType) {
+        connectStartRef.current = null;
+        return;
+      }
+
+      connectStartRef.current = {
+        nodeId: params.nodeId,
+        handleType: params.handleType,
+      };
+    },
+    []
+  );
+
+  const onConnectEnd = useCallback(
+    async (event: MouseEvent | TouchEvent) => {
+      const connectStart = connectStartRef.current;
+      connectStartRef.current = null;
+
+      if (!connectStart) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const endedOnHandle = target.closest(".react-flow__handle");
+      const endedOnNode = target.closest(".react-flow__node");
+      const endedOnCanvas = target.closest(
+        ".react-flow__pane, .react-flow__background"
+      );
+
+      if (endedOnHandle || endedOnNode || !endedOnCanvas) {
+        return;
+      }
+
+      const anchorTask = tasks.find((task) => task.id === connectStart.nodeId);
+      if (!anchorTask) {
+        return;
+      }
+
+      if (connectStart.handleType === "source") {
+        await createConnectedTask(anchorTask, "after", "after");
+      } else {
+        await createConnectedTask(anchorTask, "before", "before");
+      }
+    },
+    [createConnectedTask, tasks]
+  );
+
   // Handle drop of an unlinked task from the sidebar onto the graph canvas
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -512,6 +658,8 @@ export default function TaskMapGraphView({
           minZoom={0.1}
           fitView
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
           onEdgeClick={onEdgeClick}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
