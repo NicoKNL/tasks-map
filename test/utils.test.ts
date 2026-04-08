@@ -8,6 +8,7 @@ import {
   createEdgesFromTasks,
   checkDataviewPlugin,
   estimateNodeDimensions,
+  getLayoutedElements,
   getUnlinkedTasks,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
@@ -27,6 +28,53 @@ function makeTask(
     starred: false,
     ...overrides,
   });
+}
+
+function getComponentBounds(
+  nodeIds: string[],
+  positionById: Map<string, { x: number; y: number }>
+) {
+  const bounds = nodeIds.map((nodeId) => {
+    const position = positionById.get(nodeId) || { x: 0, y: 0 };
+    const dimensions = estimateNodeDimensions(makeTask({ id: nodeId }));
+    return {
+      minX: position.x,
+      minY: position.y,
+      maxX: position.x + dimensions.width,
+      maxY: position.y + dimensions.height,
+    };
+  });
+
+  return {
+    minX: Math.min(...bounds.map((bound) => bound.minX)),
+    minY: Math.min(...bounds.map((bound) => bound.minY)),
+    maxX: Math.max(...bounds.map((bound) => bound.maxX)),
+    maxY: Math.max(...bounds.map((bound) => bound.maxY)),
+  };
+}
+
+function getAxisGap(
+  first: { minX: number; minY: number; maxX: number; maxY: number },
+  second: { minX: number; minY: number; maxX: number; maxY: number },
+  axis: "x" | "y"
+) {
+  if (axis === "x") {
+    if (first.maxX <= second.minX) {
+      return second.minX - first.maxX;
+    }
+    if (second.maxX <= first.minX) {
+      return first.minX - second.maxX;
+    }
+    return 0;
+  }
+
+  if (first.maxY <= second.minY) {
+    return second.minY - first.maxY;
+  }
+  if (second.maxY <= first.minY) {
+    return first.minY - second.maxY;
+  }
+  return 0;
 }
 
 describe("addDateToTask", () => {
@@ -354,6 +402,70 @@ describe("createEdgesFromTasks", () => {
     expect(edges[0].data?.debugVisualization).toBe(true);
     expect(edges[0].data?.edgeStyle).toBe("SmoothStep");
     expect(edges[0].data?.smoothStepRadius).toBe(20);
+  });
+});
+
+describe("getLayoutedElements", () => {
+  it("adds extra horizontal spacing between disconnected components", () => {
+    const tasks = [
+      makeTask({ id: "A", incomingLinks: [] }),
+      makeTask({ id: "B", incomingLinks: ["A"] }),
+      makeTask({ id: "C", incomingLinks: [] }),
+      makeTask({ id: "D", incomingLinks: ["C"] }),
+    ];
+    const nodes = createNodesFromTasks(tasks, "Horizontal");
+    const edges = createEdgesFromTasks(tasks, "Horizontal");
+    const layoutedNodes = getLayoutedElements(nodes, edges, "Horizontal");
+    const positionById = new Map(
+      layoutedNodes.map((node) => [node.id, node.position])
+    );
+    const firstComponentBounds = getComponentBounds(["A", "B"], positionById);
+    const secondComponentBounds = getComponentBounds(["C", "D"], positionById);
+    const horizontalGap = getAxisGap(
+      firstComponentBounds,
+      secondComponentBounds,
+      "x"
+    );
+    const verticalGap = getAxisGap(
+      firstComponentBounds,
+      secondComponentBounds,
+      "y"
+    );
+
+    expect(positionById.get("A")?.x).toBeLessThan(positionById.get("B")?.x || 0);
+    expect(positionById.get("C")?.x).toBeLessThan(positionById.get("D")?.x || 0);
+    expect(Math.max(horizontalGap, verticalGap)).toBeGreaterThanOrEqual(100);
+  });
+
+  it("adds extra vertical spacing between disconnected components", () => {
+    const tasks = [
+      makeTask({ id: "A", incomingLinks: [] }),
+      makeTask({ id: "B", incomingLinks: ["A"] }),
+      makeTask({ id: "C", incomingLinks: [] }),
+      makeTask({ id: "D", incomingLinks: ["C"] }),
+    ];
+    const nodes = createNodesFromTasks(tasks, "Vertical");
+    const edges = createEdgesFromTasks(tasks, "Vertical");
+    const layoutedNodes = getLayoutedElements(nodes, edges, "Vertical");
+    const positionById = new Map(
+      layoutedNodes.map((node) => [node.id, node.position])
+    );
+    const firstComponentBounds = getComponentBounds(["A", "B"], positionById);
+    const secondComponentBounds = getComponentBounds(["C", "D"], positionById);
+    const horizontalGap = getAxisGap(
+      firstComponentBounds,
+      secondComponentBounds,
+      "x"
+    );
+    const verticalGap = getAxisGap(
+      firstComponentBounds,
+      secondComponentBounds,
+      "y"
+    );
+
+    expect(positionById.get("A")?.y).toBeLessThan(positionById.get("B")?.y || 0);
+    expect(positionById.get("C")?.y).toBeLessThan(positionById.get("D")?.y || 0);
+    expect(Math.max(horizontalGap, verticalGap)).toBeGreaterThanOrEqual(100);
   });
 });
 
