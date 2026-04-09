@@ -360,7 +360,9 @@ export function getLayoutedElements(
 
   const connectedComponents = getConnectedComponents(nodes, edges);
   const layoutedComponents = connectedComponents.map((componentIds) => {
-    const componentNodes = nodes.filter((node) => componentIds.includes(node.id));
+    const componentNodes = nodes.filter((node) =>
+      componentIds.includes(node.id)
+    );
     const componentNodeIds = new Set(componentIds);
     const componentEdges = edges.filter((edge) => {
       return (
@@ -369,7 +371,12 @@ export function getLayoutedElements(
     });
 
     return normalizeLayoutedNodes(
-      layoutNodesWithDagre(componentNodes, componentEdges, rankdir, nodeDimensions)
+      layoutNodesWithDagre(
+        componentNodes,
+        componentEdges,
+        rankdir,
+        nodeDimensions
+      )
     );
   });
 
@@ -482,9 +489,7 @@ function getConnectedComponents(nodes: Node[], edges: Edge[]) {
   return components;
 }
 
-function normalizeLayoutedNodes(
-  nodes: Node[]
-) {
+function normalizeLayoutedNodes(nodes: Node[]) {
   if (nodes.length === 0) {
     return nodes;
   }
@@ -549,8 +554,7 @@ function spaceConnectedComponents(
 
   const totalArea = componentBounds.reduce((sum, bounds) => {
     return (
-      sum +
-      (bounds.width + componentGapX) * (bounds.height + componentGapY)
+      sum + (bounds.width + componentGapX) * (bounds.height + componentGapY)
     );
   }, 0);
 
