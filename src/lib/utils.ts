@@ -2,7 +2,7 @@
 import dagre from "@dagrejs/dagre";
 import { App, TFile, Vault } from "obsidian";
 import { TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
-import { BaseTask } from "src/types/base-task";
+import { BaseTask, TaskInsertPosition } from "src/types/base-task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
@@ -159,9 +159,46 @@ export async function updateTaskStatusInVault(
 export async function addTaskLineToVault(
   task: BaseTask,
   newTaskLine: string,
-  app: App
+  app: App,
+  position: TaskInsertPosition = "after"
 ): Promise<void> {
-  await task.addTaskLine(newTaskLine, app);
+  await task.addTaskLine(newTaskLine, app, position);
+}
+
+interface TasksApiV1 {
+  createTaskLineModal(): Promise<string | undefined>;
+  editTaskLineModal(_taskLine: string): Promise<string | undefined>;
+}
+
+export function getTasksApi(app: App): TasksApiV1 | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tasksPlugin = (app as any).plugins?.plugins?.["obsidian-tasks-plugin"];
+
+  if (!tasksPlugin?.apiV1) {
+    return null;
+  }
+
+  return tasksPlugin.apiV1 as TasksApiV1;
+}
+
+export function parseTaskLine(
+  taskLine: string,
+  linkPath: string
+): BaseTask | null {
+  const match = taskLine.match(/^\s*[-*+]\s+\[([ x/-])\]\s+(.*)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, status, text] = match;
+  const factory = new TaskFactory();
+
+  return factory.parse({
+    status,
+    text,
+    link: { path: linkPath },
+  });
 }
 
 export async function deleteTaskFromVault(
@@ -209,14 +246,10 @@ export function addDateToTask(
   const existingFormats = detectExistingFormats(cleanedLine);
 
   // Choose format based on existing formats or default to tasks format
-  // TODO: refactor to avoid reassignment (no-useless-assignment)
-  // eslint-disable-next-line no-useless-assignment
-  let newDateTag = "";
-  if (existingFormats === "dataview") {
-    newDateTag = ` [[${mappings.dataview}::${date}]]`;
-  } else {
-    newDateTag = ` ${mappings.emoji} ${date}`;
-  }
+  const newDateTag =
+    existingFormats === "dataview"
+      ? ` [[${mappings.dataview}::${date}]]`
+      : ` ${mappings.emoji} ${date}`;
 
   // Add the new date tag before any existing tags (which typically appear at the end)
   const tagRegex =

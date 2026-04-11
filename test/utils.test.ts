@@ -10,6 +10,7 @@ import {
   estimateNodeDimensions,
   getLayoutedElements,
   getUnlinkedTasks,
+  parseTaskLine,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
 
@@ -239,6 +240,26 @@ describe("findTaskLineByIdOrText", () => {
   it("returns -1 when not found", () => {
     const lines = ["# Header", "- [ ] Some task"];
     expect(findTaskLineByIdOrText(lines, "xyz", "not here")).toBe(-1);
+  });
+});
+
+describe("parseTaskLine", () => {
+  it("parses a markdown task line into a dataview task", () => {
+    const task = parseTaskLine(
+      "- [ ] Draft release notes #docs [id:: abc123]",
+      "tasks/release.md"
+    );
+
+    expect(task).not.toBeNull();
+    expect(task?.type).toBe("dataview");
+    expect(task?.link).toBe("tasks/release.md");
+    expect(task?.status).toBe("todo");
+    expect(task?.id).toBe("abc123");
+    expect(task?.tags).toEqual(["docs"]);
+  });
+
+  it("returns null for non-task markdown lines", () => {
+    expect(parseTaskLine("Just some text", "tasks/release.md")).toBeNull();
   });
 });
 

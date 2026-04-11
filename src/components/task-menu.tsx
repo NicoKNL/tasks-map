@@ -7,6 +7,7 @@ import {
   addTaskLineToVault,
   deleteTaskFromVault,
   findTaskLineByIdOrText,
+  getTasksApi,
 } from "../lib/utils";
 
 interface TaskMenuProps {
@@ -51,15 +52,16 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
 
     setIsOpen(false);
 
-    // @ts-ignore
-    const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
-    if (!tasksPlugin?.apiV1) {
+    const tasksApi = getTasksApi(app);
+    if (!tasksApi) {
       console.error("Tasks plugin not found or API not available");
       return;
     }
-    const tasksApi = tasksPlugin.apiV1;
 
-    let taskLine = await tasksApi.createTaskLineModal();
+    const taskLine = await tasksApi.createTaskLineModal();
+    if (!taskLine?.trim()) {
+      return;
+    }
 
     // Do whatever you want with the returned value.
     // It's just a string containing the Markdown for the task.
@@ -81,13 +83,11 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
     const file = vault.getFileByPath(task.link);
     if (!file) return;
 
-    // @ts-ignore
-    const tasksPlugin = app.plugins.plugins["obsidian-tasks-plugin"];
-    if (!tasksPlugin?.apiV1) {
+    const tasksApi = getTasksApi(app);
+    if (!tasksApi) {
       console.error("Tasks plugin not found or API not available");
       return;
     }
-    const tasksApi = tasksPlugin.apiV1;
 
     try {
       const fileContent = await vault.read(file);
@@ -103,6 +103,9 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
       // console.log("before: ", taskLine);
 
       const newTaskLine = await tasksApi.editTaskLineModal(taskLine);
+      if (!newTaskLine?.trim()) {
+        return;
+      }
       // console.log("after: ", newTaskLine);
 
       lines[taskLineIdx] = newTaskLine;
