@@ -374,14 +374,10 @@ export function getLayoutedElements(
   direction: "Horizontal" | "Vertical" = "Horizontal",
   showTags: boolean = true
 ) {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
-  dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
-
-  // Store calculated dimensions for each node
   const nodeDimensions = new Map<string, { width: number; height: number }>();
 
+  // Store calculated dimensions for each node
   nodes.forEach((node) => {
     // Get task from node data to estimate dimensions
     const task = node.data?.task as BaseTask | undefined;
@@ -390,7 +386,59 @@ export function getLayoutedElements(
       : { width: NODEWIDTH, height: NODEHEIGHT };
 
     nodeDimensions.set(node.id, dimensions);
-    dagreGraph.setNode(node.id, dimensions);
+  });
+
+  const connectedComponents = getConnectedComponents(nodes, edges);
+  const layoutedComponents = connectedComponents.map((componentIds) => {
+    const componentNodes = nodes.filter((node) =>
+      componentIds.includes(node.id)
+    );
+    const componentNodeIds = new Set(componentIds);
+    const componentEdges = edges.filter((edge) => {
+      return (
+        componentNodeIds.has(edge.source) && componentNodeIds.has(edge.target)
+      );
+    });
+
+    return normalizeLayoutedNodes(
+      layoutNodesWithDagre(
+        componentNodes,
+        componentEdges,
+        rankdir,
+        nodeDimensions
+      )
+    );
+  });
+
+  if (connectedComponents.length <= 1) {
+    return layoutedComponents[0] || [];
+  }
+
+  return spaceConnectedComponents(
+    layoutedComponents,
+    nodeDimensions,
+    direction
+  );
+}
+
+function layoutNodesWithDagre(
+  nodes: Node[],
+  edges: Edge[],
+  rankdir: "LR" | "TB",
+  nodeDimensions: Map<string, { width: number; height: number }>
+) {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(
+      node.id,
+      nodeDimensions.get(node.id) || {
+        width: NODEWIDTH,
+        height: NODEHEIGHT,
+      }
+    );
   });
   edges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
@@ -409,16 +457,198 @@ export function getLayoutedElements(
         ...node,
         position: { x: 0, y: 0 },
       };
-    } else {
-      return {
-        ...node,
-        position: {
-          // Center the node at the position dagre calculated
-          x: nodeWithPosition.x - dimensions.width / 2,
-          y: nodeWithPosition.y - dimensions.height / 2,
-        },
-      };
     }
+
+    return {
+      ...node,
+      position: {
+        // Center the node at the position dagre calculated
+        x: nodeWithPosition.x - dimensions.width / 2,
+        y: nodeWithPosition.y - dimensions.height / 2,
+      },
+    };
+  });
+}
+
+function getConnectedComponents(nodes: Node[], edges: Edge[]) {
+  const adjacency = new Map<string, Set<string>>();
+
+  nodes.forEach((node) => {
+    adjacency.set(node.id, new Set());
+  });
+
+  edges.forEach((edge) => {
+    if (!adjacency.has(edge.source) || !adjacency.has(edge.target)) {
+      return;
+    }
+    adjacency.get(edge.source)?.add(edge.target);
+    adjacency.get(edge.target)?.add(edge.source);
+  });
+
+  const visited = new Set<string>();
+  const components: string[][] = [];
+
+  nodes.forEach((node) => {
+    if (visited.has(node.id)) {
+      return;
+    }
+
+    const stack = [node.id];
+    const component: string[] = [];
+    visited.add(node.id);
+
+    while (stack.length > 0) {
+      const currentId = stack.pop();
+      if (!currentId) {
+        continue;
+      }
+
+      component.push(currentId);
+      adjacency.get(currentId)?.forEach((neighborId) => {
+        if (visited.has(neighborId)) {
+          return;
+        }
+        visited.add(neighborId);
+        stack.push(neighborId);
+      });
+    }
+
+    components.push(component);
+  });
+
+  return components;
+}
+
+function normalizeLayoutedNodes(nodes: Node[]) {
+  if (nodes.length === 0) {
+    return nodes;
+  }
+
+  const minX = Math.min(...nodes.map((node) => node.position.x));
+  const minY = Math.min(...nodes.map((node) => node.position.y));
+
+  return nodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x - minX,
+      y: node.position.y - minY,
+    },
+  }));
+}
+
+function spaceConnectedComponents(
+  connectedComponents: Node[][],
+  nodeDimensions: Map<string, { width: number; height: number }>,
+  direction: "Horizontal" | "Vertical"
+) {
+  const componentGapX = Math.max(120, Math.round(NODEWIDTH * 0.6));
+  const componentGapY = Math.max(100, Math.round(NODEHEIGHT * 0.85));
+
+  const componentBounds = connectedComponents
+    .map((componentNodes) => {
+      const minX = Math.min(...componentNodes.map((node) => node.position.x));
+      const minY = Math.min(...componentNodes.map((node) => node.position.y));
+      const maxX = Math.max(
+        ...componentNodes.map((node) => {
+          const dimensions = nodeDimensions.get(node.id) || {
+            width: NODEWIDTH,
+            height: NODEHEIGHT,
+          };
+          return node.position.x + dimensions.width;
+        })
+      );
+      const maxY = Math.max(
+        ...componentNodes.map((node) => {
+          const dimensions = nodeDimensions.get(node.id) || {
+            width: NODEWIDTH,
+            height: NODEHEIGHT,
+          };
+          return node.position.y + dimensions.height;
+        })
+      );
+
+      return {
+        nodes: componentNodes,
+        minX,
+        minY,
+        width: maxX - minX,
+        height: maxY - minY,
+      };
+    })
+    .sort((a, b) => {
+      if (direction === "Horizontal") {
+        return a.minX - b.minX || a.minY - b.minY;
+      }
+      return a.minY - b.minY || a.minX - b.minX;
+    });
+
+  const totalArea = componentBounds.reduce((sum, bounds) => {
+    return (
+      sum + (bounds.width + componentGapX) * (bounds.height + componentGapY)
+    );
+  }, 0);
+
+  const wrapThreshold = Math.max(
+    direction === "Horizontal"
+      ? Math.max(...componentBounds.map((bounds) => bounds.width))
+      : Math.max(...componentBounds.map((bounds) => bounds.height)),
+    Math.ceil(Math.sqrt(totalArea) * 1.5)
+  );
+
+  const offsets = new Map<string, { x: number; y: number }>();
+
+  if (direction === "Horizontal") {
+    let cursorX = 0;
+    let cursorY = 0;
+    let rowHeight = 0;
+
+    componentBounds.forEach((bounds) => {
+      if (cursorX > 0 && cursorX + bounds.width > wrapThreshold) {
+        cursorX = 0;
+        cursorY += rowHeight + componentGapY;
+        rowHeight = 0;
+      }
+
+      offsets.set(bounds.nodes[0].id, {
+        x: cursorX - bounds.minX,
+        y: cursorY - bounds.minY,
+      });
+
+      cursorX += bounds.width + componentGapX;
+      rowHeight = Math.max(rowHeight, bounds.height);
+    });
+  } else {
+    let cursorX = 0;
+    let cursorY = 0;
+    let columnWidth = 0;
+
+    componentBounds.forEach((bounds) => {
+      if (cursorY > 0 && cursorY + bounds.height > wrapThreshold) {
+        cursorY = 0;
+        cursorX += columnWidth + componentGapX;
+        columnWidth = 0;
+      }
+
+      offsets.set(bounds.nodes[0].id, {
+        x: cursorX - bounds.minX,
+        y: cursorY - bounds.minY,
+      });
+
+      cursorY += bounds.height + componentGapY;
+      columnWidth = Math.max(columnWidth, bounds.width);
+    });
+  }
+
+  return componentBounds.flatMap((bounds) => {
+    const componentOffset = offsets.get(bounds.nodes[0].id) || { x: 0, y: 0 };
+
+    return bounds.nodes.map((node) => ({
+      ...node,
+      position: {
+        x: node.position.x + componentOffset.x,
+        y: node.position.y + componentOffset.y,
+      },
+    }));
   });
 }
 
