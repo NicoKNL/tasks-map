@@ -10,6 +10,7 @@ import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
 import {
   addLinkSignsBetweenTasks,
+  addSignToTaskInFile,
   getAllTasks,
   getLayoutedElements,
   removeLinkSignsBetweenTasks,
@@ -350,6 +351,10 @@ export default function TaskMapGraphView({
   const onConnect = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (params: any) => {
+      // Reset so onConnectEnd (which fires after onConnect) does not
+      // misinterpret this as a canvas-drop and open the create modal.
+      connectStartRef.current = null;
+
       const sourceTask = tasks.find((t) => t.id === params.source);
       const targetTask = tasks.find((t) => t.id === params.target);
 
@@ -430,6 +435,18 @@ export default function TaskMapGraphView({
       try {
         await addTaskLineToVault(anchorTask, taskLine, app, position);
 
+        // Persist the in-memory ID into the newly written task line so that
+        // all subsequent vault lookups (addLinkSignsBetweenTasks, rollback
+        // deleteTaskFromVault) can find the line by ID rather than falling
+        // back to an ambiguous text-match.
+        await addSignToTaskInFile(
+          vault,
+          newTask,
+          "id",
+          newTask.id,
+          settings.linkingStyle
+        );
+
         if (relation === "after") {
           await addLinkSignsBetweenTasks(
             vault,
@@ -453,15 +470,22 @@ export default function TaskMapGraphView({
               ? prevTasks
               : prevTasks.map((task) =>
                   task.id === anchorTask.id
-                    ? createUpdatedTask(task, [...task.incomingLinks, newTask.id])
+                    ? createUpdatedTask(task, [
+                        ...task.incomingLinks,
+                        newTask.id,
+                      ])
                     : task
                 );
 
-          if (relation === "after") {
-            newTask.incomingLinks = [...newTask.incomingLinks, anchorTask.id];
-          }
+          const taskToAdd =
+            relation === "after"
+              ? createUpdatedTask(newTask, [
+                  ...newTask.incomingLinks,
+                  anchorTask.id,
+                ])
+              : newTask;
 
-          return [...nextTasks, newTask];
+          return [...nextTasks, taskToAdd];
         });
       } catch (error) {
         console.error("Failed to create connected task:", error);

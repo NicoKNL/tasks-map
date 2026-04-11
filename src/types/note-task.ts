@@ -58,6 +58,8 @@ export class NoteTask extends BaseTask {
   async addTaskLine(
     newTaskLine: string,
     app: App,
+    // _position is intentionally unused: NoteTask always creates a new file
+    // regardless of where relative to the anchor the task should appear.
     _position: TaskInsertPosition = "after"
   ): Promise<void> {
     if (!this.link) {

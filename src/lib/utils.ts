@@ -181,7 +181,10 @@ export function getTasksApi(app: App): TasksApiV1 | null {
   return tasksPlugin.apiV1 as TasksApiV1;
 }
 
-export function parseTaskLine(taskLine: string, linkPath: string): BaseTask | null {
+export function parseTaskLine(
+  taskLine: string,
+  linkPath: string
+): BaseTask | null {
   const match = taskLine.match(/^\s*[-*+]\s+\[([ x/-])\]\s+(.*)$/);
 
   if (!match) {
