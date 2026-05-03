@@ -382,74 +382,44 @@ export function getLayoutedElements(
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
   const nodeDimensions = new Map<string, { width: number; height: number }>();
 
-  // When grouping by project, delegate to the project-group layout pipeline
+  // When grouping by project, use a two-pass layout:
+  // Pass 1: flat dagre on all task nodes (original edges) to get correct rank
+  //         ordering without group-level cycles.
+  // Pass 2: dagre on group + ungrouped nodes (sized from pass-1 bounding boxes),
+  //         using only cycle-safe inter-group edges (source max-rank < target
+  //         min-rank) so groups are spaced correctly without overlapping.
   if (groupByProject && tasks.length > 0) {
     const taskNodes = nodes as TaskNode[];
     const taskEdges = edges as TaskEdge[];
 
-    // Build group + child nodes (children have relative positions within group)
-    const groupedNodes = createProjectGroupNodes(
-      taskNodes,
-      tasks,
-      taskEdges,
-      direction,
-      showTags
-    );
+    const { singleProjectMap, multiProjectTasks, noProjectTasks } =
+      partitionTasksByProject(tasks);
 
-    // For top-level layout: treat group nodes as opaque rectangles,
-    // keep ungrouped task nodes as-is
-    const topLevelNodes = groupedNodes.filter((n) => !n.parentNode);
-    topLevelNodes.forEach((node) => {
-      if (node.type === "projectGroup" && node.style) {
-        nodeDimensions.set(node.id, {
-          width: Number(node.style.width) || NODEWIDTH,
-          height: Number(node.style.height) || NODEHEIGHT,
-        });
-      } else {
-        const task = node.data?.task as BaseTask | undefined;
-        nodeDimensions.set(
-          node.id,
-          task
-            ? estimateNodeDimensions(task, showTags)
-            : { width: NODEWIDTH, height: NODEHEIGHT }
-        );
-      }
+    // Build task-to-group lookup
+    const taskToGroup = new Map<string, string>();
+    for (const [projectName, memberTasks] of singleProjectMap) {
+      const groupId = `project-group-${projectName}`;
+      memberTasks.forEach((t) => taskToGroup.set(t.id, groupId));
+    }
+
+    // ── Pass 1: flat dagre on all task nodes ──────────────────────────────
+    taskNodes.forEach((node) => {
+      const task = node.data?.task as BaseTask | undefined;
+      nodeDimensions.set(
+        node.id,
+        task
+          ? estimateNodeDimensions(task, showTags)
+          : { width: NODEWIDTH, height: NODEHEIGHT }
+      );
     });
 
-    // Build a map from child task ID → its parent group node ID, so edges that
-    // cross group boundaries can be remapped to group-level edges for dagre.
-    const childToGroup = new Map<string, string>();
-    groupedNodes.forEach((node) => {
-      if (node.parentNode) {
-        childToGroup.set(node.id, node.parentNode);
-      }
-    });
-
-    // Remap original task-level edges to top-level IDs:
-    // If a task lives inside a group, replace its ID with the group ID.
-    // Deduplicate and drop self-loops (group → same group).
-    const topLevelEdgeSet = new Set<string>();
-    const topLevelEdges: Edge[] = [];
-    edges.forEach((edge) => {
-      const src = childToGroup.get(edge.source) ?? edge.source;
-      const tgt = childToGroup.get(edge.target) ?? edge.target;
-      if (src === tgt) return; // self-loop after remapping — skip
-      const dedupeKey = `${src}→${tgt}`;
-      if (topLevelEdgeSet.has(dedupeKey)) return;
-      topLevelEdgeSet.add(dedupeKey);
-      topLevelEdges.push({ ...edge, source: src, target: tgt });
-    });
-
-    const connectedComponents = getConnectedComponents(
-      topLevelNodes,
-      topLevelEdges
-    );
-    const layoutedComponents = connectedComponents.map((componentIds) => {
-      const componentNodes = topLevelNodes.filter((n) =>
+    const flatComponents = getConnectedComponents(taskNodes, taskEdges);
+    const flatLayoutedComponents = flatComponents.map((componentIds) => {
+      const componentNodes = taskNodes.filter((n) =>
         componentIds.includes(n.id)
       );
       const componentNodeIds = new Set(componentIds);
-      const componentEdges = topLevelEdges.filter(
+      const componentEdges = taskEdges.filter(
         (e) => componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
       );
       return normalizeLayoutedNodes(
@@ -462,29 +432,218 @@ export function getLayoutedElements(
       );
     });
 
-    let layoutedTopLevel: Node[];
-    if (connectedComponents.length <= 1) {
-      layoutedTopLevel = layoutedComponents[0] || [];
-    } else {
-      layoutedTopLevel = spaceConnectedComponents(
-        layoutedComponents,
-        nodeDimensions,
-        direction
-      );
-    }
+    const flatLayouted: Node[] =
+      flatComponents.length <= 1
+        ? flatLayoutedComponents[0] || []
+        : spaceConnectedComponents(
+            flatLayoutedComponents,
+            nodeDimensions,
+            direction
+          );
 
-    // Build a position map for the top-level nodes
-    const topLevelPositions = new Map<string, { x: number; y: number }>(
-      layoutedTopLevel.map((n) => [n.id, n.position])
+    const flatPositions = new Map<string, { x: number; y: number }>(
+      flatLayouted.map((n) => [n.id, n.position])
     );
 
-    // Return: laid-out top-level nodes + child nodes (keep their relative positions)
-    return groupedNodes.map((node) => {
-      if (node.parentNode) return node; // Child node — keep parent-relative position
-      const pos = topLevelPositions.get(node.id);
-      if (!pos) return node;
-      return { ...node, position: pos };
+    // Compute per-task "rank" (x in LR, y in TB) from flat layout
+    const taskRank = new Map<string, number>();
+    flatLayouted.forEach((n) => {
+      taskRank.set(
+        n.id,
+        direction === "Horizontal" ? n.position.x : n.position.y
+      );
     });
+
+    // ── Pass 2: build group nodes sized by member bounding boxes ──────────
+    const groupDimensions = new Map<
+      string,
+      { width: number; height: number }
+    >();
+    const groupBBoxes = new Map<
+      string,
+      { minX: number; minY: number; maxRight: number; maxBottom: number }
+    >();
+
+    for (const [projectName, memberTasks] of singleProjectMap) {
+      const groupId = `project-group-${projectName}`;
+      let minX = Infinity,
+        minY = Infinity,
+        maxRight = -Infinity,
+        maxBottom = -Infinity;
+      memberTasks.forEach((t) => {
+        const pos = flatPositions.get(t.id) ?? { x: 0, y: 0 };
+        const dims = nodeDimensions.get(t.id) ?? {
+          width: NODEWIDTH,
+          height: NODEHEIGHT,
+        };
+        minX = Math.min(minX, pos.x);
+        minY = Math.min(minY, pos.y);
+        maxRight = Math.max(maxRight, pos.x + dims.width);
+        maxBottom = Math.max(maxBottom, pos.y + dims.height);
+      });
+      groupBBoxes.set(groupId, { minX, minY, maxRight, maxBottom });
+      groupDimensions.set(groupId, {
+        width: maxRight - minX + PROJECT_GROUP_PADDING * 2,
+        height:
+          maxBottom -
+          minY +
+          PROJECT_GROUP_PADDING +
+          PROJECT_GROUP_HEADER_HEIGHT,
+      });
+    }
+
+    // Compute per-group min/max rank from member ranks
+    const groupMinRank = new Map<string, number>();
+    const groupMaxRank = new Map<string, number>();
+    for (const [projectName, memberTasks] of singleProjectMap) {
+      const groupId = `project-group-${projectName}`;
+      const ranks = memberTasks.map((t) => taskRank.get(t.id) ?? 0);
+      groupMinRank.set(groupId, Math.min(...ranks));
+      groupMaxRank.set(groupId, Math.max(...ranks));
+    }
+
+    // Build top-level nodes for pass 2
+    const ungroupedIds = new Set([
+      ...multiProjectTasks.map((t) => t.id),
+      ...noProjectTasks.map((t) => t.id),
+    ]);
+
+    const topLevelNodes: Node[] = [];
+    const topLevelDims = new Map<string, { width: number; height: number }>();
+
+    for (const [projectName] of singleProjectMap) {
+      const groupId = `project-group-${projectName}`;
+      const dims = groupDimensions.get(groupId)!;
+      topLevelNodes.push({
+        id: groupId,
+        type: "projectGroup",
+        position: { x: 0, y: 0 },
+        data: { label: projectName },
+        style: { width: dims.width, height: dims.height },
+        draggable: true,
+        zIndex: -1,
+      });
+      topLevelDims.set(groupId, dims);
+    }
+
+    flatLayouted
+      .filter((n) => ungroupedIds.has(n.id))
+      .forEach((n) => {
+        topLevelNodes.push({ ...n, position: { x: 0, y: 0 } });
+        topLevelDims.set(
+          n.id,
+          nodeDimensions.get(n.id) ?? { width: NODEWIDTH, height: NODEHEIGHT }
+        );
+      });
+
+    // Build cycle-safe top-level edges:
+    // Only add a group→group (or group↔ungrouped) edge when source max-rank
+    // is strictly less than target min-rank, so no cycles are introduced.
+    const ungroupedRank = (id: string) => taskRank.get(id) ?? 0;
+    const srcRankMax = (id: string) =>
+      groupMaxRank.get(id) ?? ungroupedRank(id);
+    const tgtRankMin = (id: string) =>
+      groupMinRank.get(id) ?? ungroupedRank(id);
+
+    const topLevelEdgeSet = new Set<string>();
+    const topLevelEdges: Edge[] = [];
+    taskEdges.forEach((edge) => {
+      const src = taskToGroup.get(edge.source) ?? edge.source;
+      const tgt = taskToGroup.get(edge.target) ?? edge.target;
+      if (src === tgt) return;
+      const dedupeKey = `${src}→${tgt}`;
+      if (topLevelEdgeSet.has(dedupeKey)) return;
+      // Only add if it doesn't create a cycle (source finishes before target starts)
+      if (srcRankMax(src) >= tgtRankMin(tgt)) return;
+      topLevelEdgeSet.add(dedupeKey);
+      topLevelEdges.push({ ...edge, source: src, target: tgt });
+    });
+
+    // Run pass-2 dagre on top-level nodes
+    const topLevelComponents = getConnectedComponents(
+      topLevelNodes,
+      topLevelEdges
+    );
+    const topLevelLayoutedComponents = topLevelComponents.map(
+      (componentIds) => {
+        const componentNodes = topLevelNodes.filter((n) =>
+          componentIds.includes(n.id)
+        );
+        const componentNodeIds = new Set(componentIds);
+        const componentEdges = topLevelEdges.filter(
+          (e) =>
+            componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
+        );
+        return normalizeLayoutedNodes(
+          layoutNodesWithDagre(
+            componentNodes,
+            componentEdges,
+            rankdir,
+            topLevelDims
+          )
+        );
+      }
+    );
+
+    const topLevelLayouted: Node[] =
+      topLevelComponents.length <= 1
+        ? topLevelLayoutedComponents[0] || []
+        : spaceConnectedComponents(
+            topLevelLayoutedComponents,
+            topLevelDims,
+            direction
+          );
+
+    const topLevelPositions = new Map<string, { x: number; y: number }>(
+      topLevelLayouted.map((n) => [n.id, n.position])
+    );
+
+    // ── Assemble result nodes ─────────────────────────────────────────────
+    const resultNodes: Node[] = [];
+
+    for (const [projectName, memberTasks] of singleProjectMap) {
+      const groupId = `project-group-${projectName}`;
+      const groupPos = topLevelPositions.get(groupId) ?? { x: 0, y: 0 };
+      const dims = groupDimensions.get(groupId)!;
+      const bbox = groupBBoxes.get(groupId)!;
+
+      resultNodes.push({
+        id: groupId,
+        type: "projectGroup",
+        position: groupPos,
+        data: { label: projectName },
+        style: { width: dims.width, height: dims.height },
+        draggable: true,
+        zIndex: -1,
+      });
+
+      // Member nodes: positions relative to group origin
+      memberTasks.forEach((t) => {
+        const flatNode = flatLayouted.find((n) => n.id === t.id);
+        if (!flatNode) return;
+        const pos = flatPositions.get(t.id) ?? { x: 0, y: 0 };
+        resultNodes.push({
+          ...flatNode,
+          parentNode: groupId,
+          extent: "parent" as const,
+          position: {
+            x: pos.x - bbox.minX + PROJECT_GROUP_PADDING,
+            y: pos.y - bbox.minY + PROJECT_GROUP_HEADER_HEIGHT,
+          },
+          draggable: true,
+        });
+      });
+    }
+
+    // Ungrouped nodes use their pass-2 top-level positions
+    flatLayouted
+      .filter((n) => ungroupedIds.has(n.id))
+      .forEach((n) => {
+        const pos = topLevelPositions.get(n.id);
+        resultNodes.push(pos ? { ...n, position: pos } : n);
+      });
+
+    return resultNodes;
   }
 
   // Store calculated dimensions for each node
