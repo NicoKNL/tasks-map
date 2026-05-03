@@ -83,7 +83,7 @@ export default function TaskMapGraphView({
   const [hideUnlinkedTasks, setHideUnlinkedTasks] = React.useState(
     embed.hideUnlinkedTasks
   );
-  const [groupByProject, setGroupByProject] = React.useState(false);
+  const [groupByProject, setGroupByProject] = React.useState(true);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Tracks which unlinked task IDs have been dropped onto the canvas this session

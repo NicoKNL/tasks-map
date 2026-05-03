@@ -376,7 +376,7 @@ export function getLayoutedElements(
   edges: Edge[],
   direction: "Horizontal" | "Vertical" = "Horizontal",
   showTags: boolean = true,
-  groupByProject: boolean = false,
+  groupByProject: boolean = true,
   tasks: BaseTask[] = []
 ) {
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
@@ -450,8 +450,7 @@ export function getLayoutedElements(
       );
       const componentNodeIds = new Set(componentIds);
       const componentEdges = topLevelEdges.filter(
-        (e) =>
-          componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
+        (e) => componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
       );
       return normalizeLayoutedNodes(
         layoutNodesWithDagre(
@@ -1310,7 +1309,7 @@ export function createNodesFromTasks(
   tagStaticColor: string = "#3b82f6",
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void,
-  groupByProject: boolean = false
+  groupByProject: boolean = true
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1482,6 +1481,7 @@ export function createProjectGroupNodes(
       data: { label: projectName },
       style: { width: groupWidth, height: groupHeight },
       draggable: true,
+      zIndex: -1,
     });
 
     // Update member nodes to be children of the group
