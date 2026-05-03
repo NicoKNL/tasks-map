@@ -27,6 +27,7 @@ import GuiOverlay from "src/components/gui-overlay";
 import FilterPresetsPanel from "src/components/filter-presets-panel";
 import StatusCountsOverlay from "src/components/status-counts-overlay";
 import TaskNode from "src/components/task-node";
+import ProjectGroupNode from "src/components/project-group-node";
 import { getFilteredNodeIds } from "src/lib/filter-tasks";
 import { TaskMinimap } from "src/components/task-minimap";
 import HashEdge from "src/components/hash-edge";
@@ -82,6 +83,7 @@ export default function TaskMapGraphView({
   const [hideUnlinkedTasks, setHideUnlinkedTasks] = React.useState(
     embed.hideUnlinkedTasks
   );
+  const [groupByProject, setGroupByProject] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Tracks which unlinked task IDs have been dropped onto the canvas this session
@@ -254,7 +256,8 @@ export default function TaskMapGraphView({
       settings.tagColorMode,
       settings.tagColorSeed,
       settings.tagStaticColor,
-      handleDeleteTask
+      handleDeleteTask,
+      groupByProject
     );
     let newEdges = createEdgesFromTasks(
       graphTasks,
@@ -281,7 +284,9 @@ export default function TaskMapGraphView({
       linkedNodes,
       newEdges,
       settings.layoutDirection,
-      settings.showTags
+      settings.showTags,
+      groupByProject,
+      graphTasks
     );
 
     // Apply stored drop positions to dropped nodes (bypass dagre)
@@ -309,10 +314,20 @@ export default function TaskMapGraphView({
     setEdges,
     handleDeleteTask,
     droppedTaskIds,
+    groupByProject,
   ]);
 
-  const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
+  const nodeTypes = useMemo(
+    () => ({ task: TaskNode, projectGroup: ProjectGroupNode }),
+    []
+  );
   const edgeTypes = useMemo(() => ({ hash: HashEdge }), []);
+
+  // Show the "group by project" toggle only when at least one task has a project
+  const showGroupByProject = useMemo(
+    () => tasks.some((t) => t.projects.length > 0),
+    [tasks]
+  );
 
   const onEdgeClick = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -720,6 +735,9 @@ export default function TaskMapGraphView({
               showUnlinkedPanel={embed.showUnlinkedPanel}
               hideUnlinkedTasks={hideUnlinkedTasks}
               setHideUnlinkedTasks={setHideUnlinkedTasks}
+              showGroupByProject={showGroupByProject}
+              groupByProject={groupByProject}
+              setGroupByProject={setGroupByProject}
             />
           </div>
           {embed.showMinimap && <TaskMinimap />}

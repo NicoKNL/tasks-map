@@ -10,6 +10,9 @@ interface ControlsPanelProps {
   showUnlinkedPanel: boolean;
   hideUnlinkedTasks: boolean;
   setHideUnlinkedTasks: (_val: boolean) => void;
+  showGroupByProject: boolean;
+  groupByProject: boolean;
+  setGroupByProject: (_val: boolean) => void;
 }
 
 export default function ControlsPanel({
@@ -20,6 +23,9 @@ export default function ControlsPanel({
   showUnlinkedPanel,
   hideUnlinkedTasks,
   setHideUnlinkedTasks,
+  showGroupByProject,
+  groupByProject,
+  setGroupByProject,
 }: ControlsPanelProps) {
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -75,6 +81,22 @@ export default function ControlsPanel({
                   />
                   <span className="tasks-map-gui-overlay-checkbox-text">
                     {t("filters.hide_tags_on_nodes")}
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {showGroupByProject && (
+              <div className="tasks-map-filter-item">
+                <label className="tasks-map-gui-overlay-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={groupByProject}
+                    onChange={(e) => setGroupByProject(e.target.checked)}
+                    className="tasks-map-gui-overlay-checkbox-input"
+                  />
+                  <span className="tasks-map-gui-overlay-checkbox-text">
+                    {t("controls.group_by_project")}
                   </span>
                 </label>
               </div>

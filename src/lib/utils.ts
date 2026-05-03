@@ -375,10 +375,91 @@ export function getLayoutedElements(
   nodes: Node[],
   edges: Edge[],
   direction: "Horizontal" | "Vertical" = "Horizontal",
-  showTags: boolean = true
+  showTags: boolean = true,
+  groupByProject: boolean = false,
+  tasks: BaseTask[] = []
 ) {
   const rankdir = direction === "Horizontal" ? "LR" : "TB"; // LR = Left-to-Right, TB = Top-to-Bottom
   const nodeDimensions = new Map<string, { width: number; height: number }>();
+
+  // When grouping by project, delegate to the project-group layout pipeline
+  if (groupByProject && tasks.length > 0) {
+    const taskNodes = nodes as TaskNode[];
+    const taskEdges = edges as TaskEdge[];
+
+    // Build group + child nodes (children have relative positions within group)
+    const groupedNodes = createProjectGroupNodes(
+      taskNodes,
+      tasks,
+      taskEdges,
+      direction,
+      showTags
+    );
+
+    // For top-level layout: treat group nodes as opaque rectangles,
+    // keep ungrouped task nodes as-is
+    const topLevelNodes = groupedNodes.filter((n) => !n.parentNode);
+    topLevelNodes.forEach((node) => {
+      if (node.type === "projectGroup" && node.style) {
+        nodeDimensions.set(node.id, {
+          width: Number(node.style.width) || NODEWIDTH,
+          height: Number(node.style.height) || NODEHEIGHT,
+        });
+      } else {
+        const task = node.data?.task as BaseTask | undefined;
+        nodeDimensions.set(
+          node.id,
+          task
+            ? estimateNodeDimensions(task, showTags)
+            : { width: NODEWIDTH, height: NODEHEIGHT }
+        );
+      }
+    });
+
+    const connectedComponents = getConnectedComponents(topLevelNodes, edges);
+    const layoutedComponents = connectedComponents.map((componentIds) => {
+      const componentNodes = topLevelNodes.filter((n) =>
+        componentIds.includes(n.id)
+      );
+      const componentNodeIds = new Set(componentIds);
+      const componentEdges = edges.filter(
+        (e) =>
+          componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
+      );
+      return normalizeLayoutedNodes(
+        layoutNodesWithDagre(
+          componentNodes,
+          componentEdges,
+          rankdir,
+          nodeDimensions
+        )
+      );
+    });
+
+    let layoutedTopLevel: Node[];
+    if (connectedComponents.length <= 1) {
+      layoutedTopLevel = layoutedComponents[0] || [];
+    } else {
+      layoutedTopLevel = spaceConnectedComponents(
+        layoutedComponents,
+        nodeDimensions,
+        direction
+      );
+    }
+
+    // Build a position map for the top-level nodes
+    const topLevelPositions = new Map<string, { x: number; y: number }>(
+      layoutedTopLevel.map((n) => [n.id, n.position])
+    );
+
+    // Return: laid-out top-level nodes + child nodes (keep their relative positions)
+    return groupedNodes.map((node) => {
+      if (node.parentNode) return node; // Child node — keep parent-relative position
+      const pos = topLevelPositions.get(node.id);
+      if (!pos) return node;
+      return { ...node, position: pos };
+    });
+  }
 
   // Store calculated dimensions for each node
   nodes.forEach((node) => {
@@ -1080,6 +1161,19 @@ function parseTaskNote(file: any, cache: any, app: any): BaseTask | null {
     // Remove duplicates and assign to task
     task.incomingLinks = [...new Set(allIncomingLinks)];
 
+    // Parse projects from TaskNotes frontmatter
+    // Format: projects: ["[[Project Name]]"] or projects: ["Project Name"]
+    if (frontmatter.projects && Array.isArray(frontmatter.projects)) {
+      task.projects = frontmatter.projects
+        .map((p: unknown) => {
+          if (typeof p !== "string") return null;
+          // Strip wiki-link brackets: "[[My Project]]" → "My Project"
+          const wikiMatch = p.match(/^\[\[(.+)\]\]$/);
+          return wikiMatch ? wikiMatch[1] : p;
+        })
+        .filter((p: string | null): p is string => !!p && p.trim() !== "");
+    }
+
     return task;
   } catch {
     return null;
@@ -1188,7 +1282,8 @@ export function createNodesFromTasks(
   tagColorSeed: number = 42,
   tagStaticColor: string = "#3b82f6",
   // eslint-disable-next-line no-unused-vars
-  onDeleteTask?: (taskId: string) => void
+  onDeleteTask?: (taskId: string) => void,
+  groupByProject: boolean = false
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1206,6 +1301,7 @@ export function createNodesFromTasks(
       tagColorMode,
       tagColorSeed,
       tagStaticColor,
+      groupByProject,
       onDeleteTask,
     },
     type: "task" as const,
@@ -1245,6 +1341,187 @@ export function createEdgesFromTasks(
     });
   });
   return edges;
+}
+
+const PROJECT_GROUP_PADDING = 40;
+const PROJECT_GROUP_HEADER_HEIGHT = 32;
+
+/**
+ * Partition tasks for project grouping.
+ * Returns three buckets:
+ * - singleProjectTasks: map from project name → tasks belonging exclusively to that project
+ * - multiProjectTasks: tasks belonging to more than one project (shown ungrouped)
+ * - noProjectTasks: tasks with no projects (shown ungrouped)
+ */
+export function partitionTasksByProject(tasks: BaseTask[]): {
+  singleProjectMap: Map<string, BaseTask[]>;
+  multiProjectTasks: BaseTask[];
+  noProjectTasks: BaseTask[];
+} {
+  const singleProjectMap = new Map<string, BaseTask[]>();
+  const multiProjectTasks: BaseTask[] = [];
+  const noProjectTasks: BaseTask[] = [];
+
+  for (const task of tasks) {
+    if (task.projects.length === 0) {
+      noProjectTasks.push(task);
+    } else if (task.projects.length > 1) {
+      multiProjectTasks.push(task);
+    } else {
+      const projectName = task.projects[0];
+      if (!singleProjectMap.has(projectName)) {
+        singleProjectMap.set(projectName, []);
+      }
+      singleProjectMap.get(projectName)!.push(task);
+    }
+  }
+
+  return { singleProjectMap, multiProjectTasks, noProjectTasks };
+}
+
+/**
+ * Build ReactFlow group nodes (type "projectGroup") and update task nodes so
+ * that members carry parentNode / extent / relative positions.
+ *
+ * Returns the combined flat list: [groupNodes..., childTaskNodes..., standaloneNodes...]
+ * ready to pass to ReactFlow.
+ */
+export function createProjectGroupNodes(
+  taskNodes: TaskNode[],
+  tasks: BaseTask[],
+  edges: TaskEdge[],
+  direction: "Horizontal" | "Vertical",
+  showTags: boolean
+): Node[] {
+  const taskById = new Map<string, BaseTask>(tasks.map((t) => [t.id, t]));
+  const { singleProjectMap, multiProjectTasks, noProjectTasks } =
+    partitionTasksByProject(tasks);
+
+  const allNodes: Node[] = [];
+
+  // Build group nodes, laying out each project's tasks internally with dagre
+  for (const [projectName, memberTasks] of singleProjectMap) {
+    const groupId = `project-group-${projectName}`;
+    const memberIds = new Set(memberTasks.map((t) => t.id));
+
+    // Filter nodes/edges to just this group's members
+    const memberNodes = taskNodes.filter((n) => memberIds.has(n.id));
+    const memberEdges = edges.filter(
+      (e) => memberIds.has(e.source) && memberIds.has(e.target)
+    );
+
+    // Compute dimensions map for these nodes
+    const nodeDimensions = new Map<string, { width: number; height: number }>();
+    memberNodes.forEach((node) => {
+      const task = taskById.get(node.id);
+      nodeDimensions.set(
+        node.id,
+        task
+          ? estimateNodeDimensions(task, showTags)
+          : { width: NODEWIDTH, height: NODEHEIGHT }
+      );
+    });
+
+    // Run dagre to get relative positions inside the group
+    const rankdir = direction === "Horizontal" ? "LR" : "TB";
+    const laidOutMemberNodes = layoutNodesWithDagreInternal(
+      memberNodes,
+      memberEdges,
+      rankdir,
+      nodeDimensions
+    );
+
+    // Compute the bounding box of the laid-out members
+    let maxRight = 0;
+    let maxBottom = 0;
+    laidOutMemberNodes.forEach((node) => {
+      const dims = nodeDimensions.get(node.id) || {
+        width: NODEWIDTH,
+        height: NODEHEIGHT,
+      };
+      maxRight = Math.max(maxRight, node.position.x + dims.width);
+      maxBottom = Math.max(maxBottom, node.position.y + dims.height);
+    });
+
+    const groupWidth = maxRight + PROJECT_GROUP_PADDING * 2;
+    const groupHeight =
+      maxBottom + PROJECT_GROUP_PADDING + PROJECT_GROUP_HEADER_HEIGHT;
+
+    // Create the group node
+    allNodes.push({
+      id: groupId,
+      type: "projectGroup",
+      position: { x: 0, y: 0 }, // Will be positioned by top-level layout
+      data: { label: projectName },
+      style: { width: groupWidth, height: groupHeight },
+      draggable: true,
+    });
+
+    // Update member nodes to be children of the group
+    laidOutMemberNodes.forEach((node) => {
+      allNodes.push({
+        ...node,
+        parentNode: groupId,
+        extent: "parent" as const,
+        position: {
+          x: node.position.x + PROJECT_GROUP_PADDING,
+          y: node.position.y + PROJECT_GROUP_HEADER_HEIGHT,
+        },
+        draggable: true,
+      });
+    });
+  }
+
+  // Add ungrouped nodes (multi-project + no-project) as standalone
+  const ungroupedIds = new Set([
+    ...multiProjectTasks.map((t) => t.id),
+    ...noProjectTasks.map((t) => t.id),
+  ]);
+  taskNodes
+    .filter((n) => ungroupedIds.has(n.id))
+    .forEach((n) => allNodes.push(n));
+
+  return allNodes;
+}
+
+/**
+ * Internal dagre layout helper (same logic as layoutNodesWithDagre but
+ * exported as a named function so createProjectGroupNodes can call it).
+ */
+function layoutNodesWithDagreInternal(
+  nodes: Node[],
+  edges: Edge[],
+  rankdir: "LR" | "TB",
+  nodeDimensions: Map<string, { width: number; height: number }>
+): Node[] {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir, nodesep: 30, ranksep: 50 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(
+      node.id,
+      nodeDimensions.get(node.id) || { width: NODEWIDTH, height: NODEHEIGHT }
+    );
+  });
+  edges.forEach((edge) => dagreGraph.setEdge(edge.source, edge.target));
+  dagre.layout(dagreGraph);
+
+  return nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    const dims = nodeDimensions.get(node.id) || {
+      width: NODEWIDTH,
+      height: NODEHEIGHT,
+    };
+    if (!nodeWithPosition) return { ...node, position: { x: 0, y: 0 } };
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - dims.width / 2,
+        y: nodeWithPosition.y - dims.height / 2,
+      },
+    };
+  });
 }
 
 /**

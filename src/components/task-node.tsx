@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
-import { Plus } from "lucide-react";
+import { FolderOpen, Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
 import { BaseTask } from "src/types/task";
 import { TaskDetails } from "./task-details";
@@ -34,6 +34,7 @@ interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
 }
@@ -48,6 +49,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorMode = "random",
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
+    groupByProject = false,
     onDeleteTask,
   } = data;
 
@@ -238,6 +240,17 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
 
         {debugVisualization && expanded && (
           <TaskDetails task={task} status={status} />
+        )}
+
+        {groupByProject && task.projects.length > 1 && (
+          <div className="tasks-map-task-node-projects">
+            {task.projects.map((project) => (
+              <span key={project} className="tasks-map-project-badge">
+                <FolderOpen size={10} />
+                {project}
+              </span>
+            ))}
+          </div>
         )}
       </TaskBackground>
     </div>
