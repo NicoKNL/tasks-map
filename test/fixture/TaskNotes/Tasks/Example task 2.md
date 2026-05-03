@@ -13,5 +13,6 @@ blockedBy:
   - uid: "[[Example task 3]]"
     reltype: FINISHTOSTART
 contexts: []
-projects: []
+projects:
+  - "[[Alpha Project]]"
 ---

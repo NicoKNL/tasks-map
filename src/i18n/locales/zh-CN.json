@@ -95,7 +95,8 @@
   "controls": {
     "title": "视图",
     "expand": "展开视图控制",
-    "minimize": "最小化视图控制"
+    "minimize": "最小化视图控制",
+    "group_by_project": "按项目分组"
   },
   "multiselect": {
     "select": "选择...",

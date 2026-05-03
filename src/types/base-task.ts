@@ -18,6 +18,7 @@ export abstract class BaseTask {
   link: string;
   incomingLinks: string[];
   starred: boolean;
+  projects: string[];
 
   constructor(data: {
     id: string;
@@ -29,6 +30,7 @@ export abstract class BaseTask {
     link: string;
     incomingLinks: string[];
     starred: boolean;
+    projects?: string[];
   }) {
     this.id = data.id;
     this.summary = data.summary;
@@ -39,6 +41,7 @@ export abstract class BaseTask {
     this.link = data.link;
     this.incomingLinks = data.incomingLinks;
     this.starred = data.starred;
+    this.projects = data.projects ?? [];
   }
 
   /**
@@ -109,6 +112,7 @@ export abstract class BaseTask {
       link: this.link,
       incomingLinks: this.incomingLinks,
       starred: this.starred,
+      projects: this.projects,
     };
   }
 }
