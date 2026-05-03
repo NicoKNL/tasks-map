@@ -21,6 +21,9 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  RELEASE_COMMIT_PREFIX: "chore: release version"
+
 jobs:
   changeset:
     name: Detect Changes
@@ -41,6 +44,7 @@ jobs:
               - 'zensical.toml'
 
   version:
+    if: "!startsWith(github.event.head_commit.message, env.RELEASE_COMMIT_PREFIX)"
     outputs:
       release: ${{ steps.semver.outputs.release }}
       version: ${{ steps.semver.outputs.version }}
@@ -96,7 +100,7 @@ jobs:
       - name: Create release commit and tag
         run: |
           git add -A
-          git commit -m "chore: release version ${{ needs.version.outputs.version }}"
+          git commit -m "${{ env.RELEASE_COMMIT_PREFIX }} ${{ needs.version.outputs.version }}"
           git push origin main
           git tag ${{ needs.version.outputs.version }}
           git push origin ${{ needs.version.outputs.version }}
