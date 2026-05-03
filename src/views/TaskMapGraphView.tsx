@@ -268,6 +268,9 @@ export default function TaskMapGraphView({
     );
 
     const filteredNodeIds = getFilteredNodeIds(graphTasks, filterState);
+    const filteredTasks = graphTasks.filter((t) =>
+      filteredNodeIds.includes(t.id)
+    );
 
     newNodes = newNodes.filter((n) => filteredNodeIds.includes(n.id));
     newEdges = newEdges.filter(
@@ -286,7 +289,7 @@ export default function TaskMapGraphView({
       settings.layoutDirection,
       settings.showTags,
       groupByProject,
-      graphTasks
+      filteredTasks
     );
 
     // Apply stored drop positions to dropped nodes (bypass dagre)
