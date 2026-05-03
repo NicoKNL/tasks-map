@@ -95,7 +95,8 @@
   "controls": {
     "title": "View",
     "expand": "Expand view controls",
-    "minimize": "Minimize view controls"
+    "minimize": "Minimize view controls",
+    "group_by_project": "Group by project"
   },
   "multiselect": {
     "select": "Select...",
