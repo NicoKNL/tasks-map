@@ -416,13 +416,40 @@ export function getLayoutedElements(
       }
     });
 
-    const connectedComponents = getConnectedComponents(topLevelNodes, edges);
+    // Build a map from child task ID → its parent group node ID, so edges that
+    // cross group boundaries can be remapped to group-level edges for dagre.
+    const childToGroup = new Map<string, string>();
+    groupedNodes.forEach((node) => {
+      if (node.parentNode) {
+        childToGroup.set(node.id, node.parentNode);
+      }
+    });
+
+    // Remap original task-level edges to top-level IDs:
+    // If a task lives inside a group, replace its ID with the group ID.
+    // Deduplicate and drop self-loops (group → same group).
+    const topLevelEdgeSet = new Set<string>();
+    const topLevelEdges: Edge[] = [];
+    edges.forEach((edge) => {
+      const src = childToGroup.get(edge.source) ?? edge.source;
+      const tgt = childToGroup.get(edge.target) ?? edge.target;
+      if (src === tgt) return; // self-loop after remapping — skip
+      const dedupeKey = `${src}→${tgt}`;
+      if (topLevelEdgeSet.has(dedupeKey)) return;
+      topLevelEdgeSet.add(dedupeKey);
+      topLevelEdges.push({ ...edge, source: src, target: tgt });
+    });
+
+    const connectedComponents = getConnectedComponents(
+      topLevelNodes,
+      topLevelEdges
+    );
     const layoutedComponents = connectedComponents.map((componentIds) => {
       const componentNodes = topLevelNodes.filter((n) =>
         componentIds.includes(n.id)
       );
       const componentNodeIds = new Set(componentIds);
-      const componentEdges = edges.filter(
+      const componentEdges = topLevelEdges.filter(
         (e) =>
           componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
       );
