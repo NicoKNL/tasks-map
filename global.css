@@ -1915,28 +1915,21 @@ If your plugin does not need CSS, delete this file.
   text-overflow: ellipsis;
 }
 
-/* ── Multi-project badges on task nodes ─────────────────────────────────── */
+/* ── Multi-project dots on task nodes ───────────────────────────────────── */
 
 .tasks-map-task-node-projects {
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
   padding: 4px 8px 6px;
+  justify-content: flex-end;
 }
 
-.tasks-map-project-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  background-color: var(--background-secondary-alt);
-  color: var(--text-muted);
-  border: 1px solid var(--background-modifier-border);
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tasks-map-project-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--dot-color, var(--text-muted));
+  opacity: 0.75;
+  flex-shrink: 0;
 }
