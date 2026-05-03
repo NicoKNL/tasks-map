@@ -1,5 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
+import { setTooltip } from "obsidian";
 import { Plus } from "lucide-react";
 import { useApp } from "src/hooks/hooks";
 import { BaseTask } from "src/types/task";
@@ -23,7 +24,36 @@ import {
 import { TagsContext } from "../contexts/context";
 
 export const NODEWIDTH = 250;
+
+const PROJECT_DOT_COLORS = [
+  "var(--color-blue)",
+  "var(--color-purple)",
+  "var(--color-green)",
+  "var(--color-red)",
+  "var(--color-orange)",
+  "var(--color-cyan)",
+  "var(--color-pink)",
+  "var(--color-yellow)",
+];
 export const NODEHEIGHT = 120;
+
+interface ProjectDotProps {
+  project: string;
+  color: string;
+}
+
+function ProjectDot({ project, color }: ProjectDotProps) {
+  const ref = useCallback(
+    (el: HTMLSpanElement | null) => {
+      if (el) {
+        el.style.setProperty("--dot-color", color);
+        setTooltip(el, project);
+      }
+    },
+    [project, color]
+  );
+  return <span ref={ref} className="tasks-map-project-dot" />;
+}
 
 interface TaskNodeData {
   task: BaseTask;
@@ -34,6 +64,7 @@ interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
 }
@@ -48,6 +79,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorMode = "random",
     tagColorSeed = 42,
     tagStaticColor = "#3b82f6",
+    groupByProject = false,
     onDeleteTask,
   } = data;
 
@@ -238,6 +270,18 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
 
         {debugVisualization && expanded && (
           <TaskDetails task={task} status={status} />
+        )}
+
+        {groupByProject && task.projects.length > 1 && (
+          <div className="tasks-map-task-node-projects">
+            {task.projects.map((project, index) => (
+              <ProjectDot
+                key={project}
+                project={project}
+                color={PROJECT_DOT_COLORS[index % PROJECT_DOT_COLORS.length]}
+              />
+            ))}
+          </div>
         )}
       </TaskBackground>
     </div>
