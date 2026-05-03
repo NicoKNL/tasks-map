@@ -22,6 +22,7 @@ export interface TaskNodeData {
   tagColorMode?: "random" | "static";
   tagColorSeed?: number;
   tagStaticColor?: string;
+  groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
 }

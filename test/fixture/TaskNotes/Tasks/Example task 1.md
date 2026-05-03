@@ -7,4 +7,6 @@ dateModified: 2025-11-22T14:16:29.228+01:00
 tags:
   - task
 completedDate: 2025-11-22
+projects:
+  - "[[Alpha Project]]"
 ---

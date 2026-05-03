@@ -95,7 +95,8 @@
   "controls": {
     "title": "Weergave",
     "expand": "Weergavebediening uitvouwen",
-    "minimize": "Weergavebediening minimaliseren"
+    "minimize": "Weergavebediening minimaliseren",
+    "group_by_project": "Groeperen op project"
   },
   "multiselect": {
     "select": "Selecteer...",
