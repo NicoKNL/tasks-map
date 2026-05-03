@@ -44,7 +44,7 @@ jobs:
               - 'zensical.toml'
 
   version:
-    if: "!startsWith(github.event.head_commit.message, env.RELEASE_COMMIT_PREFIX)"
+    if: "!startsWith(github.event.head_commit.message, 'chore: release version')"
     outputs:
       release: ${{ steps.semver.outputs.release }}
       version: ${{ steps.semver.outputs.version }}
