@@ -11,8 +11,12 @@ import {
   getLayoutedElements,
   getUnlinkedTasks,
   parseTaskLine,
+  partitionTasksByProject,
+  addSignToTaskInFile,
+  removeSignFromTaskInFile,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
+import { Vault } from "./mocks/obsidian";
 
 function makeTask(
   overrides: Partial<ConstructorParameters<typeof NoteTask>[0]> = {}
@@ -590,5 +594,332 @@ describe("getUnlinkedTasks", () => {
       const result = getUnlinkedTasks([a, b]);
       expect(result).toEqual([a, b]);
     });
+  });
+});
+
+describe("partitionTasksByProject", () => {
+  it("puts tasks with no projects into noProjectTasks", () => {
+    const task = makeTask({ id: "a", projects: [] });
+    const { noProjectTasks, singleProjectMap, multiProjectTasks } =
+      partitionTasksByProject([task]);
+    expect(noProjectTasks).toEqual([task]);
+    expect(singleProjectMap.size).toBe(0);
+    expect(multiProjectTasks).toHaveLength(0);
+  });
+
+  it("puts tasks with one project into singleProjectMap", () => {
+    const task = makeTask({ id: "b", projects: ["Alpha"] });
+    const { singleProjectMap } = partitionTasksByProject([task]);
+    expect(singleProjectMap.get("Alpha")).toEqual([task]);
+  });
+
+  it("groups multiple tasks under the same project", () => {
+    const t1 = makeTask({ id: "t1", projects: ["Alpha"] });
+    const t2 = makeTask({ id: "t2", projects: ["Alpha"] });
+    const { singleProjectMap } = partitionTasksByProject([t1, t2]);
+    expect(singleProjectMap.get("Alpha")).toEqual([t1, t2]);
+  });
+
+  it("puts tasks with multiple projects into multiProjectTasks", () => {
+    const task = makeTask({ id: "c", projects: ["Alpha", "Beta"] });
+    const { multiProjectTasks } = partitionTasksByProject([task]);
+    expect(multiProjectTasks).toEqual([task]);
+  });
+
+  it("handles mixed tasks correctly", () => {
+    const noProj = makeTask({ id: "n", projects: [] });
+    const singleProj = makeTask({ id: "s", projects: ["Alpha"] });
+    const multiProj = makeTask({ id: "m", projects: ["Alpha", "Beta"] });
+    const result = partitionTasksByProject([noProj, singleProj, multiProj]);
+    expect(result.noProjectTasks).toEqual([noProj]);
+    expect(result.singleProjectMap.get("Alpha")).toEqual([singleProj]);
+    expect(result.multiProjectTasks).toEqual([multiProj]);
+  });
+
+  it("returns empty collections for an empty task list", () => {
+    const result = partitionTasksByProject([]);
+    expect(result.noProjectTasks).toHaveLength(0);
+    expect(result.multiProjectTasks).toHaveLength(0);
+    expect(result.singleProjectMap.size).toBe(0);
+  });
+
+  describe("edge cases", () => {
+    it("handles different projects being mapped separately", () => {
+      const t1 = makeTask({ id: "t1", projects: ["Alpha"] });
+      const t2 = makeTask({ id: "t2", projects: ["Beta"] });
+      const { singleProjectMap } = partitionTasksByProject([t1, t2]);
+      expect(singleProjectMap.get("Alpha")).toEqual([t1]);
+      expect(singleProjectMap.get("Beta")).toEqual([t2]);
+    });
+  });
+});
+
+describe("addSignToTaskInFile", () => {
+  function makeVault(fileContent: string) {
+    const vault = new Vault();
+    vault.setFileContent("tasks/test.md", fileContent);
+    return vault;
+  }
+
+  it("appends emoji ID sign to matching task line", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "id", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).toContain("🆔 abc123");
+  });
+
+  it("appends dataview ID sign when linkingStyle is dataview", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "id", "abc123", "dataview");
+    expect(vault.getFileContent("tasks/test.md")).toContain("[id:: abc123]");
+  });
+
+  it("skips adding ID if emoji ID already present", async () => {
+    const initial = "- [ ] Test task 🆔 abc123";
+    const vault = makeVault(initial);
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "id", "xyz999");
+    // Should still only have the original ID
+    expect(vault.getFileContent("tasks/test.md")).toBe(initial);
+  });
+
+  it("appends individual stop sign", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "stop", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).toContain("⛔ abc123");
+  });
+
+  it("does not duplicate individual stop sign", async () => {
+    const vault = makeVault("- [ ] Test task ⛔ abc123");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "stop", "abc123");
+    const content = vault.getFileContent("tasks/test.md");
+    expect(content.match(/⛔/g)?.length).toBe(1);
+  });
+
+  it("appends dataview stop sign when linkingStyle is dataview", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "stop", "abc123", "dataview");
+    expect(vault.getFileContent("tasks/test.md")).toContain(
+      "[dependsOn:: abc123]"
+    );
+  });
+
+  it("appends to existing dataview dependsOn list", async () => {
+    const vault = makeVault("- [ ] Test task [dependsOn:: abc123]");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "stop", "def456", "dataview");
+    expect(vault.getFileContent("tasks/test.md")).toContain(
+      "[dependsOn:: abc123, def456]"
+    );
+  });
+
+  it("creates CSV stop sign when linkingStyle is csv and no existing stop signs", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "stop", "abc123", "csv");
+    expect(vault.getFileContent("tasks/test.md")).toContain("⛔ abc123");
+  });
+
+  it("appends to existing CSV stop sign", async () => {
+    const vault = makeVault("- [ ] Test task ⛔ abc123");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "stop", "def456", "csv");
+    expect(vault.getFileContent("tasks/test.md")).toContain("⛔ abc123,def456");
+  });
+
+  it("returns early when task has no link", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "" });
+    await expect(
+      addSignToTaskInFile(vault as any, task, "id", "abc123")
+    ).resolves.toBeUndefined();
+  });
+
+  it("returns early when file not found", async () => {
+    const vault = new Vault(); // empty vault, no files
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await expect(
+      addSignToTaskInFile(vault as any, task, "id", "abc123")
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe("removeSignFromTaskInFile", () => {
+  function makeVault(fileContent: string) {
+    const vault = new Vault();
+    vault.setFileContent("tasks/test.md", fileContent);
+    return vault;
+  }
+
+  it("removes emoji ID sign from task line", async () => {
+    const vault = makeVault("- [ ] Test task 🆔 abc123");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "id", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).not.toContain("🆔 abc123");
+  });
+
+  it("removes dataview ID sign from task line", async () => {
+    const vault = makeVault("- [ ] Test task [id:: abc123]");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "id", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).not.toContain("[id:: abc123]");
+  });
+
+  it("removes individual stop sign", async () => {
+    const vault = makeVault("- [ ] Test task ⛔ abc123");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).not.toContain("⛔");
+  });
+
+  it("removes one hash from CSV stop sign, keeping others", async () => {
+    const vault = makeVault("- [ ] Test task ⛔ abc123,def456");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    const content = vault.getFileContent("tasks/test.md");
+    expect(content).toContain("def456");
+    expect(content).not.toContain("abc123");
+  });
+
+  it("removes entire CSV block when last hash is removed", async () => {
+    const vault = makeVault("- [ ] Test task ⛔ abc123");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).not.toContain("⛔");
+  });
+
+  it("removes one hash from dataview dependsOn, keeping others", async () => {
+    const vault = makeVault(
+      "- [ ] Test task [dependsOn:: abc123, def456]"
+    );
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    const content = vault.getFileContent("tasks/test.md");
+    expect(content).toContain("[dependsOn:: def456]");
+    expect(content).not.toContain("abc123");
+  });
+
+  it("removes entire dataview dependsOn block when last hash removed", async () => {
+    const vault = makeVault("- [ ] Test task [dependsOn:: abc123]");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).not.toContain("dependsOn");
+  });
+
+  it("returns early when task has no link", async () => {
+    const vault = makeVault("- [ ] Test task");
+    const task = makeTask({ text: "Test task", link: "" });
+    await expect(
+      removeSignFromTaskInFile(vault as any, task, "id", "abc123")
+    ).resolves.toBeUndefined();
+  });
+
+  it("returns early when file not found", async () => {
+    const vault = new Vault();
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await expect(
+      removeSignFromTaskInFile(vault as any, task, "id", "abc123")
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe("getLayoutedElements with groupByProject=true", () => {
+  it("includes projectGroup nodes when tasks have projects", () => {
+    const tasks = [
+      makeTask({ id: "t1", projects: ["Alpha"] }),
+      makeTask({ id: "t2", projects: ["Alpha"] }),
+    ];
+    const nodes = createNodesFromTasks(tasks);
+    const edges = createEdgesFromTasks(tasks);
+    const result = getLayoutedElements(
+      nodes,
+      edges,
+      "Horizontal",
+      true,
+      true,
+      tasks
+    );
+    const groupNodes = result.filter((n) => n.type === "projectGroup");
+    expect(groupNodes.length).toBeGreaterThanOrEqual(1);
+    expect(groupNodes[0].data.label).toBe("Alpha");
+  });
+
+  it("child task nodes have parentNode set to group id", () => {
+    const tasks = [makeTask({ id: "t1", projects: ["Beta"] })];
+    const nodes = createNodesFromTasks(tasks);
+    const edges = createEdgesFromTasks(tasks);
+    const result = getLayoutedElements(
+      nodes,
+      edges,
+      "Horizontal",
+      true,
+      true,
+      tasks
+    );
+    const taskNode = result.find((n) => n.id === "t1");
+    expect(taskNode?.parentNode).toBeDefined();
+  });
+
+  it("tasks with no project are not inside a group", () => {
+    const tasks = [makeTask({ id: "solo", projects: [] })];
+    const nodes = createNodesFromTasks(tasks);
+    const edges = createEdgesFromTasks(tasks);
+    const result = getLayoutedElements(
+      nodes,
+      edges,
+      "Horizontal",
+      true,
+      true,
+      tasks
+    );
+    const soloNode = result.find((n) => n.id === "solo");
+    expect(soloNode?.parentNode).toBeUndefined();
+  });
+});
+
+describe("parseTaskLine edge cases", () => {
+  it.each([
+    ["- [ ] todo task", "todo"],
+    ["- [x] done task", "done"],
+    ["- [/] in progress task", "in_progress"],
+    ["- [-] canceled task", "canceled"],
+  ])("parses status char %s correctly", (line, expectedStatus) => {
+    const task = parseTaskLine(line, "test.md");
+    expect(task).not.toBeNull();
+    expect(task?.status).toBe(expectedStatus);
+  });
+
+  it("parses indented task lines", () => {
+    const task = parseTaskLine("  - [ ] indented task", "test.md");
+    expect(task).not.toBeNull();
+    expect(task?.status).toBe("todo");
+  });
+
+  it("parses task with * bullet", () => {
+    const task = parseTaskLine("* [ ] star bullet task", "test.md");
+    expect(task).not.toBeNull();
+  });
+
+  it("parses task with + bullet", () => {
+    const task = parseTaskLine("+ [ ] plus bullet task", "test.md");
+    expect(task).not.toBeNull();
+  });
+
+  it("returns null for heading lines", () => {
+    expect(parseTaskLine("## My Heading", "test.md")).toBeNull();
+  });
+
+  it("returns null for plain list items", () => {
+    expect(parseTaskLine("- Just a list item", "test.md")).toBeNull();
+  });
+
+  it("extracts tags from task line", () => {
+    const task = parseTaskLine("- [ ] My task #work #urgent", "test.md");
+    expect(task?.tags).toContain("work");
+    expect(task?.tags).toContain("urgent");
   });
 });
