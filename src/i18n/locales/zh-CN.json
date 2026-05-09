@@ -126,7 +126,8 @@
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
   },
   "notices": {
-    "project_assigned": "已添加到项目：{{projectName}}"
+    "project_assigned": "已添加到项目：{{projectName}}",
+    "project_assigned_multiple": "已将 {{count}} 个任务添加到项目：{{projectName}}"
   },
   "presets": {
     "panel_title": "已保存的筛选器",

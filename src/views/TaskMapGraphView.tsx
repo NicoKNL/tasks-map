@@ -6,6 +6,7 @@ import ReactFlow, {
   addEdge,
   useReactFlow,
   type NodeDragHandler,
+  type SelectionDragHandler,
 } from "reactflow";
 import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
@@ -596,16 +597,16 @@ export default function TaskMapGraphView({
     [nodes]
   );
 
-  // Highlight project group node while a task node is dragged over it
-  const onNodeDrag: NodeDragHandler = useCallback(
-    (_event, draggedNode) => {
-      if (draggedNode.type !== "task") return;
-      const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
-      const hoveredGroupId = findGroupAtPosition(dragPos);
+  // Update isDragOver highlights for project group nodes based on a set of drag positions
+  const updateDragOverHighlights = useCallback(
+    (positions: { x: number; y: number }[]) => {
+      const hoveredGroupIds = new Set(
+        positions.map((pos) => findGroupAtPosition(pos)).filter(Boolean)
+      );
       setNodes((nds) =>
         nds.map((n) => {
           if (n.type !== "projectGroup") return n;
-          const isDragOver = n.id === hoveredGroupId;
+          const isDragOver = hoveredGroupIds.has(n.id);
           if ((n.data as { isDragOver?: boolean }).isDragOver === isDragOver)
             return n;
           return { ...n, data: { ...n.data, isDragOver } };
@@ -615,33 +616,108 @@ export default function TaskMapGraphView({
     [findGroupAtPosition, setNodes]
   );
 
+  // Highlight project group node while a task node is dragged over it
+  const onNodeDrag: NodeDragHandler = useCallback(
+    (_event, draggedNode) => {
+      if (draggedNode.type !== "task") return;
+      const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
+      updateDragOverHighlights([dragPos]);
+    },
+    [updateDragOverHighlights]
+  );
+
+  // Highlight project group nodes while multiple selected task nodes are dragged
+  const onSelectionDrag: SelectionDragHandler = useCallback(
+    (_event, draggedNodes) => {
+      const positions = draggedNodes
+        .filter((n) => n.type === "task")
+        .map((n) => n.positionAbsolute ?? n.position);
+      updateDragOverHighlights(positions);
+    },
+    [updateDragOverHighlights]
+  );
+
+  // Clear all drag-over highlights on project group nodes
+  const clearDragOverHighlights = useCallback(() => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.type !== "projectGroup") return n;
+        if (!(n.data as { isDragOver?: boolean }).isDragOver) return n;
+        return { ...n, data: { ...n.data, isDragOver: false } };
+      })
+    );
+  }, [setNodes]);
+
+  // Assign a list of task nodes to the project group they were dropped into.
+  // For a multi-node selection, any single node overlapping a group is enough
+  // to assign the entire selection to that group.
+  const assignDraggedNodesToProject = useCallback(
+    async (
+      draggedNodes: {
+        id: string;
+        type?: string;
+        position: { x: number; y: number };
+        positionAbsolute?: { x: number; y: number };
+      }[]
+    ) => {
+      const taskNodes = draggedNodes.filter((n) => n.type === "task");
+      if (taskNodes.length === 0) return;
+
+      // Find the first group that any dragged node overlaps
+      let targetProjectName: string | null = null;
+      for (const draggedNode of taskNodes) {
+        const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
+        const groupId = findGroupAtPosition(dragPos);
+        if (!groupId) continue;
+        const groupNode = nodes.find((n) => n.id === groupId);
+        if (!groupNode) continue;
+        targetProjectName = (groupNode.data as { label: string }).label;
+        break;
+      }
+
+      if (!targetProjectName) return;
+
+      // Assign all task nodes in the selection to that project
+      let count = 0;
+      for (const draggedNode of taskNodes) {
+        const task = tasks.find((t) => t.id === draggedNode.id);
+        if (!(task instanceof NoteTask)) continue;
+        await task.addProject(app, targetProjectName);
+        count++;
+      }
+
+      if (count === 1) {
+        new Notice(
+          t("notices.project_assigned", { projectName: targetProjectName })
+        );
+      } else if (count > 1) {
+        new Notice(
+          t("notices.project_assigned_multiple", {
+            projectName: targetProjectName,
+            count,
+          })
+        );
+      }
+    },
+    [tasks, nodes, app, findGroupAtPosition]
+  );
+
   // Handle drag-stop of a graph task node — assign to project if dropped inside a group
   const onNodeDragStop: NodeDragHandler = useCallback(
     async (_event, draggedNode) => {
-      // Clear all drag-over highlights
-      setNodes((nds) =>
-        nds.map((n) => {
-          if (n.type !== "projectGroup") return n;
-          if (!(n.data as { isDragOver?: boolean }).isDragOver) return n;
-          return { ...n, data: { ...n.data, isDragOver: false } };
-        })
-      );
-
-      if (draggedNode.type !== "task") return;
-      const task = tasks.find((t) => t.id === draggedNode.id);
-      if (!(task instanceof NoteTask)) return;
-
-      const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
-      const groupId = findGroupAtPosition(dragPos);
-      if (!groupId) return;
-
-      const groupNode = nodes.find((n) => n.id === groupId);
-      if (!groupNode) return;
-      const projectName = (groupNode.data as { label: string }).label;
-      await task.addProject(app, projectName);
-      new Notice(t("notices.project_assigned", { projectName }));
+      clearDragOverHighlights();
+      await assignDraggedNodesToProject([draggedNode]);
     },
-    [tasks, nodes, app, findGroupAtPosition, setNodes]
+    [clearDragOverHighlights, assignDraggedNodesToProject]
+  );
+
+  // Handle drag-stop of a multi-node selection — assign all task nodes to projects
+  const onSelectionDragStop: SelectionDragHandler = useCallback(
+    async (_event, draggedNodes) => {
+      clearDragOverHighlights();
+      await assignDraggedNodesToProject(draggedNodes);
+    },
+    [clearDragOverHighlights, assignDraggedNodesToProject]
   );
 
   // Handle drop of an unlinked task from the sidebar onto the graph canvas
@@ -808,6 +884,10 @@ export default function TaskMapGraphView({
           onPaneClick={onPaneClick}
           onNodeDrag={onNodeDrag}
           onNodeDragStop={onNodeDragStop}
+          onSelectionDrag={onSelectionDrag}
+          onSelectionDragStop={onSelectionDragStop}
+          multiSelectionKeyCode="Shift"
+          selectionKeyCode="Shift"
         >
           <div className="tasks-map-panels-stack">
             {embed.showPresetsPanel && (
