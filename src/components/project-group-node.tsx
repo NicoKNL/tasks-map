@@ -4,14 +4,22 @@ import { FolderOpen } from "lucide-react";
 
 export interface ProjectGroupNodeData {
   label: string;
+  isDragOver?: boolean;
 }
 
 export default function ProjectGroupNode({
   data,
   selected,
 }: NodeProps<ProjectGroupNodeData>) {
+  const classes = [
+    "tasks-map-project-group",
+    selected ? "selected" : "",
+    data.isDragOver ? "drag-over" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
-    <div className={`tasks-map-project-group${selected ? " selected" : ""}`}>
+    <div className={classes}>
       <NodeResizer minWidth={100} minHeight={100} isVisible={selected} />
       <div className="tasks-map-project-group-label">
         <FolderOpen size={13} />

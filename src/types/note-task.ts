@@ -251,6 +251,64 @@ export class NoteTask extends BaseTask {
     });
   }
 
+  async addProject(app: App, projectName: string): Promise<void> {
+    if (!this.link || !this.text) return;
+    const vault = app?.vault;
+    if (!vault) return;
+    const file = vault.getFileByPath(this.link);
+    if (!file) return;
+
+    await vault.process(file, (fileContent) => {
+      const lines = fileContent.split(/\r?\n/);
+      const { frontmatterStart, frontmatterEnd } = this.findFrontmatter(lines);
+
+      if (frontmatterStart === -1 || frontmatterEnd === -1) {
+        return fileContent;
+      }
+
+      // Find projects section
+      let i = frontmatterStart + 1;
+      let projectsLineIdx = -1;
+      while (i < frontmatterEnd) {
+        if (lines[i] === "projects:") {
+          projectsLineIdx = i;
+          break;
+        }
+        i++;
+      }
+
+      // If projects section doesn't exist, add it
+      if (projectsLineIdx === -1) {
+        lines.splice(
+          frontmatterEnd,
+          0,
+          "projects:",
+          `  - "[[${projectName}]]"`
+        );
+        return lines.join("\n");
+      }
+
+      // Check if project already exists
+      i = projectsLineIdx + 1;
+      while (i < frontmatterEnd && lines[i].match(/^\s{2}- /)) {
+        const entryMatch = lines[i].match(/^\s{2}- (.+)$/);
+        if (entryMatch) {
+          const raw = entryMatch[1].replace(/^"|"$/g, "");
+          const wikiMatch = raw.match(/^\[\[(.+)\]\]$/);
+          const existing = wikiMatch ? wikiMatch[1] : raw;
+          if (existing === projectName) {
+            return fileContent;
+          }
+        }
+        i++;
+      }
+
+      // Append project entry
+      lines.splice(i, 0, `  - "[[${projectName}]]"`);
+      return lines.join("\n");
+    });
+  }
+
   async addLinkMetadata(vault: Vault, fromTask: BaseTask): Promise<void> {
     await this.addDependencyToFrontmatter(vault, fromTask);
   }

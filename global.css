@@ -1900,6 +1900,12 @@ If your plugin does not need CSS, delete this file.
   box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
+.tasks-map-project-group.drag-over {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+  background-color: var(--background-modifier-hover);
+}
+
 .tasks-map-project-group-label {
   display: flex;
   align-items: center;
