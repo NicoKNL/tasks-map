@@ -126,7 +126,8 @@
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type."
   },
   "notices": {
-    "project_assigned": "Added to project: {{projectName}}"
+    "project_assigned": "Added to project: {{projectName}}",
+    "project_assigned_multiple": "Added {{count}} tasks to project: {{projectName}}"
   },
   "presets": {
     "panel_title": "Saved Filters",
