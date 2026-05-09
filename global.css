@@ -1900,6 +1900,12 @@ If your plugin does not need CSS, delete this file.
   box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
+.tasks-map-project-group.drag-over {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+  background-color: var(--background-modifier-hover);
+}
+
 .tasks-map-project-group-label {
   display: flex;
   align-items: center;
@@ -1932,4 +1938,25 @@ If your plugin does not need CSS, delete this file.
   background-color: var(--dot-color, var(--text-muted));
   opacity: 0.75;
   flex-shrink: 0;
+}
+
+/* Selection rectangle drawn while dragging */
+.react-flow__selection {
+  border-radius: calc(var(--radius-m, 8px) + 6px);
+  border: 2px dashed var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+}
+
+/* "At rest" bounding box around the selected nodes.
+   ReactFlow sets outline:none on :focus (fires when canvas is active), so we
+   override it back. Radius: outer = inner + gap (concentric matching). */
+.react-flow__nodesselection-rect,
+.react-flow__nodesselection-rect:focus,
+.react-flow__nodesselection-rect:focus-visible {
+  border: none;
+  border-radius: var(--radius-m, 8px);
+  background: color-mix(in srgb, var(--interactive-accent) 6%, transparent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--interactive-accent) 6%, transparent);
+  outline: 2px dashed var(--interactive-accent);
+  outline-offset: 6px;
 }

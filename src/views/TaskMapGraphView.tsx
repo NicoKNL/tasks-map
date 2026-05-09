@@ -5,6 +5,8 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   useReactFlow,
+  type NodeDragHandler,
+  type SelectionDragHandler,
 } from "reactflow";
 import { Notice } from "obsidian";
 import { useApp } from "src/hooks/hooks";
@@ -23,6 +25,7 @@ import {
   parseTaskLine,
 } from "src/lib/utils";
 import { BaseTask } from "src/types/task";
+import { NoteTask } from "src/types/note-task";
 import GuiOverlay from "src/components/gui-overlay";
 import FilterPresetsPanel from "src/components/filter-presets-panel";
 import StatusCountsOverlay from "src/components/status-counts-overlay";
@@ -572,9 +575,154 @@ export default function TaskMapGraphView({
     [createConnectedTask, tasks]
   );
 
+  // Returns the project group node id that contains the given position, or null
+  const findGroupAtPosition = useCallback(
+    (pos: { x: number; y: number }): string | null => {
+      for (const groupNode of nodes.filter((n) => n.type === "projectGroup")) {
+        const { x, y } = groupNode.position;
+        const w =
+          groupNode.width ??
+          (groupNode.style?.width as number | undefined) ??
+          0;
+        const h =
+          groupNode.height ??
+          (groupNode.style?.height as number | undefined) ??
+          0;
+        if (pos.x >= x && pos.x <= x + w && pos.y >= y && pos.y <= y + h) {
+          return groupNode.id;
+        }
+      }
+      return null;
+    },
+    [nodes]
+  );
+
+  // Update isDragOver highlights for project group nodes based on a set of drag positions
+  const updateDragOverHighlights = useCallback(
+    (positions: { x: number; y: number }[]) => {
+      const hoveredGroupIds = new Set(
+        positions.map((pos) => findGroupAtPosition(pos)).filter(Boolean)
+      );
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.type !== "projectGroup") return n;
+          const isDragOver = hoveredGroupIds.has(n.id);
+          if ((n.data as { isDragOver?: boolean }).isDragOver === isDragOver)
+            return n;
+          return { ...n, data: { ...n.data, isDragOver } };
+        })
+      );
+    },
+    [findGroupAtPosition, setNodes]
+  );
+
+  // Highlight project group node while a task node is dragged over it
+  const onNodeDrag: NodeDragHandler = useCallback(
+    (_event, draggedNode) => {
+      if (draggedNode.type !== "task") return;
+      const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
+      updateDragOverHighlights([dragPos]);
+    },
+    [updateDragOverHighlights]
+  );
+
+  // Highlight project group nodes while multiple selected task nodes are dragged
+  const onSelectionDrag: SelectionDragHandler = useCallback(
+    (_event, draggedNodes) => {
+      const positions = draggedNodes
+        .filter((n) => n.type === "task")
+        .map((n) => n.positionAbsolute ?? n.position);
+      updateDragOverHighlights(positions);
+    },
+    [updateDragOverHighlights]
+  );
+
+  // Clear all drag-over highlights on project group nodes
+  const clearDragOverHighlights = useCallback(() => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.type !== "projectGroup") return n;
+        if (!(n.data as { isDragOver?: boolean }).isDragOver) return n;
+        return { ...n, data: { ...n.data, isDragOver: false } };
+      })
+    );
+  }, [setNodes]);
+
+  // Assign a list of task nodes to the project group they were dropped into.
+  // For a multi-node selection, any single node overlapping a group is enough
+  // to assign the entire selection to that group.
+  const assignDraggedNodesToProject = useCallback(
+    async (
+      draggedNodes: {
+        id: string;
+        type?: string;
+        position: { x: number; y: number };
+        positionAbsolute?: { x: number; y: number };
+      }[]
+    ) => {
+      const taskNodes = draggedNodes.filter((n) => n.type === "task");
+      if (taskNodes.length === 0) return;
+
+      // Find the first group that any dragged node overlaps
+      let targetProjectName: string | null = null;
+      for (const draggedNode of taskNodes) {
+        const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
+        const groupId = findGroupAtPosition(dragPos);
+        if (!groupId) continue;
+        const groupNode = nodes.find((n) => n.id === groupId);
+        if (!groupNode) continue;
+        targetProjectName = (groupNode.data as { label: string }).label;
+        break;
+      }
+
+      if (!targetProjectName) return;
+
+      // Assign all task nodes in the selection to that project
+      let count = 0;
+      for (const draggedNode of taskNodes) {
+        const task = tasks.find((t) => t.id === draggedNode.id);
+        if (!(task instanceof NoteTask)) continue;
+        await task.addProject(app, targetProjectName);
+        count++;
+      }
+
+      if (count === 1) {
+        new Notice(
+          t("notices.project_assigned", { projectName: targetProjectName })
+        );
+      } else if (count > 1) {
+        new Notice(
+          t("notices.project_assigned_multiple", {
+            projectName: targetProjectName,
+            count,
+          })
+        );
+      }
+    },
+    [tasks, nodes, app, findGroupAtPosition]
+  );
+
+  // Handle drag-stop of a graph task node — assign to project if dropped inside a group
+  const onNodeDragStop: NodeDragHandler = useCallback(
+    async (_event, draggedNode) => {
+      clearDragOverHighlights();
+      await assignDraggedNodesToProject([draggedNode]);
+    },
+    [clearDragOverHighlights, assignDraggedNodesToProject]
+  );
+
+  // Handle drag-stop of a multi-node selection — assign all task nodes to projects
+  const onSelectionDragStop: SelectionDragHandler = useCallback(
+    async (_event, draggedNodes) => {
+      clearDragOverHighlights();
+      await assignDraggedNodesToProject(draggedNodes);
+    },
+    [clearDragOverHighlights, assignDraggedNodesToProject]
+  );
+
   // Handle drop of an unlinked task from the sidebar onto the graph canvas
   const onDrop = useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
+    async (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       const taskId = event.dataTransfer.getData(DRAG_DATA_KEY);
       if (!taskId) return;
@@ -587,6 +735,35 @@ export default function TaskMapGraphView({
         x: event.clientX,
         y: event.clientY,
       });
+
+      // Check if drop landed inside a project group node
+      if (task instanceof NoteTask) {
+        const projectGroupNodes = nodes.filter(
+          (n) => n.type === "projectGroup"
+        );
+        for (const groupNode of projectGroupNodes) {
+          const { x, y } = groupNode.position;
+          const w =
+            groupNode.width ??
+            (groupNode.style?.width as number | undefined) ??
+            0;
+          const h =
+            groupNode.height ??
+            (groupNode.style?.height as number | undefined) ??
+            0;
+          if (
+            position.x >= x &&
+            position.x <= x + w &&
+            position.y >= y &&
+            position.y <= y + h
+          ) {
+            const projectName = (groupNode.data as { label: string }).label;
+            await task.addProject(app, projectName);
+            new Notice(t("notices.project_assigned", { projectName }));
+            break;
+          }
+        }
+      }
 
       // Store the position so the node appears exactly at the drop point
       droppedNodePositions.current.set(taskId, position);
@@ -601,7 +778,7 @@ export default function TaskMapGraphView({
         return next;
       });
     },
-    [tasks, reactFlowInstance]
+    [tasks, reactFlowInstance, nodes, app]
   );
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -705,6 +882,12 @@ export default function TaskMapGraphView({
           onEdgeClick={onEdgeClick}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          onNodeDrag={onNodeDrag}
+          onNodeDragStop={onNodeDragStop}
+          onSelectionDrag={onSelectionDrag}
+          onSelectionDragStop={onSelectionDragStop}
+          multiSelectionKeyCode="Shift"
+          selectionKeyCode="Shift"
         >
           <div className="tasks-map-panels-stack">
             {embed.showPresetsPanel && (

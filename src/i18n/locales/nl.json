@@ -125,6 +125,10 @@
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn."
   },
+  "notices": {
+    "project_assigned": "Toegevoegd aan project: {{projectName}}",
+    "project_assigned_multiple": "{{count}} taken toegevoegd aan project: {{projectName}}"
+  },
   "presets": {
     "panel_title": "Opgeslagen filters",
     "expand_panel": "Voorinstellingen paneel uitklappen",
