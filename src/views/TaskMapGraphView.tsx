@@ -648,7 +648,9 @@ export default function TaskMapGraphView({
     );
   }, [setNodes]);
 
-  // Assign a list of task nodes to the project group they were dropped into
+  // Assign a list of task nodes to the project group they were dropped into.
+  // For a multi-node selection, any single node overlapping a group is enough
+  // to assign the entire selection to that group.
   const assignDraggedNodesToProject = useCallback(
     async (
       draggedNodes: {
@@ -661,41 +663,40 @@ export default function TaskMapGraphView({
       const taskNodes = draggedNodes.filter((n) => n.type === "task");
       if (taskNodes.length === 0) return;
 
-      // Group task nodes by their target project group
-      const assignmentMap = new Map<string, string>(); // taskId -> projectName
+      // Find the first group that any dragged node overlaps
+      let targetProjectName: string | null = null;
       for (const draggedNode of taskNodes) {
         const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
         const groupId = findGroupAtPosition(dragPos);
         if (!groupId) continue;
         const groupNode = nodes.find((n) => n.id === groupId);
         if (!groupNode) continue;
-        const projectName = (groupNode.data as { label: string }).label;
-        assignmentMap.set(draggedNode.id, projectName);
+        targetProjectName = (groupNode.data as { label: string }).label;
+        break;
       }
 
-      if (assignmentMap.size === 0) return;
+      if (!targetProjectName) return;
 
-      // Perform assignments
-      const projectCounts = new Map<string, number>();
-      for (const [taskId, projectName] of assignmentMap) {
-        const task = tasks.find((t) => t.id === taskId);
+      // Assign all task nodes in the selection to that project
+      let count = 0;
+      for (const draggedNode of taskNodes) {
+        const task = tasks.find((t) => t.id === draggedNode.id);
         if (!(task instanceof NoteTask)) continue;
-        await task.addProject(app, projectName);
-        projectCounts.set(
-          projectName,
-          (projectCounts.get(projectName) ?? 0) + 1
-        );
+        await task.addProject(app, targetProjectName);
+        count++;
       }
 
-      // Show a notice per project
-      for (const [projectName, count] of projectCounts) {
-        if (count === 1) {
-          new Notice(t("notices.project_assigned", { projectName }));
-        } else {
-          new Notice(
-            t("notices.project_assigned_multiple", { projectName, count })
-          );
-        }
+      if (count === 1) {
+        new Notice(
+          t("notices.project_assigned", { projectName: targetProjectName })
+        );
+      } else if (count > 1) {
+        new Notice(
+          t("notices.project_assigned_multiple", {
+            projectName: targetProjectName,
+            count,
+          })
+        );
       }
     },
     [tasks, nodes, app, findGroupAtPosition]
