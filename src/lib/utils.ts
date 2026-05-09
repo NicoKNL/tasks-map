@@ -441,10 +441,6 @@ export function getLayoutedElements(
             direction
           );
 
-    const flatPositions = new Map<string, { x: number; y: number }>(
-      flatLayouted.map((n) => [n.id, n.position])
-    );
-
     // Compute per-task "rank" (x in LR, y in TB) from flat layout
     const taskRank = new Map<string, number>();
     flatLayouted.forEach((n) => {
@@ -455,6 +451,12 @@ export function getLayoutedElements(
     });
 
     // ── Pass 2: build group nodes sized by member bounding boxes ──────────
+    // Per-project local positions: re-layout each project's members using only
+    // their own connected components so disconnected subgraphs within a project
+    // are tiled compactly, without inheriting the large global spacing from
+    // Pass 1.
+    const projectLocalPositions = new Map<string, { x: number; y: number }>();
+
     const groupDimensions = new Map<
       string,
       { width: number; height: number }
@@ -466,20 +468,66 @@ export function getLayoutedElements(
 
     for (const [projectName, memberTasks] of singleProjectMap) {
       const groupId = `project-group-${projectName}`;
+      const memberIds = new Set(memberTasks.map((t) => t.id));
+      const memberNodes = taskNodes.filter((n) => memberIds.has(n.id));
+      const memberEdges = taskEdges.filter(
+        (e) => memberIds.has(e.source) && memberIds.has(e.target)
+      );
+
+      // Layout this project's members independently (handles internal forest)
+      const projectComponents = getConnectedComponents(
+        memberNodes,
+        memberEdges
+      );
+      const projectLayoutedComponents = projectComponents.map(
+        (componentIds) => {
+          const componentNodes = memberNodes.filter((n) =>
+            componentIds.includes(n.id)
+          );
+          const componentNodeIds = new Set(componentIds);
+          const componentEdges = memberEdges.filter(
+            (e) =>
+              componentNodeIds.has(e.source) && componentNodeIds.has(e.target)
+          );
+          return normalizeLayoutedNodes(
+            layoutNodesWithDagre(
+              componentNodes,
+              componentEdges,
+              rankdir,
+              nodeDimensions
+            )
+          );
+        }
+      );
+
+      const projectLayouted: Node[] =
+        projectComponents.length <= 1
+          ? projectLayoutedComponents[0] || []
+          : spaceConnectedComponents(
+              projectLayoutedComponents,
+              nodeDimensions,
+              direction
+            );
+
+      // Store local positions for assembly later
+      projectLayouted.forEach((n) => {
+        projectLocalPositions.set(n.id, n.position);
+      });
+
+      // Compute bounding box from intra-project positions
       let minX = Infinity,
         minY = Infinity,
         maxRight = -Infinity,
         maxBottom = -Infinity;
-      memberTasks.forEach((t) => {
-        const pos = flatPositions.get(t.id) ?? { x: 0, y: 0 };
-        const dims = nodeDimensions.get(t.id) ?? {
+      projectLayouted.forEach((n) => {
+        const dims = nodeDimensions.get(n.id) ?? {
           width: NODEWIDTH,
           height: NODEHEIGHT,
         };
-        minX = Math.min(minX, pos.x);
-        minY = Math.min(minY, pos.y);
-        maxRight = Math.max(maxRight, pos.x + dims.width);
-        maxBottom = Math.max(maxBottom, pos.y + dims.height);
+        minX = Math.min(minX, n.position.x);
+        minY = Math.min(minY, n.position.y);
+        maxRight = Math.max(maxRight, n.position.x + dims.width);
+        maxBottom = Math.max(maxBottom, n.position.y + dims.height);
       });
       groupBBoxes.set(groupId, { minX, minY, maxRight, maxBottom });
       groupDimensions.set(groupId, {
@@ -617,11 +665,11 @@ export function getLayoutedElements(
         zIndex: -1,
       });
 
-      // Member nodes: positions relative to group origin
+      // Member nodes: positions relative to group origin (use intra-project positions)
       memberTasks.forEach((t) => {
         const flatNode = flatLayouted.find((n) => n.id === t.id);
         if (!flatNode) return;
-        const pos = flatPositions.get(t.id) ?? { x: 0, y: 0 };
+        const pos = projectLocalPositions.get(t.id) ?? { x: 0, y: 0 };
         resultNodes.push({
           ...flatNode,
           parentNode: groupId,
