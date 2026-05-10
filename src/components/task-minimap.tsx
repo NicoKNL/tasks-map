@@ -6,11 +6,11 @@ export const TaskMinimap = () => {
     const status = node.data?.task?.status;
     switch (status) {
       case "done":
-        return "var(--tasks-map-task-completed-green)";
+        return "var(--tasks-map-color-green)";
       case "in_progress":
-        return "var(--tasks-map-task-in-progress-blue)";
+        return "var(--tasks-map-color-blue)";
       case "canceled":
-        return "var(--tasks-map-task-canceled-red)";
+        return "var(--tasks-map-color-red)";
       default:
         return "var(--background-secondary)";
     }
