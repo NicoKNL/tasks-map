@@ -69,6 +69,7 @@ jobs:
       contents: write
       attestations: write
       id-token: write
+      artifact-metadata: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -101,7 +102,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest@v4
         with:
           subject-path: |
             main.js
