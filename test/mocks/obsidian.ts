@@ -1,5 +1,5 @@
 // Mock implementations for Obsidian API
-import * as yaml from "js-yaml";
+import * as yaml from "yaml";
 
 export class TFile {
   path: string;
@@ -67,12 +67,12 @@ export class Notice {
 }
 
 /**
- * Wrapper around js-yaml for Obsidian's parseYaml API
+ * Wrapper around yaml for Obsidian's parseYaml API
  * Matches Obsidian's behavior
  */
 export function parseYaml(yamlString: string): any {
   try {
-    return yaml.load(yamlString);
+    return yaml.parse(yamlString);
   } catch (e) {
     // Return empty object on parse error, similar to Obsidian
     return {};
@@ -80,16 +80,13 @@ export function parseYaml(yamlString: string): any {
 }
 
 /**
- * Wrapper around js-yaml for Obsidian's stringifyYaml API
+ * Wrapper around yaml for Obsidian's stringifyYaml API
  * Matches Obsidian's YAML formatting style
  */
 export function stringifyYaml(obj: any): string {
-  return yaml.dump(obj, {
+  return yaml.stringify(obj, {
     indent: 2,
-    lineWidth: -1, // Don't wrap lines
-    noRefs: true, // Don't use anchors/aliases
-    sortKeys: false, // Preserve key order
-    quotingType: '"', // Use double quotes
-    forceQuotes: false, // Only quote when necessary
+    lineWidth: 0, // Don't wrap lines
+    sortMapEntries: false, // Preserve key order
   });
 }

@@ -1,5 +1,5 @@
 import { defineConfig } from "eslint/config";
-import react from "eslint-plugin-react";
+import eslintReact from "@eslint-react/eslint-plugin";
 import reactHooks from "eslint-plugin-react-hooks";
 import js from "@eslint/js";
 import globals from "globals";
@@ -11,9 +11,8 @@ export default defineConfig([
     js.configs.recommended,
     {
         files: ['**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}'],
-        ...react.configs.flat.recommended,
         plugins: {
-            react,
+            "@eslint-react": eslintReact,
             "react-hooks": reactHooks,
             "@typescript-eslint": tseslint,
         },
@@ -31,33 +30,26 @@ export default defineConfig([
                 ...globals.browser,
             },
         },
-        settings: {
-            react: {
-                version: "detect",
-            },
-        },
         rules: {
             ...prettierConfig.rules,
-            "react/react-in-jsx-scope": "off",
-            "react/jsx-uses-react": "error",
-            "react/jsx-uses-vars": "error",
+            ...eslintReact.configs.recommended.rules,
+            ...reactHooks.configs.recommended.rules,
+            "react-hooks/set-state-in-effect": "warn",
             "@typescript-eslint/no-explicit-any": "error",
             "no-unused-vars": ["error", {
                 "argsIgnorePattern": "^_",
                 "varsIgnorePattern": "^_"
             }],
-            "no-restricted-syntax": ["error", {
-                "selector": "CallExpression[callee.property.name='createElement'][arguments.0.value='style']",
-                "message": "Do not create <style> elements dynamically. Use styles.css instead, which Obsidian loads automatically."
-            }],
-            "react/forbid-dom-props": ["error", {
-                "forbid": [
-                    {
-                        "propName": "style",
-                        "message": "Inline styles are not allowed. Use CSS classes in global.css instead."
-                    }
-                ]
-            }],
+            "no-restricted-syntax": ["error",
+                {
+                    "selector": "CallExpression[callee.property.name='createElement'][arguments.0.value='style']",
+                    "message": "Do not create <style> elements dynamically. Use styles.css instead, which Obsidian loads automatically."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='style']",
+                    "message": "Inline styles are not allowed. Use CSS classes in global.css instead."
+                }
+            ],
         },
     }
 ]);
