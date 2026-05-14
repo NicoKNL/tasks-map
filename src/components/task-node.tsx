@@ -61,9 +61,6 @@ interface TaskNodeData {
   showPriorities?: boolean;
   showTags?: boolean;
   debugVisualization?: boolean;
-  tagColorMode?: "random" | "static";
-  tagColorSeed?: number;
-  tagStaticColor?: string;
   groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
@@ -76,9 +73,6 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     showPriorities = true,
     showTags = true,
     debugVisualization = false,
-    tagColorMode = "random",
-    tagColorSeed = 42,
-    tagStaticColor = "#3b82f6",
     groupByProject = false,
     onDeleteTask,
   } = data;
@@ -224,14 +218,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           <div className="tasks-map-task-node-footer">
             <div className="task-tags-container">
               {tags.map((tag) => (
-                <Tag
-                  key={tag}
-                  tag={tag}
-                  tagColorMode={tagColorMode}
-                  tagColorSeed={tagColorSeed}
-                  tagStaticColor={tagStaticColor}
-                  onRemove={handleTagRemove}
-                />
+                <Tag key={tag} tag={tag} onRemove={handleTagRemove} />
               ))}
 
               {/* Add tag button/input */}

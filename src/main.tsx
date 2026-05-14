@@ -23,6 +23,7 @@ import { initI18n, changeLanguage, t } from "./i18n";
 import { FilterState, DEFAULT_FILTER_STATE } from "./types/filter-state";
 import { EmbedConfig, DEFAULT_EMBED_CONFIG } from "./types/embed-config";
 import { checkDataviewPlugin } from "./lib/utils";
+import { tagColorManager } from "./lib/tag-color-manager";
 
 const EMBED_CODE_BLOCK = "tasks-map";
 
@@ -63,6 +64,13 @@ export default class TasksMapPlugin extends Plugin {
 
     // Initialize i18n with saved language
     await initI18n(this.settings.language);
+
+    // Initialize tag color palette
+    tagColorManager.init(
+      this.settings.tagColorMode,
+      this.settings.tagColorSeed,
+      this.settings.tagStaticColor
+    );
 
     // Always register the view - it will handle the Dataview check internally
     this.registerView(
@@ -144,6 +152,12 @@ export default class TasksMapPlugin extends Plugin {
     await this.saveData(this.settings);
     // Update language when settings change
     changeLanguage(this.settings.language);
+    // Update tag color palette when settings change
+    tagColorManager.update(
+      this.settings.tagColorMode,
+      this.settings.tagColorSeed,
+      this.settings.tagStaticColor
+    );
     // Notify open views of settings change
     window.dispatchEvent(new Event("tasks-map:settings-changed"));
   }
@@ -229,6 +243,7 @@ export default class TasksMapPlugin extends Plugin {
   }
 
   async onunload() {
+    tagColorManager.destroy();
     // Embed roots are cleaned up individually via MarkdownRenderChild
   }
 }

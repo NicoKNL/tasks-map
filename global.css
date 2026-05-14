@@ -350,7 +350,7 @@ If your plugin does not need CSS, delete this file.
   border-radius: 12px;
   border: none;
   white-space: nowrap;
-  background-color: #3b82f6; /* fallback color */
+  background-color: #3b82f6; /* fallback; overridden by .tasks-map-tag--color-N classes */
 }
 
 .tasks-map-graph-container.hide-tags .task-tag,
