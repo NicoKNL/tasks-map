@@ -595,11 +595,18 @@ export default function TaskMapGraphView({
     [nodes]
   );
 
-  // Update isDragOver highlights for project group nodes based on a set of drag positions
+  // Update isDragOver highlights for project group nodes based on a set of drag positions.
+  // Groups whose IDs appear in excludeGroupIds are never highlighted (used to suppress
+  // highlighting the group a node already belongs to).
   const updateDragOverHighlights = useCallback(
-    (positions: { x: number; y: number }[]) => {
+    (
+      positions: { x: number; y: number }[],
+      excludeGroupIds: Set<string> = new Set()
+    ) => {
       const hoveredGroupIds = new Set(
-        positions.map((pos) => findGroupAtPosition(pos)).filter(Boolean)
+        positions
+          .map((pos) => findGroupAtPosition(pos))
+          .filter((id): id is string => id !== null && !excludeGroupIds.has(id))
       );
       setNodes((nds) =>
         nds.map((n) => {
@@ -619,7 +626,10 @@ export default function TaskMapGraphView({
     (_event, draggedNode) => {
       if (draggedNode.type !== "task") return;
       const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
-      updateDragOverHighlights([dragPos]);
+      const excludeGroupIds = new Set(
+        draggedNode.parentNode ? [draggedNode.parentNode] : []
+      );
+      updateDragOverHighlights([dragPos], excludeGroupIds);
     },
     [updateDragOverHighlights]
   );
@@ -627,10 +637,12 @@ export default function TaskMapGraphView({
   // Highlight project group nodes while multiple selected task nodes are dragged
   const onSelectionDrag: SelectionDragHandler = useCallback(
     (_event, draggedNodes) => {
-      const positions = draggedNodes
-        .filter((n) => n.type === "task")
-        .map((n) => n.positionAbsolute ?? n.position);
-      updateDragOverHighlights(positions);
+      const taskNodes = draggedNodes.filter((n) => n.type === "task");
+      const positions = taskNodes.map((n) => n.positionAbsolute ?? n.position);
+      const excludeGroupIds = new Set(
+        taskNodes.map((n) => n.parentNode).filter((id): id is string => !!id)
+      );
+      updateDragOverHighlights(positions, excludeGroupIds);
     },
     [updateDragOverHighlights]
   );
