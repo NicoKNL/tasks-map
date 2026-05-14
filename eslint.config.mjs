@@ -46,6 +46,10 @@ export default defineConfig([
                 "argsIgnorePattern": "^_",
                 "varsIgnorePattern": "^_"
             }],
+            "no-restricted-syntax": ["error", {
+                "selector": "CallExpression[callee.property.name='createElement'][arguments.0.value='style']",
+                "message": "Do not create <style> elements dynamically. Use styles.css instead, which Obsidian loads automatically."
+            }],
             "react/forbid-dom-props": ["error", {
                 "forbid": [
                     {

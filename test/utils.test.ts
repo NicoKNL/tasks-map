@@ -360,17 +360,11 @@ describe("createNodesFromTasks", () => {
       "Horizontal",
       false,
       false,
-      true,
-      "static",
-      99,
-      "#aabbcc"
+      true
     );
     expect(nodes[0].data.showPriorities).toBe(false);
     expect(nodes[0].data.showTags).toBe(false);
     expect(nodes[0].data.debugVisualization).toBe(true);
-    expect(nodes[0].data.tagColorMode).toBe("static");
-    expect(nodes[0].data.tagColorSeed).toBe(99);
-    expect(nodes[0].data.tagStaticColor).toBe("#aabbcc");
   });
 });
 

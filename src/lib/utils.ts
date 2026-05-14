@@ -7,6 +7,7 @@ import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
 import { t } from "../i18n";
+import { TagColorPalette } from "./tag-color-manager";
 
 export const statusSymbols = {
   todo: "[ ]",
@@ -1511,12 +1512,10 @@ export function createNodesFromTasks(
   showPriorities: boolean = true,
   showTags: boolean = true,
   debugVisualization: boolean = false,
-  tagColorMode: "random" | "static" = "random",
-  tagColorSeed: number = 42,
-  tagStaticColor: string = "#3b82f6",
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void,
-  groupByProject: boolean = true
+  groupByProject: boolean = true,
+  tagColorPalette: TagColorPalette = "rainbow"
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1531,10 +1530,8 @@ export function createNodesFromTasks(
       showPriorities,
       showTags,
       debugVisualization,
-      tagColorMode,
-      tagColorSeed,
-      tagStaticColor,
       groupByProject,
+      tagColorPalette,
       onDeleteTask,
     },
     type: "task" as const,
