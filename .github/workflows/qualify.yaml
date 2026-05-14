@@ -39,6 +39,7 @@ jobs:
               - 'package-lock.json'
               - 'eslint.config.mjs'
               - 'jest.config.js'
+              - '.stylelintrc.json'
             docs:
               - 'docs/**'
               - 'zensical.toml'
@@ -80,6 +81,9 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
+      - name: Run Stylelint
+        run: npm run lint:css
 
   format:
     name: Format Check

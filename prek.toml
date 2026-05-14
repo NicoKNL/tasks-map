@@ -16,5 +16,6 @@ repo = "local"
 hooks = [
     { id = "check-npm-install", name = "check npm install", entry = "bash -c 'if [ ! -d node_modules ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then echo \"node_modules is out of date. Run npm install.\"; exit 1; fi'", language = "system", always_run = true, pass_filenames = false },
     { id = "eslint", name = "eslint", entry = "npm run lint", language = "system", pass_filenames = false },
+    { id = "stylelint", name = "stylelint", entry = "npm run lint:css", language = "system", pass_filenames = false },
     { id = "prettier", name = "prettier", entry = "npm run format", language = "system", pass_filenames = false },
 ]

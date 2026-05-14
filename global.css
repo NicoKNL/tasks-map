@@ -593,7 +593,14 @@ If your plugin does not need CSS, delete this file.
   align-items: center;
   gap: 2px;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.tasks-map-add-tag-button:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
 }
 
 .task-tags-container {
@@ -775,7 +782,7 @@ If your plugin does not need CSS, delete this file.
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  margin: 12px 0 8px 0;
+  margin: 12px 0 8px;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
@@ -1403,22 +1410,6 @@ If your plugin does not need CSS, delete this file.
 
 .tasks-map-message-link:hover {
   text-decoration: underline;
-}
-
-/* Add Tag Button Hover Styles */
-.task-tags-container:hover .tasks-map-add-tag-button {
-  opacity: 1 !important;
-}
-
-.tasks-map-add-tag-button {
-  transition:
-    opacity 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.tasks-map-add-tag-button:hover {
-  background-color: rgba(0, 0, 0, 0.3) !important;
-  color: white !important;
 }
 
 /* Loading Spinner Styles */
