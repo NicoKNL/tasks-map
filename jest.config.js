@@ -25,6 +25,7 @@ module.exports = {
     '^src/hooks/(.*)$': '<rootDir>/test/mocks/hooks.ts',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^react$': '<rootDir>/test/mocks/react.ts',
+    '^react/jsx-runtime$': '<rootDir>/test/mocks/react-jsx-runtime.ts',
     '^react-dom$': '<rootDir>/test/mocks/react-dom.ts',
     '^reactflow$': '<rootDir>/test/mocks/reactflow.ts',
     '^lucide-react$': '<rootDir>/test/mocks/lucide-react.ts',
