@@ -1,0 +1,9 @@
+{
+  "ignoreFiles": ["styles.css"],
+  "rules": {
+    "no-duplicate-selectors": true,
+    "shorthand-property-no-redundant-values": true,
+    "declaration-block-no-shorthand-property-overrides": true,
+    "no-invalid-double-slash-comments": true
+  }
+}
