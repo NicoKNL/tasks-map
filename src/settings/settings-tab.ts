@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import TasksMapPlugin from "../main";
-import { getTagColor } from "../lib/utils";
+import { TagColorPalette, getTagColorClass } from "../lib/tag-color-manager";
 import { t } from "../i18n";
 import { SUPPORTED_LANGUAGES } from "../i18n";
 
@@ -15,9 +15,7 @@ export class TasksMapSettingTab extends PluginSettingTab {
   private createTagPreview(
     container: HTMLElement,
     tags: string[],
-    mode: "random" | "static",
-    seed = 42,
-    staticColor = "#3B82F6"
+    palette: TagColorPalette
   ): void {
     container.empty();
 
@@ -30,20 +28,10 @@ export class TasksMapSettingTab extends PluginSettingTab {
     previewDiv.style.flexWrap = "wrap";
 
     tags.forEach((tag) => {
-      const tagElement = previewDiv.createSpan({
-        cls: "tag-preview-pill",
+      previewDiv.createSpan({
+        cls: `tasks-map-tag ${getTagColorClass(tag, palette)}`,
         text: tag,
       });
-
-      const backgroundColor = getTagColor(tag, mode, seed, staticColor);
-      tagElement.style.backgroundColor = backgroundColor;
-      tagElement.style.color = "white";
-      tagElement.style.padding = "4px 8px";
-      tagElement.style.borderRadius = "12px";
-      tagElement.style.fontSize = "12px";
-      tagElement.style.fontWeight = "500";
-      tagElement.style.border = "none";
-      tagElement.style.display = "inline-block";
     });
   }
 
@@ -165,99 +153,33 @@ export class TasksMapSettingTab extends PluginSettingTab {
     new Setting(containerEl).setHeading().setName(t("settings.tag_appearance"));
 
     new Setting(containerEl)
-      .setName(t("settings.tag_color_mode"))
-      .setDesc(t("settings.tag_color_mode_desc"))
-      .addDropdown((dropdown) =>
+      .setName(t("settings.tag_color_palette"))
+      .setDesc(t("settings.tag_color_palette_desc"))
+      .addDropdown((dropdown) => {
         dropdown
-          .addOption("random", t("settings.tag_color_random"))
-          .addOption("static", t("settings.tag_color_static"))
-          .setValue(this.plugin.settings.tagColorMode)
+          .addOption("rainbow", t("settings.palette_rainbow"))
+          .addOption("ocean", t("settings.palette_ocean"))
+          .addOption("forest", t("settings.palette_forest"))
+          .addOption("sunset", t("settings.palette_sunset"))
+          .addOption("mono", t("settings.palette_mono"))
+          .setValue(this.plugin.settings.tagColorPalette)
           .onChange(async (value) => {
-            this.plugin.settings.tagColorMode = value as "random" | "static";
+            this.plugin.settings.tagColorPalette = value as TagColorPalette;
             await this.plugin.saveSettings();
-            this.display(); // Refresh to show/hide conditional settings
-          })
-      );
+            this.createTagPreview(
+              tagPreviewContainer,
+              ["priority", "bug", "feature", "docs", "blocked"],
+              value as TagColorPalette
+            );
+          });
+      });
 
-    if (this.plugin.settings.tagColorMode === "random") {
-      new Setting(containerEl)
-        .setName(t("settings.color_seed"))
-        .setDesc(t("settings.color_seed_desc"))
-        .addText((text) =>
-          text
-            .setPlaceholder("42")
-            .setValue(this.plugin.settings.tagColorSeed.toString())
-            .onChange(async (value) => {
-              const seedValue = parseInt(value) || 42;
-              this.plugin.settings.tagColorSeed = seedValue;
-              await this.plugin.saveSettings();
-              // Update preview when seed changes
-              const previewContainer = containerEl.querySelector(
-                ".tag-preview-container"
-              )?.parentElement;
-              if (previewContainer) {
-                this.createTagPreview(
-                  previewContainer,
-                  ["priority", "bug", "feature", "documentation"],
-                  "random",
-                  seedValue
-                );
-              }
-            })
-        );
-
-      // Add preview container for random mode
-      const previewSetting = new Setting(containerEl)
-        .setName(t("settings.preview"))
-        .setDesc(t("settings.preview_random_desc"));
-
-      this.createTagPreview(
-        previewSetting.settingEl,
-        ["priority", "bug", "feature", "documentation"],
-        "random",
-        this.plugin.settings.tagColorSeed
-      );
-    }
-
-    if (this.plugin.settings.tagColorMode === "static") {
-      new Setting(containerEl)
-        .setName(t("settings.static_tag_color"))
-        .setDesc(t("settings.static_tag_color_desc"))
-        .addColorPicker((colorPicker) =>
-          colorPicker
-            .setValue(this.plugin.settings.tagStaticColor)
-            .onChange(async (value) => {
-              this.plugin.settings.tagStaticColor = value;
-              await this.plugin.saveSettings();
-              // Update preview when color changes
-              const previewContainer = containerEl.querySelector(
-                ".tag-preview-container"
-              )?.parentElement;
-              if (previewContainer) {
-                this.createTagPreview(
-                  previewContainer,
-                  ["priority", "bug", "feature", "documentation"],
-                  "static",
-                  42,
-                  value
-                );
-              }
-            })
-        );
-
-      // Add preview container for static mode
-      const previewSetting = new Setting(containerEl)
-        .setName(t("settings.preview"))
-        .setDesc(t("settings.preview_static_desc"));
-
-      this.createTagPreview(
-        previewSetting.settingEl,
-        ["priority", "bug", "feature", "documentation"],
-        "static",
-        42,
-        this.plugin.settings.tagStaticColor
-      );
-    }
+    const tagPreviewContainer = containerEl.createDiv();
+    this.createTagPreview(
+      tagPreviewContainer,
+      ["priority", "bug", "feature", "docs", "blocked"],
+      this.plugin.settings.tagColorPalette
+    );
 
     new Setting(containerEl)
       .setHeading()

@@ -257,7 +257,8 @@ export default function TaskMapGraphView({
       settings.showTags,
       settings.debugVisualization,
       handleDeleteTask,
-      groupByProject
+      groupByProject,
+      settings.tagColorPalette
     );
     let newEdges = createEdgesFromTasks(
       graphTasks,

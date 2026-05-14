@@ -1,5 +1,6 @@
 import { Language } from "../i18n";
 import { FilterState } from "./filter-state";
+import { TagColorPalette } from "../lib/tag-color-manager";
 
 export interface FilterPreset {
   id: string;
@@ -20,9 +21,7 @@ export interface TasksMapSettings {
   debugVisualization: boolean;
 
   // Tag color settings
-  tagColorMode: "random" | "static";
-  tagColorSeed: number;
-  tagStaticColor: string;
+  tagColorPalette: TagColorPalette;
 
   // Language setting
   language: Language;
@@ -44,9 +43,7 @@ export const DEFAULT_SETTINGS: TasksMapSettings = {
   debugVisualization: false,
 
   // Tag color defaults
-  tagColorMode: "random",
-  tagColorSeed: 42,
-  tagStaticColor: "#3b82f6",
+  tagColorPalette: "rainbow",
 
   // Language default
   language: "en",

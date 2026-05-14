@@ -61,6 +61,7 @@ interface TaskNodeData {
   showPriorities?: boolean;
   showTags?: boolean;
   debugVisualization?: boolean;
+  tagColorPalette?: import("src/lib/tag-color-manager").TagColorPalette;
   groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars
   onDeleteTask?: (taskId: string) => void;
@@ -73,6 +74,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     showPriorities = true,
     showTags = true,
     debugVisualization = false,
+    tagColorPalette = "rainbow",
     groupByProject = false,
     onDeleteTask,
   } = data;
@@ -218,7 +220,12 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           <div className="tasks-map-task-node-footer">
             <div className="task-tags-container">
               {tags.map((tag) => (
-                <Tag key={tag} tag={tag} onRemove={handleTagRemove} />
+                <Tag
+                  key={tag}
+                  tag={tag}
+                  palette={tagColorPalette}
+                  onRemove={handleTagRemove}
+                />
               ))}
 
               {/* Add tag button/input */}

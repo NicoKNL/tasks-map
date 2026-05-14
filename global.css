@@ -350,8 +350,58 @@ If your plugin does not need CSS, delete this file.
   border-radius: 12px;
   border: none;
   white-space: nowrap;
-  background-color: #3b82f6; /* fallback; overridden by .tasks-map-tag--color-N classes */
+  background-color: #3b82f6; /* fallback; overridden by palette classes below */
 }
+
+/* Tag palette: rainbow */
+.tasks-map-tag--rainbow-0 { background-color: #e05c5c; }
+.tasks-map-tag--rainbow-1 { background-color: #e07c3a; }
+.tasks-map-tag--rainbow-2 { background-color: #c9a827; }
+.tasks-map-tag--rainbow-3 { background-color: #4caf62; }
+.tasks-map-tag--rainbow-4 { background-color: #2674b5; }
+.tasks-map-tag--rainbow-5 { background-color: #7c5cbf; }
+.tasks-map-tag--rainbow-6 { background-color: #d45fa0; }
+.tasks-map-tag--rainbow-7 { background-color: #3ab8b8; }
+
+/* Tag palette: ocean */
+.tasks-map-tag--ocean-0 { background-color: #1a6e8a; }
+.tasks-map-tag--ocean-1 { background-color: #2187a8; }
+.tasks-map-tag--ocean-2 { background-color: #1f9eb5; }
+.tasks-map-tag--ocean-3 { background-color: #2ab5c4; }
+.tasks-map-tag--ocean-4 { background-color: #3abfaa; }
+.tasks-map-tag--ocean-5 { background-color: #2e9e8c; }
+.tasks-map-tag--ocean-6 { background-color: #1d7e7e; }
+.tasks-map-tag--ocean-7 { background-color: #256e9e; }
+
+/* Tag palette: forest */
+.tasks-map-tag--forest-0 { background-color: #2d7a3a; }
+.tasks-map-tag--forest-1 { background-color: #3a8c45; }
+.tasks-map-tag--forest-2 { background-color: #4a9e50; }
+.tasks-map-tag--forest-3 { background-color: #6aaa45; }
+.tasks-map-tag--forest-4 { background-color: #8ab035; }
+.tasks-map-tag--forest-5 { background-color: #7a9e2d; }
+.tasks-map-tag--forest-6 { background-color: #5c8c38; }
+.tasks-map-tag--forest-7 { background-color: #3d6b2d; }
+
+/* Tag palette: sunset */
+.tasks-map-tag--sunset-0 { background-color: #c0392b; }
+.tasks-map-tag--sunset-1 { background-color: #d45a2a; }
+.tasks-map-tag--sunset-2 { background-color: #e07030; }
+.tasks-map-tag--sunset-3 { background-color: #e09030; }
+.tasks-map-tag--sunset-4 { background-color: #c97040; }
+.tasks-map-tag--sunset-5 { background-color: #b84060; }
+.tasks-map-tag--sunset-6 { background-color: #a03070; }
+.tasks-map-tag--sunset-7 { background-color: #d04080; }
+
+/* Tag palette: mono */
+.tasks-map-tag--mono-0,
+.tasks-map-tag--mono-1,
+.tasks-map-tag--mono-2,
+.tasks-map-tag--mono-3,
+.tasks-map-tag--mono-4,
+.tasks-map-tag--mono-5,
+.tasks-map-tag--mono-6,
+.tasks-map-tag--mono-7 { background-color: #2674b5; }
 
 .tasks-map-graph-container.hide-tags .task-tag,
 .tasks-map-graph-container.hide-tags .task-tags-container,
