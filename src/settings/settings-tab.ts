@@ -22,10 +22,6 @@ export class TasksMapSettingTab extends PluginSettingTab {
     const previewDiv = container.createDiv({
       cls: "tag-preview-container",
     });
-    previewDiv.style.display = "flex";
-    previewDiv.style.gap = "8px";
-    previewDiv.style.marginTop = "10px";
-    previewDiv.style.flexWrap = "wrap";
 
     tags.forEach((tag) => {
       previewDiv.createSpan({

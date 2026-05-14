@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { ReactFlowProvider } from "reactflow";
 import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
@@ -39,14 +39,6 @@ export default function TaskMapGraphEmbedView({
     ...initialFilter,
   });
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.style.height = `${embedConfig.height}px`;
-    }
-  }, [embedConfig.height]);
-
   useEffect(() => {
     const handler = () => setSettings({ ...plugin.settings });
     window.addEventListener("tasks-map:settings-changed", handler);
@@ -56,17 +48,15 @@ export default function TaskMapGraphEmbedView({
 
   return (
     <AppContext.Provider value={plugin.app}>
-      <div className="tasks-map-embed-container" ref={containerRef}>
-        <ReactFlowProvider>
-          <TaskMapGraphView
-            settings={settings}
-            filterState={filterState}
-            setFilterState={setFilterState}
-            plugin={plugin}
-            embedConfig={embedConfig}
-          />
-        </ReactFlowProvider>
-      </div>
+      <ReactFlowProvider>
+        <TaskMapGraphView
+          settings={settings}
+          filterState={filterState}
+          setFilterState={setFilterState}
+          plugin={plugin}
+          embedConfig={embedConfig}
+        />
+      </ReactFlowProvider>
     </AppContext.Provider>
   );
 }
@@ -93,15 +83,6 @@ function coerceBool(value: unknown, defaultVal: boolean): boolean {
 }
 
 /**
- * Coerce a raw value to a positive number; returns `defaultVal` for
- * non-numbers, NaN, Infinity, or non-positive values.
- */
-function coercePositiveNumber(value: unknown, defaultVal: number): number {
-  if (typeof value === "number" && isFinite(value) && value > 0) return value;
-  return defaultVal;
-}
-
-/**
  * Coerce a raw value to an array of strings; returns `defaultVal` for
  * non-arrays or arrays that contain non-string elements.
  */
@@ -118,7 +99,6 @@ function coerceStringArray(value: unknown, defaultVal: string[]): string[] {
  */
 function coerceEmbedConfig(raw: Record<string, unknown>): EmbedConfig {
   return {
-    height: coercePositiveNumber(raw.height, DEFAULT_EMBED_CONFIG.height),
     showMinimap: coerceBool(raw.showMinimap, DEFAULT_EMBED_CONFIG.showMinimap),
     showFilterPanel: coerceBool(
       raw.showFilterPanel,

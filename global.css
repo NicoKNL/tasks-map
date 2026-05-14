@@ -53,6 +53,14 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-normal);
 }
 
+/* Tag Preview Container (settings tab) */
+.tag-preview-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
 /* Settings Preview Styles */
 .tasks-map-preview-container {
   margin-top: 8px;
@@ -1913,6 +1921,7 @@ If your plugin does not need CSS, delete this file.
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   overflow: hidden;
+  height: 400px;
 }
 
 /* Embed error state */

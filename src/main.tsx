@@ -99,6 +99,7 @@ export default class TasksMapPlugin extends Plugin {
         const dataviewCheck = checkDataviewPlugin(this.app);
 
         const root = createRoot(el);
+        el.addClass("tasks-map-embed-container");
 
         // Register cleanup via MarkdownRenderChild so the root is unmounted
         // when the embed is removed or the preview re-renders

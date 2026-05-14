@@ -1,5 +1,4 @@
 export interface EmbedConfig {
-  height: number;
   showMinimap: boolean;
   showFilterPanel: boolean;
   showPresetsPanel: boolean;
@@ -9,7 +8,6 @@ export interface EmbedConfig {
 }
 
 export const DEFAULT_EMBED_CONFIG: EmbedConfig = {
-  height: 400,
   showMinimap: true,
   showFilterPanel: true,
   showPresetsPanel: true,

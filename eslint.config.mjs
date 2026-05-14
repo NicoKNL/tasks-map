@@ -46,18 +46,17 @@ export default defineConfig([
                 "argsIgnorePattern": "^_",
                 "varsIgnorePattern": "^_"
             }],
-            "no-restricted-syntax": ["error", {
-                "selector": "CallExpression[callee.property.name='createElement'][arguments.0.value='style']",
-                "message": "Do not create <style> elements dynamically. Use styles.css instead, which Obsidian loads automatically."
-            }],
-            "react/forbid-dom-props": ["error", {
-                "forbid": [
-                    {
-                        "propName": "style",
-                        "message": "Inline styles are not allowed. Use CSS classes in global.css instead."
-                    }
-                ]
-            }],
+            "no-restricted-syntax": ["error",
+                {
+                    "selector": "CallExpression[callee.property.name='createElement'][arguments.0.value='style']",
+                    "message": "Do not create <style> elements dynamically. Use styles.css instead, which Obsidian loads automatically."
+                },
+                {
+                    "selector": "AssignmentExpression[left.type='MemberExpression'][left.object.type='MemberExpression'][left.object.property.name='style']",
+                    "message": "Avoid setting styles directly via element.style. Use CSS classes in global.css for better theming and maintainability."
+                }
+            ],
+            "react/forbid-dom-props": "off",
         },
     }
 ]);
