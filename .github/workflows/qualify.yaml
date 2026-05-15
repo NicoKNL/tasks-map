@@ -441,9 +441,13 @@ jobs:
                 coverageSection = `
             ### 🧪 Coverage
 
+            <div align="center">
+
             | Statements | Branches | Functions | Lines |
-            |------------|----------|-----------|-------|
+            |:----------:|:--------:|:---------:|:-----:|
             | ${pct('statements')} | ${pct('branches')} | ${pct('functions')} | ${pct('lines')} |
+
+            </div>
             `;
               }
             }
@@ -466,9 +470,13 @@ jobs:
 
             ### Checks
 
+            <div align="center">
+
             | ESLint | Stylelint | Prettier | TypeScript | Build${bundleSize} | Tests |
-            |--------|-----------|----------|------------|--------|-------|
+            |:------:|:---------:|:--------:|:----------:|:------:|:-----:|
             | ${iconWithDetail(results.lint.eslint, details.eslint)} | ${iconWithDetail(results.lint.stylelint, details.stylelint)} | ${iconWithDetail(results.format.prettier, details.prettier)} | ${iconWithDetail(results.build.typecheck, details.typecheck)} | ${icon(results.build.build)} | ${icon(results.test.tests)} |
+
+            </div>
             ${coverageSection}
             <sub>Posted by the Qualify workflow · ${{ github.sha }}</sub>`;
 
