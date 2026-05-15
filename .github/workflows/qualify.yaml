@@ -28,6 +28,7 @@ jobs:
         with:
           filters: |
             code:
+              - '.github/**'
               - 'src/**'
               - 'test/**'
               - 'main.js'
@@ -80,10 +81,45 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        id: eslint
+        run: |
+          set +e
+          npm run lint 2>&1 | tee eslint.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Run Stylelint
-        run: npm run lint:css
+        id: stylelint
+        run: |
+          set +e
+          npm run lint:css 2>&1 | tee stylelint.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Write lint status artifact
+        if: always()
+        run: |
+          eslint_exit="${{ steps.eslint.outputs.exit_code }}"
+          stylelint_exit="${{ steps.stylelint.outputs.exit_code }}"
+          eslint_status=$([[ "$eslint_exit" == "0" ]] && echo "pass" || echo "fail")
+          stylelint_status=$([[ "$stylelint_exit" == "0" ]] && echo "pass" || echo "fail")
+          {
+            echo "eslint=${eslint_status}"
+            cat eslint.txt
+            echo "---stylelint---"
+            echo "stylelint=${stylelint_status}"
+            cat stylelint.txt
+          } > lint-status.txt
+
+      - name: Upload lint status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-status
+          path: lint-status.txt
+          retention-days: 1
+
+      - name: Fail if lint errors
+        if: steps.eslint.outputs.exit_code != '0' || steps.stylelint.outputs.exit_code != '0'
+        run: exit 1
 
   format:
     name: Format Check
@@ -104,7 +140,31 @@ jobs:
         run: npm ci
 
       - name: Check Prettier formatting
-        run: npm run format
+        id: prettier
+        run: |
+          set +e
+          npm run format 2>&1 | tee prettier.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Write format status artifact
+        if: always()
+        run: |
+          exit_code="${{ steps.prettier.outputs.exit_code }}"
+          status=$([[ "$exit_code" == "0" ]] && echo "pass" || echo "fail")
+          echo "prettier=${status}" > format-status.txt
+          cat prettier.txt >> format-status.txt
+
+      - name: Upload format status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-status
+          path: format-status.txt
+          retention-days: 1
+
+      - name: Fail if format errors
+        if: steps.prettier.outputs.exit_code != '0'
+        run: exit 1
 
   test:
     name: Test Suite
@@ -128,20 +188,34 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: set -o pipefail && npm run test:coverage | tee coverage.txt
+        id: tests
+        run: |
+          set +e
+          set -o pipefail
+          npm run test:coverage 2>&1 | tee coverage.txt
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
 
-      - name: Jest coverage comment
-        if: github.event_name == 'pull_request'
-        uses: MishaKav/jest-coverage-comment@v1
+      - name: Write test status artifact
+        if: always()
+        run: |
+          exit_code="${{ steps.tests.outputs.exit_code }}"
+          status=$([[ "$exit_code" == "0" ]] && echo "pass" || echo "fail")
+          echo "tests=${status}" > test-status.txt
+          cat coverage.txt >> test-status.txt
+
+      - name: Upload test status
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          coverage-summary-path: coverage/coverage-summary.json
-          coverage-path: coverage.txt
-          title: Code Coverage
-          summary-title: Coverage Summary
-          badge-title: Coverage
-          junitxml-title: ""
-          coverage-title: Coverage Report
-          coverage-path-prefix: src/
+          name: test-status
+          path: |
+            test-status.txt
+            coverage/coverage-summary.json
+          retention-days: 1
+
+      - name: Fail if tests failed
+        if: steps.tests.outputs.exit_code != '0'
+        run: exit 1
 
   build:
     name: Build Check
@@ -162,10 +236,50 @@ jobs:
         run: npm ci
 
       - name: TypeScript type check
-        run: npx tsc -noEmit -skipLibCheck
+        id: typecheck
+        run: |
+          set +e
+          npx tsc -noEmit -skipLibCheck 2>&1 | tee typecheck.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Build project
-        run: node esbuild.config.mjs production
+        id: build
+        run: |
+          set +e
+          node esbuild.config.mjs production 2>&1 | tee build.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Write build status artifact
+        if: always()
+        run: |
+          tc_exit="${{ steps.typecheck.outputs.exit_code }}"
+          build_exit="${{ steps.build.outputs.exit_code }}"
+          tc_status=$([[ "$tc_exit" == "0" ]] && echo "pass" || echo "fail")
+          build_status=$([[ "$build_exit" == "0" ]] && echo "pass" || echo "fail")
+          {
+            echo "typecheck=${tc_status}"
+            echo "---typecheck---"
+            cat typecheck.txt
+            echo "---build---"
+            echo "build=${build_status}"
+            cat build.txt
+          } > build-status.txt
+          if [[ -f main.js ]]; then
+            size=$(wc -c < main.js)
+            echo "bundle_size=${size}" >> build-status.txt
+          fi
+
+      - name: Upload build status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-status
+          path: build-status.txt
+          retention-days: 1
+
+      - name: Fail if type errors or build failed
+        if: steps.typecheck.outputs.exit_code != '0' || steps.build.outputs.exit_code != '0'
+        run: exit 1
 
   docs:
     name: Docs Build Check
@@ -186,3 +300,201 @@ jobs:
 
       - name: Build docs
         run: zensical build --clean
+
+  report:
+    name: Qualification Report
+    needs: [lint, format, test, build]
+    if: always() && github.event_name == 'pull_request' && (needs.lint.result != 'skipped' || needs.format.result != 'skipped' || needs.test.result != 'skipped' || needs.build.result != 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Download all status artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Build and post qualification report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            function readFile(p) {
+              try { return fs.readFileSync(p, 'utf8'); } catch { return null; }
+            }
+
+            function parseStatus(content, key) {
+              if (!content) return null;
+              const match = content.match(new RegExp(`^${key}=(\\w+)`, 'm'));
+              return match ? match[1] : null;
+            }
+
+            function icon(status) {
+              if (status === 'pass') return '✅';
+              if (status === 'fail') return '❌';
+              return '⏭️';
+            }
+
+            // Parse "✖ N problems (X errors, Y warnings)" from ESLint/Stylelint output.
+            // Returns a label like "2 errors, 1 warning" or null if clean.
+            function parseLintCounts(output) {
+              if (!output) return null;
+              const m = output.match(/(\d+) errors?, (\d+) warnings?/);
+              if (!m) return null;
+              const errors = parseInt(m[1]);
+              const warnings = parseInt(m[2]);
+              const parts = [];
+              if (errors > 0) parts.push(`${errors} error${errors !== 1 ? 's' : ''}`);
+              if (warnings > 0) parts.push(`${warnings} warning${warnings !== 1 ? 's' : ''}`);
+              return parts.length ? parts.join(', ') : null;
+            }
+
+            // Count "error TS" lines from tsc output.
+            function parseTscErrors(output) {
+              if (!output) return null;
+              const matches = (output.match(/^.*error TS\d+/mg) || []);
+              return matches.length > 0 ? `${matches.length} error${matches.length !== 1 ? 's' : ''}` : null;
+            }
+
+            // Count unformatted files listed by Prettier.
+            function parsePrettierIssues(output) {
+              if (!output) return null;
+              // Prettier lists each unformatted file on its own line after "Checking formatting..."
+              const lines = output.split('\n').filter(l =>
+                l.trim() && !l.includes('Checking formatting') && !l.includes('prettier') &&
+                !l.startsWith('>') && !l.includes('tasks-map@') && !l.includes('Code style issues')
+              );
+              const fileLines = lines.filter(l => /\.(ts|tsx|js|jsx|json|css|md)$/.test(l.trim()));
+              return fileLines.length > 0 ? `${fileLines.length} file${fileLines.length !== 1 ? 's' : ''}` : null;
+            }
+
+            function iconWithDetail(status, detail) {
+              const base = icon(status);
+              if (!detail) return base;
+              return `${base} ${detail}`;
+            }
+
+            function jobResult(result) {
+              if (result === 'success') return 'pass';
+              if (result === 'failure') return 'fail';
+              return null;
+            }
+
+            const lintContent    = readFile('artifacts/lint-status/lint-status.txt');
+            const formatContent  = readFile('artifacts/format-status/format-status.txt');
+            const testContent    = readFile('artifacts/test-status/test-status.txt');
+            const buildContent   = readFile('artifacts/build-status/build-status.txt');
+            const coverageSummary = readFile('artifacts/test-status/coverage/coverage-summary.json');
+
+            // Extract per-tool output sections from artifact files
+            function extractSection(content, start, end) {
+              if (!content) return null;
+              const startIdx = content.indexOf(start);
+              if (startIdx === -1) return null;
+              const after = startIdx + start.length;
+              if (!end) return content.slice(after);
+              const endIdx = content.indexOf(end, after);
+              return content.slice(after, endIdx === -1 ? undefined : endIdx);
+            }
+
+            const eslintOutput    = extractSection(lintContent, 'eslint=pass\n', '---stylelint---') ||
+                                    extractSection(lintContent, 'eslint=fail\n', '---stylelint---');
+            const stylelintOutput = extractSection(lintContent, '---stylelint---', null);
+            const prettierOutput  = extractSection(formatContent, 'prettier=pass\n', null) ||
+                                    extractSection(formatContent, 'prettier=fail\n', null);
+            const typecheckOutput = extractSection(buildContent, '---typecheck---', '---build---');
+
+            const results = {
+              lint: {
+                eslint:     parseStatus(lintContent, 'eslint')    ?? jobResult('${{ needs.lint.result }}'),
+                stylelint:  parseStatus(lintContent, 'stylelint') ?? jobResult('${{ needs.lint.result }}'),
+              },
+              format: {
+                prettier:   parseStatus(formatContent, 'prettier') ?? jobResult('${{ needs.format.result }}'),
+              },
+              test: {
+                tests:      parseStatus(testContent, 'tests')       ?? jobResult('${{ needs.test.result }}'),
+              },
+              build: {
+                typecheck:  parseStatus(buildContent, 'typecheck')  ?? jobResult('${{ needs.build.result }}'),
+                build:      parseStatus(buildContent, 'build')      ?? jobResult('${{ needs.build.result }}'),
+              },
+            };
+
+            const details = {
+              eslint:    parseLintCounts(eslintOutput),
+              stylelint: parseLintCounts(stylelintOutput),
+              prettier:  parsePrettierIssues(prettierOutput),
+              typecheck: parseTscErrors(typecheckOutput),
+            };
+
+            // Coverage
+            let coverageSection = '';
+            if (coverageSummary) {
+              const summary = JSON.parse(coverageSummary);
+              const t = summary.total;
+              if (t) {
+                const pct = (k) => `${t[k].pct}%`;
+                coverageSection = `
+            ### 🧪 Coverage
+
+            | Statements | Branches | Functions | Lines |
+            |:----------:|:--------:|:---------:|:-----:|
+            | ${pct('statements')} | ${pct('branches')} | ${pct('functions')} | ${pct('lines')} |
+            `;
+              }
+            }
+
+            // Bundle size
+            let bundleSize = '';
+            const bundleSizeMatch = buildContent && buildContent.match(/^bundle_size=(\d+)/m);
+            if (bundleSizeMatch) {
+              const kb = (parseInt(bundleSizeMatch[1]) / 1024).toFixed(1);
+              bundleSize = ` — bundle \`${kb} KB\``;
+            }
+
+            const overallPass = Object.values(results).every(group =>
+              Object.values(group).every(v => v === 'pass' || v === null)
+            );
+
+            const body = `## 💎 Qualification Report
+
+            ${overallPass ? '> All checks passed.' : '> One or more checks failed — see details below.'}
+
+            ### Checks
+
+            | ESLint | Stylelint | Prettier | TypeScript | Build${bundleSize} | Tests |
+            |:------:|:---------:|:--------:|:----------:|:------:|:-----:|
+            | ${iconWithDetail(results.lint.eslint, details.eslint)} | ${iconWithDetail(results.lint.stylelint, details.stylelint)} | ${iconWithDetail(results.format.prettier, details.prettier)} | ${iconWithDetail(results.build.typecheck, details.typecheck)} | ${icon(results.build.build)} | ${icon(results.test.tests)} |
+            ${coverageSection}
+            <sub>Posted by the Qualify workflow · ${{ github.sha }}</sub>`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('💎 Qualification Report')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
