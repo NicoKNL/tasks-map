@@ -103,7 +103,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Link Button Styles */
-.tasks-map-link-button {
+.tasks-map-graph-container .tasks-map-link-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,11 +111,11 @@ If your plugin does not need CSS, delete this file.
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--tasks-map-node-divider) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
+  border: none;
+  border-left: 1px solid var(--tasks-map-node-divider);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
@@ -135,8 +135,8 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-muted);
 }
 
-.tasks-map-link-button:hover {
-  background: var(--tasks-map-node-hover) !important;
+.tasks-map-graph-container .tasks-map-link-button:hover {
+  background: var(--tasks-map-node-hover);
 }
 
 /* Task Menu Styles */
@@ -147,7 +147,7 @@ If your plugin does not need CSS, delete this file.
   align-self: stretch;
 }
 
-.tasks-map-task-menu-button {
+.tasks-map-graph-container .tasks-map-task-menu-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,11 +155,11 @@ If your plugin does not need CSS, delete this file.
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--tasks-map-node-divider) !important;
-  border-radius: 0 var(--radius-m) 0 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
+  border: none;
+  border-left: 1px solid var(--tasks-map-node-divider);
+  border-radius: 0 var(--radius-m) 0 0;
+  box-shadow: none;
+  background: transparent;
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
@@ -167,8 +167,8 @@ If your plugin does not need CSS, delete this file.
   outline: none;
 }
 
-.tasks-map-task-menu-button:hover {
-  background: var(--tasks-map-node-hover) !important;
+.tasks-map-graph-container .tasks-map-task-menu-button:hover {
+  background: var(--tasks-map-node-hover);
   color: var(--text-normal);
 }
 
@@ -253,7 +253,7 @@ If your plugin does not need CSS, delete this file.
   margin-bottom: 6px;
 }
 
-.tasks-map-task-node-header-button {
+.tasks-map-graph-container .tasks-map-task-node-header-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,11 +261,11 @@ If your plugin does not need CSS, delete this file.
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--tasks-map-node-divider) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: var(--tasks-map-node-bg) !important;
+  border: none;
+  border-left: 1px solid var(--tasks-map-node-divider);
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--tasks-map-node-bg);
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
@@ -274,11 +274,11 @@ If your plugin does not need CSS, delete this file.
   transition: color 0.2s ease;
 }
 
-.tasks-map-task-node-header-button:hover {
-  background: var(--tasks-map-node-hover) !important;
+.tasks-map-graph-container .tasks-map-task-node-header-button:hover {
+  background: var(--tasks-map-node-hover);
 }
 
-.tasks-map-star-button {
+.tasks-map-graph-container .tasks-map-star-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,11 +286,11 @@ If your plugin does not need CSS, delete this file.
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--tasks-map-node-divider) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
+  border: none;
+  border-left: 1px solid var(--tasks-map-node-divider);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
@@ -300,8 +300,8 @@ If your plugin does not need CSS, delete this file.
   transition: color 0.2s ease;
 }
 
-.tasks-map-star-button:hover {
-  background: var(--tasks-map-node-hover) !important;
+.tasks-map-graph-container .tasks-map-star-button:hover {
+  background: var(--tasks-map-node-hover);
   color: rgb(255, 215, 0);
 }
 
@@ -716,30 +716,30 @@ If your plugin does not need CSS, delete this file.
   padding: 10px 12px;
 }
 
-.tasks-map-filter-panel__header-icon {
+.tasks-map-graph-container .tasks-map-filter-panel__header-icon {
   display: flex;
   align-items: center;
   align-self: stretch;
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--background-modifier-border) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: var(--background-secondary) !important;
+  border: none;
+  border-left: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--background-secondary);
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
   height: auto;
 }
 
-.tasks-map-filter-panel__header-icon:hover {
-  background: var(--background-modifier-hover) !important;
+.tasks-map-graph-container .tasks-map-filter-panel__header-icon:hover {
+  background: var(--background-modifier-hover);
 }
 
-.tasks-map-filter-panel.minimized .tasks-map-filter-panel__header-icon {
-  border-radius: 0 8px 8px 0 !important;
+.tasks-map-graph-container .tasks-map-filter-panel.minimized .tasks-map-filter-panel__header-icon {
+  border-radius: 0 8px 8px 0;
   padding: 10px;
 }
 
@@ -833,15 +833,15 @@ If your plugin does not need CSS, delete this file.
   gap: 6px;
 }
 
-.tasks-map-search-icon-button {
+.tasks-map-graph-container .tasks-map-search-icon-button {
   display: flex;
   align-items: center;
   justify-content: center;
   appearance: none;
   -webkit-appearance: none;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0;
@@ -853,19 +853,19 @@ If your plugin does not need CSS, delete this file.
   min-height: 28px;
 }
 
-.tasks-map-search-icon-button:hover {
+.tasks-map-graph-container .tasks-map-search-icon-button:hover {
   color: var(--text-normal);
-  background: var(--background-modifier-hover) !important;
-  box-shadow: none !important;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
-.tasks-map-search-input {
+.tasks-map-graph-container .tasks-map-search-input {
   flex: 1;
-  border: 1px solid var(--background-modifier-border) !important;
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  font-size: 13px !important;
-  padding: 6px 8px !important;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  padding: 6px 8px;
   outline: none;
   min-width: 0;
   border-radius: 4px;
@@ -877,15 +877,15 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-faint);
 }
 
-.tasks-map-search-clear {
+.tasks-map-graph-container .tasks-map-search-clear {
   display: flex;
   align-items: center;
   justify-content: center;
   appearance: none;
   -webkit-appearance: none;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0;
@@ -897,10 +897,10 @@ If your plugin does not need CSS, delete this file.
   min-height: 28px;
 }
 
-.tasks-map-search-clear:hover {
+.tasks-map-graph-container .tasks-map-search-clear:hover {
   color: var(--text-normal);
-  background: transparent !important;
-  box-shadow: none !important;
+  background: transparent;
+  box-shadow: none;
 }
 
 .tasks-map-search-result-count {
@@ -1006,7 +1006,7 @@ If your plugin does not need CSS, delete this file.
   font-size: 12px;
 }
 
-.tasks-map-gui-overlay-reload-button {
+.tasks-map-graph-container .tasks-map-gui-overlay-reload-button {
   width: 100%;
   padding: 6px 10px;
   border-radius: 4px;
@@ -1014,17 +1014,17 @@ If your plugin does not need CSS, delete this file.
   font-weight: 500;
   appearance: none;
   -webkit-appearance: none;
-  background: transparent !important;
-  box-shadow: none !important;
+  background: transparent;
+  box-shadow: none;
   color: var(--text-faint);
-  border: none !important;
+  border: none;
   cursor: pointer;
 }
 
-.tasks-map-gui-overlay-reload-button:hover {
+.tasks-map-graph-container .tasks-map-gui-overlay-reload-button:hover {
   color: var(--text-muted);
-  background: var(--background-modifier-hover) !important;
-  box-shadow: none !important;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
 /* Legacy styles - kept for backward compatibility */
@@ -1182,10 +1182,10 @@ If your plugin does not need CSS, delete this file.
 
 /* Task Minimap Styles */
 .tasks-map-react-flow__minimap {
-  background: var(--background-primary) !important;
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black), 0.12) !important;
+  background: var(--background-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(var(--tasks-map-color-black), 0.12);
 }
 
 /* Task Map Graph View Styles */
@@ -1592,30 +1592,30 @@ If your plugin does not need CSS, delete this file.
   padding: 10px 12px;
 }
 
-.tasks-map-unlinked-panel__header-icon {
+.tasks-map-graph-container .tasks-map-unlinked-panel__header-icon {
   display: flex;
   align-items: center;
   align-self: stretch;
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--background-modifier-border) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: var(--background-secondary) !important;
+  border: none;
+  border-left: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--background-secondary);
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
   height: auto;
 }
 
-.tasks-map-unlinked-panel__header-icon:hover {
-  background: var(--background-modifier-hover) !important;
+.tasks-map-graph-container .tasks-map-unlinked-panel__header-icon:hover {
+  background: var(--background-modifier-hover);
 }
 
-.tasks-map-unlinked-panel--collapsed .tasks-map-unlinked-panel__header-icon {
-  border-radius: 0 8px 8px 0 !important;
+.tasks-map-graph-container .tasks-map-unlinked-panel--collapsed .tasks-map-unlinked-panel__header-icon {
+  border-radius: 0 8px 8px 0;
   padding: 10px;
 }
 
@@ -1633,14 +1633,14 @@ If your plugin does not need CSS, delete this file.
   flex-shrink: 0;
 }
 
-.tasks-map-unlinked-panel__filter-input {
+.tasks-map-graph-container .tasks-map-unlinked-panel__filter-input {
   flex: 1;
-  background: var(--background-primary) !important;
-  border: 1px solid var(--background-modifier-border) !important;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
   border-radius: 5px;
   padding: 4px 8px;
   font-size: 12px;
-  color: var(--text-normal) !important;
+  color: var(--text-normal);
   outline: none;
   min-width: 0;
 }
@@ -1742,15 +1742,15 @@ If your plugin does not need CSS, delete this file.
   flex-shrink: 0;
 }
 
-.tasks-map-preset-action-btn {
+.tasks-map-graph-container .tasks-map-preset-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   appearance: none;
   -webkit-appearance: none;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   padding: 0;
   width: 38px;
   height: 38px;
@@ -1762,15 +1762,15 @@ If your plugin does not need CSS, delete this file.
   flex-shrink: 0;
 }
 
-.tasks-map-preset-action-btn:hover {
+.tasks-map-graph-container .tasks-map-preset-action-btn:hover {
   color: var(--text-normal);
-  background: var(--background-modifier-hover) !important;
-  box-shadow: none !important;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
-.tasks-map-preset-action-btn--danger:hover {
+.tasks-map-graph-container .tasks-map-preset-action-btn--danger:hover {
   color: var(--text-error);
-  background: rgba(var(--tasks-map-color-red-rgb), 0.12) !important;
+  background: rgba(var(--tasks-map-color-red-rgb), 0.12);
 }
 
 .tasks-map-preset-action-btn:disabled {
@@ -1804,14 +1804,14 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-faint);
 }
 
-.tasks-map-preset-save-btn {
+.tasks-map-graph-container .tasks-map-preset-save-btn {
   width: 100%;
   padding: 6px 10px;
   appearance: none;
   -webkit-appearance: none;
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
+  background: transparent;
+  box-shadow: none;
+  border: none;
   border-radius: 4px;
   font-size: 12px;
   color: var(--text-faint);
@@ -1819,10 +1819,10 @@ If your plugin does not need CSS, delete this file.
   text-align: center;
 }
 
-.tasks-map-preset-save-btn:hover {
+.tasks-map-graph-container .tasks-map-preset-save-btn:hover {
   color: var(--text-muted);
-  background: var(--background-modifier-hover) !important;
-  box-shadow: none !important;
+  background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
 /* Presets Panel */
@@ -1867,30 +1867,30 @@ If your plugin does not need CSS, delete this file.
   padding: 10px 12px;
 }
 
-.tasks-map-presets-panel__header-icon {
+.tasks-map-graph-container .tasks-map-presets-panel__header-icon {
   display: flex;
   align-items: center;
   align-self: stretch;
   padding: 0 10px;
   appearance: none;
   -webkit-appearance: none;
-  border: none !important;
-  border-left: 1px solid var(--background-modifier-border) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: var(--background-secondary) !important;
+  border: none;
+  border-left: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--background-secondary);
   cursor: pointer;
   flex-shrink: 0;
   color: var(--text-muted);
   height: auto;
 }
 
-.tasks-map-presets-panel__header-icon:hover {
-  background: var(--background-modifier-hover) !important;
+.tasks-map-graph-container .tasks-map-presets-panel__header-icon:hover {
+  background: var(--background-modifier-hover);
 }
 
-.tasks-map-presets-panel--collapsed .tasks-map-presets-panel__header-icon {
-  border-radius: 0 8px 8px 0 !important;
+.tasks-map-graph-container .tasks-map-presets-panel--collapsed .tasks-map-presets-panel__header-icon {
+  border-radius: 0 8px 8px 0;
   padding: 10px;
 }
 
