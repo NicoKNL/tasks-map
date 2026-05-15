@@ -714,18 +714,20 @@ export default function TaskMapGraphView({
 
   // Handle drag-stop of a graph task node — assign to project if dropped inside a group
   const onNodeDragStop: NodeDragHandler = useCallback(
-    async (_event, draggedNode) => {
+    (_event, draggedNode) => {
       clearDragOverHighlights();
-      await assignDraggedNodesToProject([draggedNode]);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- NodeDragHandler expects void; async work is intentionally fire-and-forget
+      assignDraggedNodesToProject([draggedNode]);
     },
     [clearDragOverHighlights, assignDraggedNodesToProject]
   );
 
   // Handle drag-stop of a multi-node selection — assign all task nodes to projects
   const onSelectionDragStop: SelectionDragHandler = useCallback(
-    async (_event, draggedNodes) => {
+    (_event, draggedNodes) => {
       clearDragOverHighlights();
-      await assignDraggedNodesToProject(draggedNodes);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- SelectionDragHandler expects void; async work is intentionally fire-and-forget
+      assignDraggedNodesToProject(draggedNodes);
     },
     [clearDragOverHighlights, assignDraggedNodesToProject]
   );
