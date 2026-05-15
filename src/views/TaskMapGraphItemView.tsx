@@ -111,7 +111,7 @@ export default class TaskMapGraphItemView extends ItemView {
       this.app as unknown as {
         plugins: { plugins: Record<string, TasksMapPlugin> };
       }
-    ).plugins.plugins["tasks-map"] as TasksMapPlugin;
+    ).plugins.plugins["tasks-map"];
 
     if (!plugin) {
       this.root.render(

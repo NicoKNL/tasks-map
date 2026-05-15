@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ExpandButtonProps {
   expanded: boolean;
-  onClick: (e: React.MouseEvent) => void; // eslint-disable-line no-unused-vars
+  onClick: (e: React.MouseEvent) => void; // eslint-disable-line no-unused-vars -- prop callback parameter convention
 }
 
 export function ExpandButton({ expanded, onClick }: ExpandButtonProps) {

@@ -4,7 +4,7 @@ import CreatableSelect from "react-select/creatable";
 interface TagInputProps {
   allTags: string[];
   existingTags: string[]; // Tags already on this task
-  onAddTag: (tag: string) => void; // eslint-disable-line no-unused-vars
+  onAddTag: (tag: string) => void; // eslint-disable-line no-unused-vars -- prop callback parameter convention
   onCancel: () => void;
   hasError?: boolean;
 }
@@ -18,7 +18,7 @@ export function TagInput({
   onCancel,
   hasError = false,
 }: TagInputProps) {
-  const selectRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const selectRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any -- react-select ref type is not exported
   const hasSelectedRef = useRef(false);
   const [inputValue, setInputValue] = React.useState("");
   const [hasSpaceError, setHasSpaceError] = React.useState(false);

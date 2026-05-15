@@ -163,7 +163,7 @@ export default function TaskMapGraphView({
     setDroppedTaskIds(new Set());
     droppedNodePositions.current = new Map();
     // Use setTimeout to allow the loading UI to render before heavy computation
-    setTimeout(() => {
+    window.setTimeout(() => {
       const newTasks = getAllTasks(app);
       setTasks(newTasks);
       const newRegistry = new Map<string, string[]>();
@@ -196,7 +196,7 @@ export default function TaskMapGraphView({
 
   useEffect(() => {
     // Get the Dataview plugin to check index status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
     const dataviewPlugin = (app as any).plugins?.plugins?.["dataview"];
 
     // Check if Dataview index is already initialized
@@ -204,7 +204,7 @@ export default function TaskMapGraphView({
       // Index already ready, load tasks immediately
       reloadTasks();
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose metadataCache events
       const metadataCache = (app as any).metadataCache;
       const eventRef = metadataCache.on("dataview:index-ready", () => {
         reloadTasks();
@@ -305,7 +305,7 @@ export default function TaskMapGraphView({
     if (skipFitViewRef.current) {
       skipFitViewRef.current = false;
     } else {
-      setTimeout(() => {
+      window.setTimeout(() => {
         reactFlowInstance.fitView({ duration: 400 });
       }, 1000);
     }
@@ -334,7 +334,7 @@ export default function TaskMapGraphView({
   );
 
   const onEdgeClick = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow event/edge types lack exported union
     (event: any, edge: any) => {
       event.stopPropagation();
       setSelectedEdge(edge.id);
@@ -368,7 +368,7 @@ export default function TaskMapGraphView({
   }, [selectedEdge, edges, tasks, vault, setEdges]);
 
   const onConnect = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow Connection type is not exported
     async (params: any) => {
       // Reset so onConnectEnd (which fires after onConnect) does not
       // misinterpret this as a canvas-drop and open the create modal.
@@ -520,7 +520,7 @@ export default function TaskMapGraphView({
   );
 
   const onConnectStart = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow OnConnectStartParams type is not exported
     (_event: any, params: any) => {
       if (!params?.nodeId || !params?.handleType) {
         connectStartRef.current = null;
@@ -627,7 +627,7 @@ export default function TaskMapGraphView({
       if (draggedNode.type !== "task") return;
       const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
       const excludeGroupIds = new Set(
-        draggedNode.parentNode ? [draggedNode.parentNode] : []
+        draggedNode.parentId ? [draggedNode.parentId] : []
       );
       updateDragOverHighlights([dragPos], excludeGroupIds);
     },
@@ -640,7 +640,7 @@ export default function TaskMapGraphView({
       const taskNodes = draggedNodes.filter((n) => n.type === "task");
       const positions = taskNodes.map((n) => n.positionAbsolute ?? n.position);
       const excludeGroupIds = new Set(
-        taskNodes.map((n) => n.parentNode).filter((id): id is string => !!id)
+        taskNodes.map((n) => n.parentId).filter((id): id is string => !!id)
       );
       updateDragOverHighlights(positions, excludeGroupIds);
     },
@@ -714,18 +714,20 @@ export default function TaskMapGraphView({
 
   // Handle drag-stop of a graph task node — assign to project if dropped inside a group
   const onNodeDragStop: NodeDragHandler = useCallback(
-    async (_event, draggedNode) => {
+    (_event, draggedNode) => {
       clearDragOverHighlights();
-      await assignDraggedNodesToProject([draggedNode]);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- NodeDragHandler expects void; async work is intentionally fire-and-forget
+      assignDraggedNodesToProject([draggedNode]);
     },
     [clearDragOverHighlights, assignDraggedNodesToProject]
   );
 
   // Handle drag-stop of a multi-node selection — assign all task nodes to projects
   const onSelectionDragStop: SelectionDragHandler = useCallback(
-    async (_event, draggedNodes) => {
+    (_event, draggedNodes) => {
       clearDragOverHighlights();
-      await assignDraggedNodesToProject(draggedNodes);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- SelectionDragHandler expects void; async work is intentionally fire-and-forget
+      assignDraggedNodesToProject(draggedNodes);
     },
     [clearDragOverHighlights, assignDraggedNodesToProject]
   );
@@ -858,7 +860,7 @@ export default function TaskMapGraphView({
       <div
         className="tasks-map-graph-container"
         ref={containerRef}
-        onDrop={onDrop}
+        onDrop={(e) => void onDrop(e)}
         onDragOver={onDragOver}
       >
         {embed.showUnlinkedPanel && hideUnlinkedTasks && (
@@ -886,16 +888,18 @@ export default function TaskMapGraphView({
           proOptions={{ hideAttribution: true }}
           minZoom={0.1}
           fitView
-          onConnect={onConnect}
+          onConnect={(params) => void onConnect(params)}
           onConnectStart={onConnectStart}
-          onConnectEnd={onConnectEnd}
+          onConnectEnd={(e) => void onConnectEnd(e)}
           onEdgeClick={onEdgeClick}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onNodeDrag={onNodeDrag}
-          onNodeDragStop={onNodeDragStop}
+          onNodeDragStop={(e, node, nodes) =>
+            void onNodeDragStop(e, node, nodes)
+          }
           onSelectionDrag={onSelectionDrag}
-          onSelectionDragStop={onSelectionDragStop}
+          onSelectionDragStop={(e, nodes) => void onSelectionDragStop(e, nodes)}
           multiSelectionKeyCode="Shift"
           selectionKeyCode="Shift"
         >
@@ -942,7 +946,9 @@ export default function TaskMapGraphView({
             <StatusCountsOverlay tasks={filteredTasks} />
           )}
         </ReactFlow>
-        {selectedEdge && <DeleteEdgeButton onDelete={onDeleteSelectedEdge} />}
+        {selectedEdge && (
+          <DeleteEdgeButton onDelete={() => void onDeleteSelectedEdge()} />
+        )}
       </div>
     </TagsContext.Provider>
   );

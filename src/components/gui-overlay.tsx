@@ -180,7 +180,7 @@ export default function GuiOverlay(props: GuiOverlayProps) {
                   onKeyDown={handleSearchKeyDown}
                   onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
                   onBlur={() =>
-                    setTimeout(() => {
+                    window.setTimeout(() => {
                       setShowSuggestions(false);
                     }, 150)
                   }

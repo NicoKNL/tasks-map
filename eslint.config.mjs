@@ -28,6 +28,7 @@ export default defineConfig([
             globals: {
                 ...globals.serviceworker,
                 ...globals.browser,
+                activeDocument: "readonly", // Obsidian global (active document context)
             },
         },
         rules: {

@@ -63,7 +63,7 @@ interface TaskNodeData {
   debugVisualization?: boolean;
   tagColorPalette?: import("src/lib/tag-color-manager").TagColorPalette;
   groupByProject?: boolean;
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void;
 }
 
@@ -121,7 +121,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     if (tagToAdd.includes(" ")) {
       setTagError(true);
       // Reset after showing error briefly
-      setTimeout(() => {
+      window.setTimeout(() => {
         setTagError(false);
         setIsAddingTag(false);
       }, 100);
@@ -203,7 +203,10 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
           />
           {showPriorities && <TaskPriority priority={task.priority} />}
           <div className="tasks-map-task-node-header-spacer" />
-          <StarButton starred={starred} onClick={handleStarToggle} />
+          <StarButton
+            starred={starred}
+            onClick={() => void handleStarToggle()}
+          />
           <LinkButton link={task.link} app={app} taskStatus={status} />
           <TaskMenu
             task={task}
@@ -224,7 +227,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
                   key={tag}
                   tag={tag}
                   palette={tagColorPalette}
-                  onRemove={handleTagRemove}
+                  onRemove={(tag) => void handleTagRemove(tag)}
                 />
               ))}
 
@@ -234,7 +237,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
                   <TagInput
                     allTags={allTags}
                     existingTags={tags}
-                    onAddTag={handleAddTag}
+                    onAddTag={(tag) => void handleAddTag(tag)}
                     onCancel={handleCancelAddTag}
                     hasError={tagError}
                   />

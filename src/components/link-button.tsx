@@ -64,7 +64,7 @@ export const LinkButton = ({
   return (
     <button
       className={`tasks-map-link-button tasks-map-link-button--${status}`}
-      onClick={handleClick}
+      onClick={(e) => void handleClick(e)}
     >
       <ArrowUpRight size={16} />
     </button>

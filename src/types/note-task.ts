@@ -97,7 +97,7 @@ export class NoteTask extends BaseTask {
     const file = vault.getFileByPath(this.link);
     if (!file) return;
 
-    await vault.delete(file);
+    await app.fileManager.trashFile(file);
   }
 
   async addStar(app: App): Promise<void> {
