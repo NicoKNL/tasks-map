@@ -87,7 +87,7 @@ function renderSummaryWithLinks(
       const displayText = alias || file;
       const link = container.createEl("a", {
         text: displayText,
-        cls: "tasks-map-link internal-link",
+        cls: "tasks-map-link tasks-map-link--internal",
       });
 
       link.addEventListener("click", (e) => {

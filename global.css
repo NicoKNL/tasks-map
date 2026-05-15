@@ -327,7 +327,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Task Details Styles */
-.task-details {
+.tasks-map-task-details {
   margin-top: 10px;
   font-size: 13px;
   background: var(--background-secondary-alt);
@@ -403,13 +403,12 @@ If your plugin does not need CSS, delete this file.
 .tasks-map-tag--mono-6,
 .tasks-map-tag--mono-7 { background-color: #2674b5; }
 
-.tasks-map-graph-container.hide-tags .task-tag,
-.tasks-map-graph-container.hide-tags .task-tags-container,
-.tasks-map-graph-container.hide-tags .tasks-map-task-node-footer {
-  display: none !important;
+.tasks-map-graph-container.tasks-map--hide-tags .tasks-map-tag-list,
+.tasks-map-graph-container.tasks-map--hide-tags .tasks-map-task-node-footer {
+  display: none;
 }
 
-.tasks-map-tag.removable {
+.tasks-map-tag.tasks-map-tag--removable {
   cursor: pointer;
 }
 
@@ -429,106 +428,106 @@ If your plugin does not need CSS, delete this file.
 
 /* Tag Input (CreatableSelect) Styles */
 .tasks-map-tag-select__container {
-  min-width: 160px !important;
-  font-size: 11px !important;
+  min-width: 160px;
+  font-size: 11px;
 }
 
 .tasks-map-tag-select__control {
-  min-height: 20px !important;
-  height: 20px !important;
-  min-width: 160px !important;
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border-color: var(--interactive-accent) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 0 0 1px var(--interactive-accent) !important;
+  min-height: 20px;
+  height: 20px;
+  min-width: 160px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border-color: var(--interactive-accent);
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--interactive-accent);
 }
 
 .tasks-map-tag-select__control:hover {
-  border-color: var(--interactive-accent) !important;
+  border-color: var(--interactive-accent);
 }
 
 .tasks-map-tag-select-error .tasks-map-tag-select__control {
-  background: rgba(255, 0, 0, 0.1) !important;
-  border-color: var(--text-error) !important;
-  box-shadow: 0 0 0 1px var(--text-error) !important;
+  background: rgba(255, 0, 0, 0.1);
+  border-color: var(--text-error);
+  box-shadow: 0 0 0 1px var(--text-error);
 }
 
 .tasks-map-tag-select-error .tasks-map-tag-select__control:hover {
-  border-color: var(--text-error) !important;
+  border-color: var(--text-error);
 }
 
 .tasks-map-tag-select__value-container {
-  padding: 0 8px !important;
-  height: 100% !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: center !important;
+  padding: 0 8px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
 }
 
 .tasks-map-tag-select__indicators {
-  display: none !important;
+  display: none;
 }
 
 .tasks-map-tag-select__input {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  flex: 1 !important;
-  display: flex !important;
-  align-items: center !important;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .tasks-map-tag-select__input > div {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  flex: 1 !important;
-  display: flex !important;
-  align-items: center !important;
-  font-size: 11px !important;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
 }
 
 .tasks-map-tag-select__input input,
 .tasks-map-tag-select__input input:focus {
-  margin: 0 !important;
-  padding: 0 !important;
-  color: var(--text-normal) !important;
-  font-size: 11px !important;
-  font-family: inherit !important;
-  line-height: 11px !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  flex: 1 !important;
-  min-width: 4px !important;
-  -webkit-text-size-adjust: 100% !important;
-  text-size-adjust: 100% !important;
+  margin: 0;
+  padding: 0;
+  color: var(--text-normal);
+  font-size: 11px;
+  font-family: inherit;
+  line-height: 11px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  flex: 1;
+  min-width: 4px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .tasks-map-tag-select__single-value {
-  margin: 0 !important;
-  padding: 0 !important;
-  color: var(--text-normal) !important;
-  font-size: 11px !important;
-  font-family: inherit !important;
-  line-height: 11px !important;
+  margin: 0;
+  padding: 0;
+  color: var(--text-normal);
+  font-size: 11px;
+  font-family: inherit;
+  line-height: 11px;
 }
 
 .tasks-map-tag-select__placeholder {
-  color: var(--text-faint) !important;
-  font-size: 11px !important;
-  font-family: inherit !important;
-  line-height: 11px !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: inherit;
+  line-height: 11px;
+  margin: 0;
+  padding: 0;
 }
 
 /* Ensure all nested elements inherit small font size */
@@ -537,49 +536,49 @@ If your plugin does not need CSS, delete this file.
 .tasks-map-tag-select__value-container *,
 .tasks-map-tag-select__input *,
 .tasks-map-tag-select__input input {
-  font-size: 11px !important;
+  font-size: 11px;
 }
 
 .tasks-map-tag-select__menu {
-  min-width: 160px !important;
-  z-index: 9999 !important;
-  background: var(--background-secondary) !important;
-  color: var(--text-normal) !important;
-  border: 1px solid var(--background-modifier-border) !important;
-  border-radius: 8px !important;
-  margin-top: 4px !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+  min-width: 160px;
+  z-index: 9999;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  margin-top: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tasks-map-tag-select__menu-list {
-  padding: 4px !important;
-  max-height: 200px !important;
+  padding: 4px;
+  max-height: 200px;
 }
 
 .tasks-map-tag-select__option {
-  background: var(--background-secondary) !important;
-  color: var(--text-normal) !important;
-  cursor: pointer !important;
-  border-radius: 4px !important;
-  padding: 6px 8px !important;
-  font-size: 11px !important;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
 }
 
 .tasks-map-tag-select__option--is-focused {
-  background: var(--background-modifier-hover) !important;
+  background: var(--background-modifier-hover);
 }
 
 .tasks-map-tag-select__option--is-selected {
-  background: var(--background-modifier-hover) !important;
+  background: var(--background-modifier-hover);
 }
 
 .tasks-map-tag-select__option:active {
-  background: var(--background-modifier-active) !important;
+  background: var(--background-modifier-active);
 }
 
 .tasks-map-tag-select__menu-notice {
-  color: var(--text-muted) !important;
-  font-size: 11px !important;
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 .tasks-map-add-tag-button {
@@ -603,7 +602,7 @@ If your plugin does not need CSS, delete this file.
   color: white;
 }
 
-.task-tags-container {
+.tasks-map-tag-list {
   display: flex;
   align-items: flex-start;
   gap: 4px;
@@ -611,7 +610,7 @@ If your plugin does not need CSS, delete this file.
   flex-wrap: wrap;
 }
 
-.task-tags-container:hover .tasks-map-add-tag-button {
+.tasks-map-tag-list:hover .tasks-map-add-tag-button {
   opacity: 1;
 }
 
@@ -637,11 +636,11 @@ If your plugin does not need CSS, delete this file.
   text-decoration: underline;
 }
 
-.tasks-map-link.internal-link {
+.tasks-map-link.tasks-map-link--internal {
   color: var(--link-color);
 }
 
-.tasks-map-link.internal-link:hover {
+.tasks-map-link.tasks-map-link--internal:hover {
   color: var(--link-color-hover);
 }
 
@@ -686,7 +685,7 @@ If your plugin does not need CSS, delete this file.
   overflow: hidden;
 }
 
-.tasks-map-filter-panel.minimized {
+.tasks-map-filter-panel.tasks-map-filter-panel--minimized {
   min-width: unset;
   max-height: unset;
   overflow: visible;
@@ -701,7 +700,7 @@ If your plugin does not need CSS, delete this file.
   flex-shrink: 0;
 }
 
-.tasks-map-filter-panel.minimized .tasks-map-filter-panel__header {
+.tasks-map-filter-panel.tasks-map-filter-panel--minimized .tasks-map-filter-panel__header {
   border-bottom: none;
 }
 
@@ -738,7 +737,7 @@ If your plugin does not need CSS, delete this file.
   background: var(--background-modifier-hover);
 }
 
-.tasks-map-graph-container .tasks-map-filter-panel.minimized .tasks-map-filter-panel__header-icon {
+.tasks-map-graph-container .tasks-map-filter-panel.tasks-map-filter-panel--minimized .tasks-map-filter-panel__header-icon {
   border-radius: 0 8px 8px 0;
   padding: 10px;
 }
@@ -1936,12 +1935,12 @@ If your plugin does not need CSS, delete this file.
   opacity: 0.95;
 }
 
-.tasks-map-project-group.selected {
+.tasks-map-project-group.tasks-map-project-group--selected {
   border-color: var(--background-modifier-border-focus);
   box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.tasks-map-project-group.drag-over {
+.tasks-map-project-group.tasks-map-project-group--drag-over {
   border-color: var(--interactive-accent);
   box-shadow: 0 0 0 2px var(--interactive-accent);
   background-color: var(--background-modifier-hover);

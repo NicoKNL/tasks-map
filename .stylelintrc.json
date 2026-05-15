@@ -4,6 +4,8 @@
     "no-duplicate-selectors": true,
     "shorthand-property-no-redundant-values": true,
     "declaration-block-no-shorthand-property-overrides": true,
-    "no-invalid-double-slash-comments": true
+    "no-invalid-double-slash-comments": true,
+    "declaration-no-important": true,
+    "selector-class-pattern": "^(tasks-map-|react-flow|theme-dark)[a-z0-9_-]*(__|--[a-z0-9_-]+)?$"
   }
 }

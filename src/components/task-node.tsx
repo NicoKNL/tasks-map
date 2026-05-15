@@ -218,7 +218,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
 
         {showTags && (
           <div className="tasks-map-task-node-footer">
-            <div className="task-tags-container">
+            <div className="tasks-map-tag-list">
               {tags.map((tag) => (
                 <Tag
                   key={tag}

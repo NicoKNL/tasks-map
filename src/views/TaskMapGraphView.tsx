@@ -150,9 +150,9 @@ export default function TaskMapGraphView({
   React.useEffect(() => {
     if (containerRef.current) {
       if (hideTags) {
-        containerRef.current.classList.add("hide-tags");
+        containerRef.current.classList.add("tasks-map--hide-tags");
       } else {
-        containerRef.current.classList.remove("hide-tags");
+        containerRef.current.classList.remove("tasks-map--hide-tags");
       }
     }
   }, [hideTags]);

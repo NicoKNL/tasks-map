@@ -13,8 +13,8 @@ export default function ProjectGroupNode({
 }: NodeProps<ProjectGroupNodeData>) {
   const classes = [
     "tasks-map-project-group",
-    selected ? "selected" : "",
-    data.isDragOver ? "drag-over" : "",
+    selected ? "tasks-map-project-group--selected" : "",
+    data.isDragOver ? "tasks-map-project-group--drag-over" : "",
   ]
     .filter(Boolean)
     .join(" ");
