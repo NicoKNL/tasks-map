@@ -29,7 +29,7 @@ export async function initI18n(language: Language = "en") {
 }
 
 export function changeLanguage(language: Language) {
-  i18next.changeLanguage(language);
+  void i18next.changeLanguage(language);
 }
 
 export function t(key: string, options?: Record<string, unknown>): string {

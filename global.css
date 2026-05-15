@@ -2000,3 +2000,10 @@ If your plugin does not need CSS, delete this file.
   outline: 2px dashed var(--interactive-accent);
   outline-offset: 6px;
 }
+
+.tasks-map-tag-preview-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}

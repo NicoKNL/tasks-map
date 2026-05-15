@@ -5,7 +5,7 @@ import { NO_TAGS_VALUE } from "src/lib/filter-tasks";
 interface TagSelectProps {
   allTags: string[];
   selectedTags: string[];
-  setSelectedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars
+  setSelectedTags: (tags: string[]) => void; // eslint-disable-line no-unused-vars -- prop callback parameter convention
 }
 
 type TagOption = { value: string; label: string };

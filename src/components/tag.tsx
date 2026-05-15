@@ -5,7 +5,7 @@ import { TagColorPalette, getTagColorClass } from "../lib/tag-color-manager";
 interface TagProps {
   tag: string;
   palette?: TagColorPalette;
-  onRemove?: (tag: string) => void; // eslint-disable-line no-unused-vars
+  onRemove?: (tag: string) => void; // eslint-disable-line no-unused-vars -- prop callback parameter convention
 }
 
 export function Tag({ tag, palette = "rainbow", onRemove }: TagProps) {

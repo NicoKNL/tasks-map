@@ -172,7 +172,7 @@ interface TasksApiV1 {
 }
 
 export function getTasksApi(app: App): TasksApiV1 | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
   const tasksPlugin = (app as any).plugins?.plugins?.["obsidian-tasks-plugin"];
 
   if (!tasksPlugin?.apiV1) {
@@ -1232,7 +1232,7 @@ export async function removeSignFromTaskInFile(
 }
 
 // TODO: Improve typing for app parameter
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
 export function getAllTasks(app: any): BaseTask[] {
   // Central function to gather tasks from all available sources
   const allTasks: BaseTask[] = [];
@@ -1246,7 +1246,7 @@ export function getAllTasks(app: any): BaseTask[] {
   return allTasks;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
 export function getAllDataviewTasks(app: any): BaseTask[] {
   let tasks: RawTask[] = [];
 
@@ -1268,7 +1268,7 @@ export function getAllDataviewTasks(app: any): BaseTask[] {
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
 export function getNoteTasks(app: any): BaseTask[] {
   const tasks: BaseTask[] = [];
   const vault = app.vault;
@@ -1329,7 +1329,7 @@ function normalizeNotePriority(priority: string): string {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
 function parseTaskNote(file: any, cache: any, app: any): BaseTask | null {
   const frontmatter = cache.frontmatter || {};
   const factory = new TaskFactory();
@@ -1414,7 +1414,7 @@ function parseTaskNote(file: any, cache: any, app: any): BaseTask | null {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
 function parseBlockedByLinks(blockedBy: any, app: any): string[] {
   const links: string[] = [];
   const vault = app.vault;
@@ -1469,7 +1469,7 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
         file = vault.getAbstractFileByPath(pageName + ".md");
         if (!file) {
           const markdownFiles = vault.getMarkdownFiles();
-          file = markdownFiles.find((f: any) => f.basename === pageName); // eslint-disable-line @typescript-eslint/no-explicit-any
+          file = markdownFiles.find((f: any) => f.basename === pageName); // eslint-disable-line @typescript-eslint/no-explicit-any -- Obsidian TFile type not available in this context
         }
       } catch {
         continue;
@@ -1512,7 +1512,7 @@ export function createNodesFromTasks(
   showPriorities: boolean = true,
   showTags: boolean = true,
   debugVisualization: boolean = false,
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void,
   groupByProject: boolean = true,
   tagColorPalette: TagColorPalette = "rainbow"
@@ -1760,10 +1760,9 @@ function layoutNodesWithDagreInternal(
  * @param app Obsidian App instance
  * @returns object with isInstalled, isEnabled, and getMessage() function
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
 export function checkDataviewPlugin(app: any) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const plugins = (app as any).plugins;
+  const plugins = app.plugins;
 
   // Check if plugin is installed (available in plugins list)
   const installedPlugins = plugins?.manifests || {};

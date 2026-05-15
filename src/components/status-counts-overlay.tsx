@@ -12,7 +12,7 @@ const statusLabelKeys: Record<TaskStatus, string> = {
 const ALL_STATUSES: TaskStatus[] = ["todo", "in_progress", "done", "canceled"];
 
 function getContrastColor(bgColor: string): string {
-  const canvas = document.createElement("canvas");
+  const canvas = activeDocument.createElement("canvas");
   canvas.width = 1;
   canvas.height = 1;
   const ctx = canvas.getContext("2d");
@@ -49,7 +49,7 @@ export default function StatusCountsOverlay({
 
     // Re-compute when Obsidian changes theme/accent (style or class mutations on body)
     const observer = new MutationObserver(updateColor);
-    observer.observe(document.body, {
+    observer.observe(activeDocument.body, {
       attributes: true,
       attributeFilter: ["style", "class"],
     });

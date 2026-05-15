@@ -7,7 +7,7 @@ import { useApp } from "src/hooks/hooks";
 interface TaskStatusProps {
   status: TaskStatus;
   task: BaseTask;
-  onStatusChange: (newStatus: TaskStatus) => void; // eslint-disable-line no-unused-vars
+  onStatusChange: (newStatus: TaskStatus) => void; // eslint-disable-line no-unused-vars -- prop callback parameter convention
 }
 
 const statusIcons: Record<TaskStatus, React.ReactElement> = {
@@ -38,7 +38,7 @@ export function TaskStatusToggle({
   return (
     <div className="tasks-map-status-container">
       <div
-        onClick={handleToggleStatus}
+        onClick={(e) => void handleToggleStatus(e)}
         className="tasks-map-task-status-toggle"
       >
         {statusIcons[status]}

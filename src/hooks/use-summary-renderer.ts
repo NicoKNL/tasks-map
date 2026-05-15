@@ -94,7 +94,7 @@ function renderSummaryWithLinks(
         e.preventDefault();
         e.stopPropagation();
         if (app) {
-          openFileInObsidian(app, file);
+          void openFileInObsidian(app, file);
         }
       });
       return;

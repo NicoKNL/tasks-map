@@ -169,7 +169,7 @@ export default function FilterPresetBar({
             isClearable
             isDisabled={presets.length === 0}
             noOptionsMessage={() => t("presets.no_presets")}
-            menuPortalTarget={document.body}
+            menuPortalTarget={activeDocument.body}
             menuPosition="fixed"
             styles={{
               menuPortal: (base) => ({ ...base, zIndex: 9999 }),

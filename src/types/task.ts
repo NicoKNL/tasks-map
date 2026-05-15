@@ -22,7 +22,7 @@ export interface TaskNodeData {
   debugVisualization?: boolean;
   groupByProject?: boolean;
   tagColorPalette?: TagColorPalette;
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void;
 }
 

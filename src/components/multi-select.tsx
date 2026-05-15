@@ -4,7 +4,7 @@ import { t } from "../i18n";
 interface MultiSelectProps<T extends string> {
   options: T[];
   selected: T[];
-  setSelected: (selected: T[]) => void; // eslint-disable-line no-unused-vars
+  setSelected: (selected: T[]) => void; // eslint-disable-line no-unused-vars -- prop callback parameter convention
   placeholder?: string;
 }
 

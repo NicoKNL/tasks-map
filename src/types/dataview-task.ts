@@ -40,7 +40,7 @@ export class DataviewTask extends BaseTask {
 
       // TODO: Verify if the escape is really useless here (or change this parsing completely). It was added by the linter, but it seems necessary for correct regex.
       lines[taskLineIdx] = lines[taskLineIdx].replace(
-        /\[([ x/\-])\]/, // eslint-disable-line no-useless-escape
+        /\[([ x/\-])\]/, // eslint-disable-line no-useless-escape -- escape required for correct character class behavior
         statusSymbols[newStatus]
       );
 

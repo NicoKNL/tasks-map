@@ -30,13 +30,17 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
 
     if (isOpen) {
       // Use capture phase to catch clicks before ReactFlow handles them
-      document.addEventListener("mousedown", handleClickOutside, true);
-      document.addEventListener("pointerdown", handleClickOutside, true);
+      activeDocument.addEventListener("mousedown", handleClickOutside, true);
+      activeDocument.addEventListener("pointerdown", handleClickOutside, true);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside, true);
-      document.removeEventListener("pointerdown", handleClickOutside, true);
+      activeDocument.removeEventListener("mousedown", handleClickOutside, true);
+      activeDocument.removeEventListener(
+        "pointerdown",
+        handleClickOutside,
+        true
+      );
     };
   }, [isOpen]);
 
@@ -141,17 +145,23 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
 
       {isOpen && (
         <div className="tasks-map-task-menu-dropdown">
-          <button className="tasks-map-task-menu-item" onClick={handleCreate}>
+          <button
+            className="tasks-map-task-menu-item"
+            onClick={(e) => void handleCreate(e)}
+          >
             <CirclePlus size={12} />
             <span>Create task</span>
           </button>
-          <button className="tasks-map-task-menu-item" onClick={handleEdit}>
+          <button
+            className="tasks-map-task-menu-item"
+            onClick={(e) => void handleEdit(e)}
+          >
             <SquarePen size={12} />
             <span>Edit task</span>
           </button>
           <button
             className="tasks-map-task-menu-item tasks-map-task-menu-item--danger"
-            onClick={handleDelete}
+            onClick={(e) => void handleDelete(e)}
           >
             <Trash2 size={12} />
             <span>Delete task</span>

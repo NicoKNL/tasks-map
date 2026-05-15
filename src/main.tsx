@@ -76,7 +76,7 @@ export default class TasksMapPlugin extends Plugin {
       id: "open-tasks-map-view",
       name: t("commands.open_map_view"),
       callback: () => {
-        this.activateViewInMainArea();
+        void this.activateViewInMainArea();
       },
     });
 
@@ -89,7 +89,7 @@ export default class TasksMapPlugin extends Plugin {
     });
 
     this.addRibbonIcon("map", t("ribbon.open_tasks_map"), () => {
-      this.activateViewInMainArea();
+      void this.activateViewInMainArea();
     });
 
     // Register the tasks-map fenced code block processor
@@ -173,8 +173,8 @@ export default class TasksMapPlugin extends Plugin {
   }
 
   insertPresetIntoNote(preset: FilterPreset): void {
-    new NoteSuggestModal(this.app, async (file) => {
-      await this.appendCodeBlockToFile(
+    new NoteSuggestModal(this.app, (file) => {
+      void this.appendCodeBlockToFile(
         file,
         preset.filter,
         DEFAULT_EMBED_CONFIG
@@ -193,8 +193,8 @@ export default class TasksMapPlugin extends Plugin {
         DEFAULT_EMBED_CONFIG
       );
     } else {
-      new NoteSuggestModal(this.app, async (file) => {
-        await this.appendCodeBlockToFile(
+      new NoteSuggestModal(this.app, (file) => {
+        void this.appendCodeBlockToFile(
           file,
           filterToInsert,
           DEFAULT_EMBED_CONFIG
@@ -225,10 +225,10 @@ export default class TasksMapPlugin extends Plugin {
   async activateViewInMainArea() {
     const leaf = this.app.workspace.getLeaf(true); // true = main area
     await leaf.setViewState({ type: VIEW_TYPE, active: true });
-    this.app.workspace.revealLeaf(leaf);
+    void this.app.workspace.revealLeaf(leaf);
   }
 
-  async onunload() {
+  onunload(): void {
     // Embed roots are cleaned up individually via MarkdownRenderChild
   }
 }
