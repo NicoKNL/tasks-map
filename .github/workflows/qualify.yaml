@@ -373,7 +373,7 @@ jobs:
 
             function iconWithDetail(status, detail) {
               const base = icon(status);
-              if (status === 'pass' || !detail) return base;
+              if (!detail) return base;
               return `${base} ${detail}`;
             }
 
