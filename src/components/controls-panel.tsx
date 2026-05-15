@@ -34,7 +34,9 @@ export default function ControlsPanel({
   };
 
   return (
-    <div className={`tasks-map-filter-panel ${isMinimized ? "minimized" : ""}`}>
+    <div
+      className={`tasks-map-filter-panel ${isMinimized ? "tasks-map-filter-panel--minimized" : ""}`}
+    >
       <div className="tasks-map-filter-panel__header">
         <span className="tasks-map-filter-panel__title">
           {t("controls.title")}

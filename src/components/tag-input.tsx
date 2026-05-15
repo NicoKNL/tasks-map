@@ -75,6 +75,7 @@ export function TagInput({
   return (
     <CreatableSelect
       ref={selectRef}
+      unstyled
       classNamePrefix="tasks-map-tag-select"
       className={hasError || hasSpaceError ? "tasks-map-tag-select-error" : ""}
       options={options}

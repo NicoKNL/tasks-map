@@ -18,7 +18,7 @@ export function Tag({ tag, palette = "rainbow", onRemove }: TagProps) {
 
   return (
     <span
-      className={`tasks-map-tag ${getTagColorClass(tag, palette)} ${onRemove ? "removable" : ""}`}
+      className={`tasks-map-tag ${getTagColorClass(tag, palette)} ${onRemove ? "tasks-map-tag--removable" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
