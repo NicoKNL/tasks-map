@@ -626,12 +626,14 @@ export default function TaskMapGraphView({
     (_event, draggedNode) => {
       if (draggedNode.type !== "task") return;
       const dragPos = draggedNode.positionAbsolute ?? draggedNode.position;
-      const excludeGroupIds = new Set(
-        draggedNode.parentId ? [draggedNode.parentId] : []
-      );
+      // Prefer parentNode from current nodes state — ReactFlow 11 may not populate
+      // parentId reliably on the drag-event node snapshot.
+      const currentNode = nodes.find((n) => n.id === draggedNode.id);
+      const parentNodeId = currentNode?.parentNode ?? draggedNode.parentId;
+      const excludeGroupIds = new Set(parentNodeId ? [parentNodeId] : []);
       updateDragOverHighlights([dragPos], excludeGroupIds);
     },
-    [updateDragOverHighlights]
+    [updateDragOverHighlights, nodes]
   );
 
   // Highlight project group nodes while multiple selected task nodes are dragged
@@ -640,11 +642,16 @@ export default function TaskMapGraphView({
       const taskNodes = draggedNodes.filter((n) => n.type === "task");
       const positions = taskNodes.map((n) => n.positionAbsolute ?? n.position);
       const excludeGroupIds = new Set(
-        taskNodes.map((n) => n.parentId).filter((id): id is string => !!id)
+        taskNodes
+          .map((n) => {
+            const currentNode = nodes.find((cn) => cn.id === n.id);
+            return currentNode?.parentNode ?? n.parentId;
+          })
+          .filter((id): id is string => !!id)
       );
       updateDragOverHighlights(positions, excludeGroupIds);
     },
-    [updateDragOverHighlights]
+    [updateDragOverHighlights, nodes]
   );
 
   // Clear all drag-over highlights on project group nodes
@@ -687,9 +694,13 @@ export default function TaskMapGraphView({
 
       if (!targetProjectName) return;
 
-      // Assign all task nodes in the selection to that project
+      // Assign all task nodes in the selection to that project, skipping any
+      // that already belong to the target group.
+      const targetGroupId = `project-group-${targetProjectName}`;
       let count = 0;
       for (const draggedNode of taskNodes) {
+        const currentNode = nodes.find((n) => n.id === draggedNode.id);
+        if (currentNode?.parentNode === targetGroupId) continue;
         const task = tasks.find((t) => t.id === draggedNode.id);
         if (!(task instanceof NoteTask)) continue;
         await task.addProject(app, targetProjectName);
