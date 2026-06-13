@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ReactFlowProvider } from "reactflow";
 import { AppContext } from "src/contexts/context";
 import TaskMapGraphView from "./TaskMapGraphView";
+import { EmbedSidebar } from "src/components/embed-sidebar";
 import type TasksMapPlugin from "../main";
 import { TasksMapSettings } from "src/types/settings";
 import { FilterState, DEFAULT_FILTER_STATE } from "src/types/filter-state";
@@ -40,6 +41,7 @@ export default function TaskMapGraphEmbedView({
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const reloadRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -57,15 +59,19 @@ export default function TaskMapGraphEmbedView({
   return (
     <AppContext.Provider value={plugin.app}>
       <div className="tasks-map-embed-container" ref={containerRef}>
-        <ReactFlowProvider>
-          <TaskMapGraphView
-            settings={settings}
-            filterState={filterState}
-            setFilterState={setFilterState}
-            plugin={plugin}
-            embedConfig={embedConfig}
-          />
-        </ReactFlowProvider>
+        <div className="tasks-map-embed-inner">
+          <ReactFlowProvider>
+            <TaskMapGraphView
+              settings={settings}
+              filterState={filterState}
+              setFilterState={setFilterState}
+              plugin={plugin}
+              embedConfig={embedConfig}
+              reloadRef={reloadRef}
+            />
+          </ReactFlowProvider>
+        </div>
+        <EmbedSidebar onReload={() => reloadRef.current?.()} />
       </div>
     </AppContext.Provider>
   );
@@ -139,6 +145,14 @@ function coerceEmbedConfig(raw: Record<string, unknown>): EmbedConfig {
     showStatusCounts: coerceBool(
       raw.showStatusCounts,
       DEFAULT_EMBED_CONFIG.showStatusCounts
+    ),
+    showViewPanel: coerceBool(
+      raw.showViewPanel,
+      DEFAULT_EMBED_CONFIG.showViewPanel
+    ),
+    hideTagsOnNodes: coerceBool(
+      raw.hideTagsOnNodes,
+      DEFAULT_EMBED_CONFIG.hideTagsOnNodes
     ),
   };
 }

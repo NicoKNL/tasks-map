@@ -58,6 +58,7 @@ interface TaskMapGraphViewProps {
   setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
   plugin: TasksMapPlugin;
   embedConfig?: EmbedConfig;
+  reloadRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 export default function TaskMapGraphView({
@@ -66,6 +67,7 @@ export default function TaskMapGraphView({
   setFilterState,
   plugin,
   embedConfig,
+  reloadRef,
 }: TaskMapGraphViewProps) {
   const embed = { ...DEFAULT_EMBED_CONFIG, ...embedConfig };
   const app = useApp();
@@ -82,7 +84,7 @@ export default function TaskMapGraphView({
     handleType: "source" | "target";
   } | null>(null);
 
-  const [hideTags, setHideTags] = React.useState(false);
+  const [hideTags, setHideTags] = React.useState(embed.hideTagsOnNodes);
   const [hideUnlinkedTasks, setHideUnlinkedTasks] = React.useState(
     embed.hideUnlinkedTasks
   );
@@ -175,6 +177,12 @@ export default function TaskMapGraphView({
       new Notice("Tasks reloaded");
     }, 0);
   }, [app]);
+
+  useEffect(() => {
+    if (reloadRef) {
+      reloadRef.current = reloadTasks;
+    }
+  }, [reloadRef, reloadTasks]);
 
   const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
     setTaskTagsRegistry((prevRegistry) => {
@@ -938,18 +946,20 @@ export default function TaskMapGraphView({
                 suggestionTasks={preSearchFilteredTasks}
               />
             )}
-            <ControlsPanel
-              showTags={settings.showTags}
-              hideTags={hideTags}
-              setHideTags={toggleHideTags}
-              reloadTasks={reloadTasks}
-              showUnlinkedPanel={embed.showUnlinkedPanel}
-              hideUnlinkedTasks={hideUnlinkedTasks}
-              setHideUnlinkedTasks={setHideUnlinkedTasks}
-              showGroupByProject={showGroupByProject}
-              groupByProject={groupByProject}
-              setGroupByProject={setGroupByProject}
-            />
+            {embed.showViewPanel && (
+              <ControlsPanel
+                showTags={settings.showTags}
+                hideTags={hideTags}
+                setHideTags={toggleHideTags}
+                reloadTasks={reloadTasks}
+                showUnlinkedPanel={embed.showUnlinkedPanel}
+                hideUnlinkedTasks={hideUnlinkedTasks}
+                setHideUnlinkedTasks={setHideUnlinkedTasks}
+                showGroupByProject={showGroupByProject}
+                groupByProject={groupByProject}
+                setGroupByProject={setGroupByProject}
+              />
+            )}
           </div>
           {embed.showMinimap && <TaskMinimap />}
           <Background />
