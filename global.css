@@ -1899,10 +1899,52 @@ If your plugin does not need CSS, delete this file.
 
 /* Embed container */
 .tasks-map-embed-container {
-  position: relative;
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Embed graph area */
+.tasks-map-embed-inner {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Embed sidebar */
+.tasks-map-embed-sidebar {
+  flex-shrink: 0;
+  width: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-left: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.tasks-map-embed-container .tasks-map-embed-sidebar__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  border-bottom: 1px solid var(--background-modifier-border);
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--background-secondary);
+  cursor: pointer;
+  color: var(--text-muted);
+  height: auto;
+}
+
+.tasks-map-embed-container .tasks-map-embed-sidebar__button:hover {
+  background: var(--background-modifier-hover);
+  box-shadow: none;
 }
 
 /* Embed error state */

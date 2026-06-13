@@ -58,6 +58,7 @@ interface TaskMapGraphViewProps {
   setFilterState: React.Dispatch<React.SetStateAction<FilterState>>;
   plugin: TasksMapPlugin;
   embedConfig?: EmbedConfig;
+  reloadRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 export default function TaskMapGraphView({
@@ -66,6 +67,7 @@ export default function TaskMapGraphView({
   setFilterState,
   plugin,
   embedConfig,
+  reloadRef,
 }: TaskMapGraphViewProps) {
   const embed = { ...DEFAULT_EMBED_CONFIG, ...embedConfig };
   const app = useApp();
@@ -175,6 +177,12 @@ export default function TaskMapGraphView({
       new Notice("Tasks reloaded");
     }, 0);
   }, [app]);
+
+  useEffect(() => {
+    if (reloadRef) {
+      reloadRef.current = reloadTasks;
+    }
+  }, [reloadRef, reloadTasks]);
 
   const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
     setTaskTagsRegistry((prevRegistry) => {
