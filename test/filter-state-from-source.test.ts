@@ -57,6 +57,28 @@ describe("filterStateFromSource", () => {
       );
     });
 
+    it("accepts showViewPanel: false", () => {
+      const source = JSON.stringify({
+        filter: {},
+        config: { showViewPanel: false },
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.config.showViewPanel).toBe(false);
+    });
+
+    it("accepts hideTagsOnNodes: true", () => {
+      const source = JSON.stringify({
+        filter: {},
+        config: { hideTagsOnNodes: true },
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.config.hideTagsOnNodes).toBe(true);
+    });
+
     it("uses defaults when filter and config are omitted but keys are present", () => {
       const source = JSON.stringify({ filter: {}, config: {} });
       const result = filterStateFromSource(source);
@@ -142,6 +164,32 @@ describe("filterStateFromSource", () => {
       expect(result.kind).toBe("ok");
       if (result.kind !== "ok") return;
       expect(result.config.showMinimap).toBe(DEFAULT_EMBED_CONFIG.showMinimap);
+    });
+
+    it('falls back to default showViewPanel when value is the string "false"', () => {
+      const source = JSON.stringify({
+        filter: {},
+        config: { showViewPanel: "false" },
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.config.showViewPanel).toBe(
+        DEFAULT_EMBED_CONFIG.showViewPanel
+      );
+    });
+
+    it('falls back to default hideTagsOnNodes when value is the string "true"', () => {
+      const source = JSON.stringify({
+        filter: {},
+        config: { hideTagsOnNodes: "true" },
+      });
+      const result = filterStateFromSource(source);
+      expect(result.kind).toBe("ok");
+      if (result.kind !== "ok") return;
+      expect(result.config.hideTagsOnNodes).toBe(
+        DEFAULT_EMBED_CONFIG.hideTagsOnNodes
+      );
     });
 
     it("falls back to default selectedTags when value is a plain string", () => {

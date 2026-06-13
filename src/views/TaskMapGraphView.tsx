@@ -82,7 +82,7 @@ export default function TaskMapGraphView({
     handleType: "source" | "target";
   } | null>(null);
 
-  const [hideTags, setHideTags] = React.useState(false);
+  const [hideTags, setHideTags] = React.useState(embed.hideTagsOnNodes);
   const [hideUnlinkedTasks, setHideUnlinkedTasks] = React.useState(
     embed.hideUnlinkedTasks
   );
@@ -938,18 +938,20 @@ export default function TaskMapGraphView({
                 suggestionTasks={preSearchFilteredTasks}
               />
             )}
-            <ControlsPanel
-              showTags={settings.showTags}
-              hideTags={hideTags}
-              setHideTags={toggleHideTags}
-              reloadTasks={reloadTasks}
-              showUnlinkedPanel={embed.showUnlinkedPanel}
-              hideUnlinkedTasks={hideUnlinkedTasks}
-              setHideUnlinkedTasks={setHideUnlinkedTasks}
-              showGroupByProject={showGroupByProject}
-              groupByProject={groupByProject}
-              setGroupByProject={setGroupByProject}
-            />
+            {embed.showViewPanel && (
+              <ControlsPanel
+                showTags={settings.showTags}
+                hideTags={hideTags}
+                setHideTags={toggleHideTags}
+                reloadTasks={reloadTasks}
+                showUnlinkedPanel={embed.showUnlinkedPanel}
+                hideUnlinkedTasks={hideUnlinkedTasks}
+                setHideUnlinkedTasks={setHideUnlinkedTasks}
+                showGroupByProject={showGroupByProject}
+                groupByProject={groupByProject}
+                setGroupByProject={setGroupByProject}
+              />
+            )}
           </div>
           {embed.showMinimap && <TaskMinimap />}
           <Background />

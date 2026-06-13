@@ -140,6 +140,14 @@ function coerceEmbedConfig(raw: Record<string, unknown>): EmbedConfig {
       raw.showStatusCounts,
       DEFAULT_EMBED_CONFIG.showStatusCounts
     ),
+    showViewPanel: coerceBool(
+      raw.showViewPanel,
+      DEFAULT_EMBED_CONFIG.showViewPanel
+    ),
+    hideTagsOnNodes: coerceBool(
+      raw.hideTagsOnNodes,
+      DEFAULT_EMBED_CONFIG.hideTagsOnNodes
+    ),
   };
 }
 
