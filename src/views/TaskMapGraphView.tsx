@@ -358,6 +358,33 @@ export default function TaskMapGraphView({
     setSelectedEdge(null);
   }, [setSelectedEdge]);
 
+  const createUpdatedTask = useCallback(
+    (task: BaseTask, incomingLinks: string[]) =>
+      Object.assign(Object.create(Object.getPrototypeOf(task)), task, {
+        incomingLinks,
+      }) as BaseTask,
+    []
+  );
+
+  const updateTaskIncomingLinks = useCallback(
+    (
+      taskId: string,
+      updateIncomingLinks: (_incomingLinks: string[]) => string[]
+    ) => {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? createUpdatedTask(
+                task,
+                updateIncomingLinks(task.incomingLinks)
+              )
+            : task
+        )
+      );
+    },
+    [createUpdatedTask]
+  );
+
   const onDeleteSelectedEdge = useCallback(async () => {
     if (!selectedEdge) return;
 
@@ -370,10 +397,21 @@ export default function TaskMapGraphView({
 
     if (vault) {
       await removeLinkSignsBetweenTasks(vault, targetTask, sourceTask.id);
+      skipFitViewRef.current = true;
+      updateTaskIncomingLinks(targetTask.id, (incomingLinks) =>
+        incomingLinks.filter((id) => id !== sourceTask.id)
+      );
       setEdges((eds) => eds.filter((e) => e.id !== selectedEdge));
       setSelectedEdge(null);
     }
-  }, [selectedEdge, edges, tasks, vault, setEdges]);
+  }, [
+    selectedEdge,
+    edges,
+    tasks,
+    vault,
+    setEdges,
+    updateTaskIncomingLinks,
+  ]);
 
   const onConnect = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow Connection type is not exported
@@ -387,6 +425,10 @@ export default function TaskMapGraphView({
 
       if (!vault || !sourceTask || !targetTask) return;
 
+      if (targetTask.incomingLinks.includes(sourceTask.id)) {
+        return;
+      }
+
       if (sourceTask.type !== targetTask.type) {
         new Notice(t("errors.cannot_create_edges_different_types"), 5000);
         return;
@@ -399,6 +441,12 @@ export default function TaskMapGraphView({
         settings.linkingStyle
       );
       if (hash) {
+        skipFitViewRef.current = true;
+        updateTaskIncomingLinks(targetTask.id, (incomingLinks) =>
+          incomingLinks.includes(sourceTask.id)
+            ? incomingLinks
+            : [...incomingLinks, sourceTask.id]
+        );
         setEdges((eds) =>
           addEdge(
             {
@@ -419,18 +467,11 @@ export default function TaskMapGraphView({
       vault,
       tasks,
       setEdges,
+      updateTaskIncomingLinks,
       settings.layoutDirection,
       settings.debugVisualization,
       settings.linkingStyle,
     ]
-  );
-
-  const createUpdatedTask = useCallback(
-    (task: BaseTask, incomingLinks: string[]) =>
-      Object.assign(Object.create(Object.getPrototypeOf(task)), task, {
-        incomingLinks,
-      }) as BaseTask,
-    []
   );
 
   const createConnectedTask = useCallback(
