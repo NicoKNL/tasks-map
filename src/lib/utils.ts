@@ -1515,7 +1515,8 @@ export function createNodesFromTasks(
   // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void,
   groupByProject: boolean = true,
-  tagColorPalette: TagColorPalette = "rainbow"
+  tagColorPalette: TagColorPalette = "rainbow",
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1533,6 +1534,7 @@ export function createNodesFromTasks(
       groupByProject,
       tagColorPalette,
       onDeleteTask,
+      onTaskEdited,
     },
     type: "task" as const,
     sourcePosition,

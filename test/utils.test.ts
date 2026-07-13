@@ -366,6 +366,24 @@ describe("createNodesFromTasks", () => {
     expect(nodes[0].data.showTags).toBe(false);
     expect(nodes[0].data.debugVisualization).toBe(true);
   });
+
+  it("passes through the task edit callback", () => {
+    const task = makeTask();
+    const handleTaskEdited = jest.fn();
+    const nodes = createNodesFromTasks(
+      [task],
+      "Horizontal",
+      true,
+      true,
+      false,
+      undefined,
+      true,
+      "rainbow",
+      handleTaskEdited
+    );
+
+    expect(nodes[0].data.onTaskEdited).toBe(handleTaskEdited);
+  });
 });
 
 describe("createEdgesFromTasks", () => {

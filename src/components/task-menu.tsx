@@ -8,15 +8,22 @@ import {
   deleteTaskFromVault,
   findTaskLineByIdOrText,
   getTasksApi,
+  parseTaskLine,
 } from "../lib/utils";
 
 interface TaskMenuProps {
   task: BaseTask;
   app: App;
   onTaskDeleted?: () => void;
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void;
 }
 
-const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
+const TaskMenu = ({
+  task,
+  app,
+  onTaskDeleted,
+  onTaskEdited,
+}: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +121,15 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
 
       lines[taskLineIdx] = newTaskLine;
       await vault.modify(file, lines.join("\n"));
+
+      const updatedTask = parseTaskLine(newTaskLine, task.link);
+      if (updatedTask) {
+        if (!newTaskLine.includes(updatedTask.id)) {
+          updatedTask.id = task.id;
+        }
+        updatedTask.projects = task.projects;
+        onTaskEdited?.(task.id, updatedTask);
+      }
     } catch (error) {
       console.error("Error processing task:", error);
     }

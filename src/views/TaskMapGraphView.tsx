@@ -216,6 +216,43 @@ export default function TaskMapGraphView({
     });
   }, []);
 
+  const handleTaskEdited = useCallback(
+    (taskId: string, updatedTask: BaseTask) => {
+      skipFitViewRef.current = true;
+      setTasks((prevTasks) =>
+        prevTasks.map((task) => (task.id === taskId ? updatedTask : task))
+      );
+      setTaskTagsRegistry((prevRegistry) => {
+        const newRegistry = new Map(prevRegistry);
+        if (taskId !== updatedTask.id) {
+          newRegistry.delete(taskId);
+        }
+        newRegistry.set(updatedTask.id, updatedTask.tags);
+        return newRegistry;
+      });
+
+      if (taskId === updatedTask.id) return;
+
+      setDroppedTaskIds((prevDroppedTaskIds) => {
+        if (!prevDroppedTaskIds.has(taskId)) {
+          return prevDroppedTaskIds;
+        }
+
+        const nextDroppedTaskIds = new Set(prevDroppedTaskIds);
+        nextDroppedTaskIds.delete(taskId);
+        nextDroppedTaskIds.add(updatedTask.id);
+        return nextDroppedTaskIds;
+      });
+
+      const droppedPosition = droppedNodePositions.current.get(taskId);
+      if (droppedPosition) {
+        droppedNodePositions.current.delete(taskId);
+        droppedNodePositions.current.set(updatedTask.id, droppedPosition);
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     // Get the Dataview plugin to check index status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
@@ -280,7 +317,8 @@ export default function TaskMapGraphView({
       settings.debugVisualization,
       handleDeleteTask,
       groupByProject,
-      settings.tagColorPalette
+      settings.tagColorPalette,
+      handleTaskEdited
     );
     let newEdges = createEdgesFromTasks(
       graphTasks,
@@ -339,6 +377,7 @@ export default function TaskMapGraphView({
     setNodes,
     setEdges,
     handleDeleteTask,
+    handleTaskEdited,
     droppedTaskIds,
     groupByProject,
   ]);

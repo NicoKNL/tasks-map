@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { setTooltip } from "obsidian";
 import { Plus } from "lucide-react";
@@ -65,6 +65,7 @@ interface TaskNodeData {
   groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void;
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void;
 }
 
 export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
@@ -77,6 +78,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorPalette = "rainbow",
     groupByProject = false,
     onDeleteTask,
+    onTaskEdited,
   } = data;
 
   const { allTags, updateTaskTags } = useContext(TagsContext);
@@ -88,6 +90,12 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const [tagError, setTagError] = useState(false);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary, app);
+
+  useEffect(() => {
+    setStatus(task.status);
+    setStarred(task.starred);
+    setTags(task.tags || []);
+  }, [task.status, task.starred, task.tags]);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
@@ -212,6 +220,7 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
             task={task}
             app={app}
             onTaskDeleted={() => onDeleteTask?.(task.id)}
+            onTaskEdited={onTaskEdited}
           />
         </div>
 
