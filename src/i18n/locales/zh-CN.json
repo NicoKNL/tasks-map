@@ -118,8 +118,13 @@
     "no_tasks_hint": "在你的 vault 中未找到任何任务。",
     "all_unlinked_hint": "将左侧面板中的任务拖到图上以放置它们。"
   },
+  "edge_actions": {
+    "delete_edge": "删除连线",
+    "insert_task": "插入任务"
+  },
   "errors": {
-    "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。"
+    "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。",
+    "cannot_insert_task_between_non_dataview": "仅 Dataview 任务支持在连线之间插入任务。"
   },
   "notices": {
     "project_assigned": "已添加到项目：{{projectName}}",
