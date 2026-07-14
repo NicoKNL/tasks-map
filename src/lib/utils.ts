@@ -1557,7 +1557,8 @@ export function createNodesFromTasks(
   onDeleteTask?: (taskId: string) => void,
   groupByProject: boolean = true,
   tagColorPalette: TagColorPalette = "rainbow",
-  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void,
+  onTaskCreated?: (_newTask: BaseTask) => void
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1576,6 +1577,7 @@ export function createNodesFromTasks(
       tagColorPalette,
       onDeleteTask,
       onTaskEdited,
+      onTaskCreated,
     },
     type: "task" as const,
     sourcePosition,

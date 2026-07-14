@@ -15,6 +15,7 @@ interface TaskMenuProps {
   task: BaseTask;
   app: App;
   onTaskDeleted?: () => void;
+  onTaskCreated?: (_newTask: BaseTask) => void;
   onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void;
 }
 
@@ -22,6 +23,7 @@ const TaskMenu = ({
   task,
   app,
   onTaskDeleted,
+  onTaskCreated,
   onTaskEdited,
 }: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,6 +80,11 @@ const TaskMenu = ({
     // It's just a string containing the Markdown for the task.
     // console.log(taskLine);
     await addTaskLineToVault(task, taskLine, app);
+
+    const newTask = parseTaskLine(taskLine, task.link);
+    if (newTask) {
+      onTaskCreated?.(newTask);
+    }
   };
 
   const handleEdit = async (e: React.MouseEvent) => {
