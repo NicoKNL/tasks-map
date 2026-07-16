@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { setTooltip } from "obsidian";
 import { Plus } from "lucide-react";
@@ -19,6 +19,7 @@ import {
   removeTagFromTaskInVault,
   addTagToTaskInVault,
   addStarToTaskInVault,
+  editTaskWithTasksModal,
   removeStarFromTaskInVault,
 } from "../lib/utils";
 import { TagsContext } from "../contexts/context";
@@ -65,6 +66,9 @@ interface TaskNodeData {
   groupByProject?: boolean;
   // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void;
+  // eslint-disable-next-line no-unused-vars -- callback parameter convention
+  onTaskCreated?: (_newTask: BaseTask) => void;
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void;
 }
 
 export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
@@ -77,6 +81,8 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     tagColorPalette = "rainbow",
     groupByProject = false,
     onDeleteTask,
+    onTaskCreated,
+    onTaskEdited,
   } = data;
 
   const { allTags, updateTaskTags } = useContext(TagsContext);
@@ -88,6 +94,12 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const [tagError, setTagError] = useState(false);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary, app);
+
+  useEffect(() => {
+    setStatus(task.status);
+    setStarred(task.starred);
+    setTags(task.tags || []);
+  }, [task.status, task.starred, task.tags]);
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
@@ -184,8 +196,26 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     }
   };
 
+  const handleDoubleClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as Element;
+    const interactiveTarget = target.closest?.(
+      "button, input, textarea, select, a, [role='button'], .nodrag, .react-flow__handle, .tasks-map-add-tag-button, .tasks-map-tag-remove-icon"
+    );
+    if (interactiveTarget && event.currentTarget.contains(interactiveTarget)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const updatedTask = await editTaskWithTasksModal(task, app);
+    if (updatedTask) {
+      onTaskEdited?.(task.id, updatedTask);
+    }
+  };
+
   return (
-    <div>
+    <div onDoubleClick={(event) => void handleDoubleClick(event)}>
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
       <TaskBackground
@@ -212,6 +242,8 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
             task={task}
             app={app}
             onTaskDeleted={() => onDeleteTask?.(task.id)}
+            onTaskCreated={onTaskCreated}
+            onTaskEdited={onTaskEdited}
           />
         </div>
 

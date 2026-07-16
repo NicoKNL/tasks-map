@@ -202,6 +202,106 @@ export function parseTaskLine(
   });
 }
 
+export function stripTaskLineTags(taskLine: string): {
+  taskLine: string;
+  tags: string[];
+} {
+  const tagPattern = /(?:^|\s)#(\S+)/g;
+  const seenTags = new Set<string>();
+  const tags = Array.from(taskLine.matchAll(tagPattern))
+    .map((match) => match[1])
+    .filter((tag) => {
+      const normalizedTag = tag.toLowerCase();
+      if (seenTags.has(normalizedTag)) return false;
+      seenTags.add(normalizedTag);
+      return true;
+    });
+  const leadingWhitespace = taskLine.match(/^\s*/)?.[0] ?? "";
+  const content = taskLine
+    .slice(leadingWhitespace.length)
+    .replace(tagPattern, (match) => (match.startsWith("#") ? "" : " "))
+    .replace(/[ \t]{2,}/g, " ")
+    .trimEnd();
+
+  return {
+    taskLine: leadingWhitespace + content,
+    tags,
+  };
+}
+
+export function restoreTaskLineTags(
+  taskLine: string,
+  originalTags: string[]
+): string {
+  const existingTags = new Set(
+    Array.from(taskLine.matchAll(/(?:^|\s)#(\S+)/g)).map((match) =>
+      match[1].toLowerCase()
+    )
+  );
+  const tagsToRestore = originalTags.filter((tag) => {
+    const normalizedTag = tag.toLowerCase();
+    if (existingTags.has(normalizedTag)) return false;
+    existingTags.add(normalizedTag);
+    return true;
+  });
+
+  if (tagsToRestore.length === 0) return taskLine;
+
+  return `${taskLine.trimEnd()} ${tagsToRestore
+    .map((tag) => `#${tag}`)
+    .join(" ")}`;
+}
+
+export async function editTaskWithTasksModal(
+  task: BaseTask,
+  app: App
+): Promise<BaseTask | null> {
+  if (!task.link) return null;
+
+  const file = app.vault.getFileByPath(task.link);
+  if (!file) return null;
+
+  const tasksApi = getTasksApi(app);
+  if (!tasksApi) {
+    console.error("Tasks plugin not found or API not available");
+    return null;
+  }
+
+  try {
+    const fileContent = await app.vault.read(file);
+    const lines = fileContent.split(/\r?\n/);
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) {
+      console.warn("Task line not found");
+      return null;
+    }
+
+    const preparedTask = stripTaskLineTags(lines[taskLineIdx]);
+    const editedTaskLine = await tasksApi.editTaskLineModal(
+      preparedTask.taskLine
+    );
+    if (!editedTaskLine?.trim()) return null;
+
+    const newTaskLine = restoreTaskLineTags(editedTaskLine, preparedTask.tags);
+
+    lines[taskLineIdx] = newTaskLine;
+    await app.vault.modify(file, lines.join("\n"));
+
+    const updatedTask = parseTaskLine(newTaskLine, task.link);
+    if (!updatedTask) return null;
+
+    if (!newTaskLine.includes(updatedTask.id)) {
+      updatedTask.id = task.id;
+    }
+    updatedTask.projects = task.projects;
+    return updatedTask;
+  } catch (error) {
+    console.error("Error processing task:", error);
+    return null;
+  }
+}
+
 export async function deleteTaskFromVault(
   task: BaseTask,
   app: App
@@ -1515,7 +1615,9 @@ export function createNodesFromTasks(
   // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void,
   groupByProject: boolean = true,
-  tagColorPalette: TagColorPalette = "rainbow"
+  tagColorPalette: TagColorPalette = "rainbow",
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void,
+  onTaskCreated?: (_newTask: BaseTask) => void
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1533,6 +1635,8 @@ export function createNodesFromTasks(
       groupByProject,
       tagColorPalette,
       onDeleteTask,
+      onTaskEdited,
+      onTaskCreated,
     },
     type: "task" as const,
     sourcePosition,

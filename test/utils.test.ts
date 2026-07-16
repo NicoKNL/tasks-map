@@ -14,9 +14,12 @@ import {
   partitionTasksByProject,
   addSignToTaskInFile,
   removeSignFromTaskInFile,
+  stripTaskLineTags,
+  restoreTaskLineTags,
+  editTaskWithTasksModal,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
-import { Vault } from "./mocks/obsidian";
+import { App, Vault } from "./mocks/obsidian";
 
 function makeTask(
   overrides: Partial<ConstructorParameters<typeof NoteTask>[0]> = {}
@@ -81,6 +84,79 @@ function getAxisGap(
   }
   return 0;
 }
+
+describe("task line tags in Tasks editor", () => {
+  it("removes existing tags while preserving task indentation and metadata", () => {
+    const result = stripTaskLineTags(
+      "  - [ ] Write docs #work #project/docs [id:: abc123]"
+    );
+
+    expect(result).toEqual({
+      taskLine: "  - [ ] Write docs [id:: abc123]",
+      tags: ["work", "project/docs"],
+    });
+  });
+
+  it("restores original tags and keeps tags added in the Tasks editor", () => {
+    const result = restoreTaskLineTags("- [ ] Update docs #new", [
+      "work",
+      "project/docs",
+    ]);
+
+    expect(result).toBe("- [ ] Update docs #new #work #project/docs");
+  });
+
+  it("does not duplicate tags re-added in the Tasks editor", () => {
+    const result = restoreTaskLineTags("- [ ] Update docs #work", [
+      "Work",
+      "work",
+      "project",
+    ]);
+
+    expect(result).toBe("- [ ] Update docs #work #project");
+  });
+
+  it("hides original tags from the modal and restores them after editing", async () => {
+    const app = new App();
+    const editTaskLineModal = jest
+      .fn<Promise<string>, [string]>()
+      .mockResolvedValue("- [ ] Updated task #new [id:: abc123]");
+    const appWithPlugins = app as App & {
+      plugins: {
+        plugins: {
+          "obsidian-tasks-plugin": {
+            apiV1: { editTaskLineModal: typeof editTaskLineModal };
+          };
+        };
+      };
+    };
+    appWithPlugins.plugins = {
+      plugins: {
+        "obsidian-tasks-plugin": {
+          apiV1: { editTaskLineModal },
+        },
+      },
+    };
+    app.vault.setFileContent(
+      "tasks/test.md",
+      "- [ ] Original task #work #project/docs [id:: abc123]"
+    );
+    const task = makeTask({
+      text: "Original task #work #project/docs [id:: abc123]",
+      tags: ["work", "project/docs"],
+    });
+
+    const updatedTask = await editTaskWithTasksModal(task, appWithPlugins);
+
+    expect(editTaskLineModal).toHaveBeenCalledWith(
+      "- [ ] Original task [id:: abc123]"
+    );
+    expect(app.vault.getFileContent("tasks/test.md")).toBe(
+      "- [ ] Updated task #new [id:: abc123] #work #project/docs"
+    );
+    expect(updatedTask?.tags).toEqual(["new", "work", "project/docs"]);
+  });
+});
 
 describe("addDateToTask", () => {
   it("adds an emoji-format due date to a plain task", () => {
