@@ -105,8 +105,7 @@ export class TasksMapSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.layoutDirection)
           .onChange(async (value) => {
             this.plugin.settings.layoutDirection = value as
-              | "Horizontal"
-              | "Vertical";
+              "Horizontal" | "Vertical";
             await this.plugin.saveSettings();
           })
       );
@@ -122,9 +121,7 @@ export class TasksMapSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.edgeStyle)
           .onChange(async (value) => {
             this.plugin.settings.edgeStyle = value as
-              | "Bezier"
-              | "Straight"
-              | "SmoothStep";
+              "Bezier" | "Straight" | "SmoothStep";
             await this.plugin.saveSettings();
             this.display();
           })
@@ -192,9 +189,7 @@ export class TasksMapSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.linkingStyle)
           .onChange(async (value) => {
             this.plugin.settings.linkingStyle = value as
-              | "individual"
-              | "csv"
-              | "dataview";
+              "individual" | "csv" | "dataview";
             await this.plugin.saveSettings();
             updatePreview(value as "individual" | "csv" | "dataview");
           })
