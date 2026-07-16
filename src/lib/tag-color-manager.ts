@@ -1,9 +1,5 @@
 export type TagColorPalette =
-  | "rainbow"
-  | "ocean"
-  | "forest"
-  | "sunset"
-  | "mono";
+  "rainbow" | "ocean" | "forest" | "sunset" | "mono";
 
 export const TAG_COLOR_PALETTES: Record<TagColorPalette, string[]> = {
   rainbow: [
