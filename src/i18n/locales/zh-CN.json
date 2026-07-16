@@ -122,6 +122,15 @@
     "delete_edge": "删除连线",
     "insert_task": "插入任务"
   },
+  "task_dates": {
+    "title": "任务日期",
+    "due": "截止",
+    "scheduled": "计划",
+    "start": "开始",
+    "created": "创建",
+    "done": "完成",
+    "canceled": "取消"
+  },
   "errors": {
     "cannot_create_edges_different_types": "无法在不同任务类型（dataview 和基于笔记的任务）之间创建连接。两个任务必须是相同类型。",
     "cannot_insert_task_between_non_dataview": "仅 Dataview 任务支持在连线之间插入任务。"

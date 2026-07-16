@@ -122,6 +122,15 @@
     "delete_edge": "Delete edge",
     "insert_task": "Insert task"
   },
+  "task_dates": {
+    "title": "Task dates",
+    "due": "Due",
+    "scheduled": "Scheduled",
+    "start": "Start",
+    "created": "Created",
+    "done": "Done",
+    "canceled": "Canceled"
+  },
   "errors": {
     "cannot_create_edges_different_types": "Cannot create edges between different task types (dataview and note-based tasks). Both tasks must be of the same type.",
     "cannot_insert_task_between_non_dataview": "Insert task between edges is only supported for Dataview tasks."

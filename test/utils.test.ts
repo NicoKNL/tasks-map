@@ -17,6 +17,7 @@ import {
   stripTaskLineTags,
   restoreTaskLineTags,
   editTaskWithTasksModal,
+  getTaskDateProperties,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
 import { App, Vault } from "./mocks/obsidian";
@@ -155,6 +156,40 @@ describe("task line tags in Tasks editor", () => {
       "- [ ] Updated task #new [id:: abc123] #work #project/docs"
     );
     expect(updatedTask?.tags).toEqual(["new", "work", "project/docs"]);
+  });
+});
+
+describe("getTaskDateProperties", () => {
+  it("extracts all Tasks emoji date properties in display order", () => {
+    const result = getTaskDateProperties(
+      "Task ➕ 2025-01-01 ⏳ 2025-01-10 🛫 2025-01-11 📅 2025-01-15 ✅ 2025-01-14 ❌ 2025-01-16"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-01-15" },
+      { type: "scheduled", date: "2025-01-10" },
+      { type: "start", date: "2025-01-11" },
+      { type: "created", date: "2025-01-01" },
+      { type: "done", date: "2025-01-14" },
+      { type: "canceled", date: "2025-01-16" },
+    ]);
+  });
+
+  it("extracts Dataview and text date fields", () => {
+    const result = getTaskDateProperties(
+      "Task [due:: 2025-03-01] [[scheduled::2025-02-20]] start:2025-02-21 completion:2025-03-02"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-03-01" },
+      { type: "scheduled", date: "2025-02-20" },
+      { type: "start", date: "2025-02-21" },
+      { type: "done", date: "2025-03-02" },
+    ]);
+  });
+
+  it("returns no properties when the task has no dates", () => {
+    expect(getTaskDateProperties("Task without dates")).toEqual([]);
   });
 });
 

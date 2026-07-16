@@ -122,6 +122,15 @@
     "delete_edge": "Verbinding verwijderen",
     "insert_task": "Taak invoegen"
   },
+  "task_dates": {
+    "title": "Taakdatums",
+    "due": "Deadline",
+    "scheduled": "Gepland",
+    "start": "Start",
+    "created": "Aangemaakt",
+    "done": "Voltooid",
+    "canceled": "Geannuleerd"
+  },
   "errors": {
     "cannot_create_edges_different_types": "Kan geen verbindingen maken tussen verschillende taaktypes (dataview en notitie-gebaseerde taken). Beide taken moeten van hetzelfde type zijn.",
     "cannot_insert_task_between_non_dataview": "Een taak invoegen tussen verbindingen wordt alleen ondersteund voor Dataview-taken."
