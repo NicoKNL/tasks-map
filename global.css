@@ -86,11 +86,14 @@ If your plugin does not need CSS, delete this file.
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.tasks-map-delete-edge-button {
+.tasks-map-delete-edge-button,
+.tasks-map-insert-task-button {
   padding: 10px;
-  background: var(--tasks-map-color-red);
   color: var(--tasks-map-color-white);
   border: none;
   border-radius: 6px;
@@ -98,8 +101,20 @@ If your plugin does not need CSS, delete this file.
   cursor: pointer;
 }
 
+.tasks-map-delete-edge-button {
+  background: var(--tasks-map-color-red);
+}
+
 .tasks-map-delete-edge-button:hover {
   background: var(--tasks-map-color-red-hover, #c53030);
+}
+
+.tasks-map-insert-task-button {
+  background: var(--interactive-accent);
+}
+
+.tasks-map-insert-task-button:hover {
+  background: var(--interactive-accent-hover);
 }
 
 /* Link Button Styles */
