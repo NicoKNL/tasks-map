@@ -797,6 +797,25 @@ describe("removeSignFromTaskInFile", () => {
     expect(content).not.toContain("abc123");
   });
 
+  it("removes consecutive hashes when the task text still has stale metadata", async () => {
+    const vault = makeVault(
+      "- [ ] Test task [dependsOn:: abc123, def456, ghi789]"
+    );
+    const task = makeTask({
+      id: "target1",
+      text: "Test task [dependsOn:: abc123, def456, ghi789]",
+      link: "tasks/test.md",
+    });
+
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    await removeSignFromTaskInFile(vault as any, task, "stop", "def456");
+
+    const content = vault.getFileContent("tasks/test.md");
+    expect(content).toContain("[dependsOn:: ghi789]");
+    expect(content).not.toContain("abc123");
+    expect(content).not.toContain("def456");
+  });
+
   it("removes entire dataview dependsOn block when last hash removed", async () => {
     const vault = makeVault("- [ ] Test task [dependsOn:: abc123]");
     const task = makeTask({ text: "Test task", link: "tasks/test.md" });
