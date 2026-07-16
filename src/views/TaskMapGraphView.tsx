@@ -499,6 +499,115 @@ export default function TaskMapGraphView({
     updateTaskIncomingLinks,
   ]);
 
+  const onInsertTaskBetweenSelectedEdge = useCallback(async () => {
+    const selected = getSelectedEdgeTasks();
+    if (!selected || !vault) return;
+
+    const { sourceTask, targetTask } = selected;
+    if (sourceTask.type !== "dataview" || targetTask.type !== "dataview") {
+      new Notice(t("errors.cannot_insert_task_between_non_dataview"), 5000);
+      return;
+    }
+
+    const tasksApi = getTasksApi(app);
+    if (!tasksApi) {
+      console.error("Tasks plugin not found or API not available");
+      return;
+    }
+
+    const taskLine = await tasksApi.createTaskLineModal();
+    if (!taskLine?.trim()) {
+      return;
+    }
+
+    const newTask = parseTaskLine(taskLine, sourceTask.link);
+    if (!newTask || newTask.type !== sourceTask.type) {
+      return;
+    }
+
+    let newTaskWritten = false;
+    let oldLinkRemoved = false;
+
+    try {
+      await addTaskLineToVault(sourceTask, taskLine, app, "after");
+      newTaskWritten = true;
+
+      await addSignToTaskInFile(
+        vault,
+        newTask,
+        "id",
+        newTask.id,
+        settings.linkingStyle
+      );
+      await removeLinkSignsBetweenTasks(vault, targetTask, sourceTask.id);
+      oldLinkRemoved = true;
+      await addLinkSignsBetweenTasks(
+        vault,
+        sourceTask,
+        newTask,
+        settings.linkingStyle
+      );
+      await addLinkSignsBetweenTasks(
+        vault,
+        newTask,
+        targetTask,
+        settings.linkingStyle
+      );
+
+      skipFitViewRef.current = true;
+      setNewlyCreatedTaskIds((prevTaskIds) =>
+        new Set(prevTaskIds).add(newTask.id)
+      );
+      setTasks((prevTasks) => {
+        const taskToAdd = createUpdatedTask(newTask, [
+          ...new Set([...newTask.incomingLinks, sourceTask.id]),
+        ]);
+
+        return [
+          ...prevTasks.map((task) => {
+            if (task.id !== targetTask.id) return task;
+
+            const nextIncomingLinks = task.incomingLinks.filter(
+              (id) => id !== sourceTask.id
+            );
+
+            return createUpdatedTask(task, [
+              ...new Set([...nextIncomingLinks, newTask.id]),
+            ]);
+          }),
+          taskToAdd,
+        ];
+      });
+      setSelectedEdge(null);
+    } catch (error) {
+      console.error("Failed to insert task between edge:", error);
+
+      try {
+        await removeLinkSignsBetweenTasks(vault, targetTask, newTask.id);
+        await removeLinkSignsBetweenTasks(vault, newTask, sourceTask.id);
+        if (oldLinkRemoved) {
+          await addLinkSignsBetweenTasks(
+            vault,
+            sourceTask,
+            targetTask,
+            settings.linkingStyle
+          );
+        }
+        if (newTaskWritten) {
+          await deleteTaskFromVault(newTask, app);
+        }
+      } catch (rollbackError) {
+        console.error("Failed to rollback inserted task:", rollbackError);
+      }
+    }
+  }, [
+    app,
+    createUpdatedTask,
+    getSelectedEdgeTasks,
+    settings.linkingStyle,
+    vault,
+  ]);
+
   const onConnect = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow Connection type is not exported
     async (params: any) => {
@@ -1100,7 +1209,10 @@ export default function TaskMapGraphView({
           )}
         </ReactFlow>
         {selectedEdge && (
-          <DeleteEdgeButton onDelete={() => void onDeleteSelectedEdge()} />
+          <DeleteEdgeButton
+            onDelete={() => void onDeleteSelectedEdge()}
+            onInsertTask={() => void onInsertTaskBetweenSelectedEdge()}
+          />
         )}
       </div>
     </TagsContext.Provider>
