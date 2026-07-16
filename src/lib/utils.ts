@@ -243,6 +243,51 @@ export function parseTaskLine(
   });
 }
 
+export async function editTaskWithTasksModal(
+  task: BaseTask,
+  app: App
+): Promise<BaseTask | null> {
+  if (!task.link) return null;
+
+  const file = app.vault.getFileByPath(task.link);
+  if (!file) return null;
+
+  const tasksApi = getTasksApi(app);
+  if (!tasksApi) {
+    console.error("Tasks plugin not found or API not available");
+    return null;
+  }
+
+  try {
+    const fileContent = await app.vault.read(file);
+    const lines = fileContent.split(/\r?\n/);
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) {
+      console.warn("Task line not found");
+      return null;
+    }
+
+    const newTaskLine = await tasksApi.editTaskLineModal(lines[taskLineIdx]);
+    if (!newTaskLine?.trim()) return null;
+
+    lines[taskLineIdx] = newTaskLine;
+    await app.vault.modify(file, lines.join("\n"));
+
+    const updatedTask = parseTaskLine(newTaskLine, task.link);
+    if (!updatedTask) return null;
+
+    if (!newTaskLine.includes(updatedTask.id)) {
+      updatedTask.id = task.id;
+    }
+    updatedTask.projects = task.projects;
+    return updatedTask;
+  } catch (error) {
+    console.error("Error processing task:", error);
+    return null;
+  }
+}
+
 export async function deleteTaskFromVault(
   task: BaseTask,
   app: App

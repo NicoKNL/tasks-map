@@ -19,6 +19,7 @@ import {
   removeTagFromTaskInVault,
   addTagToTaskInVault,
   addStarToTaskInVault,
+  editTaskWithTasksModal,
   removeStarFromTaskInVault,
 } from "../lib/utils";
 import { TagsContext } from "../contexts/context";
@@ -195,8 +196,26 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
     }
   };
 
+  const handleDoubleClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as Element;
+    const interactiveTarget = target.closest?.(
+      "button, input, textarea, select, a, [role='button'], .nodrag, .react-flow__handle, .tasks-map-add-tag-button, .tasks-map-tag-remove-icon"
+    );
+    if (interactiveTarget && event.currentTarget.contains(interactiveTarget)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const updatedTask = await editTaskWithTasksModal(task, app);
+    if (updatedTask) {
+      onTaskEdited?.(task.id, updatedTask);
+    }
+  };
+
   return (
-    <div>
+    <div onDoubleClick={(event) => void handleDoubleClick(event)}>
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
       <TaskBackground
