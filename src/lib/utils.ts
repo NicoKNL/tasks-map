@@ -243,6 +243,56 @@ export function parseTaskLine(
   });
 }
 
+export function stripTaskLineTags(taskLine: string): {
+  taskLine: string;
+  tags: string[];
+} {
+  const tagPattern = /(?:^|\s)#(\S+)/g;
+  const seenTags = new Set<string>();
+  const tags = Array.from(taskLine.matchAll(tagPattern))
+    .map((match) => match[1])
+    .filter((tag) => {
+      const normalizedTag = tag.toLowerCase();
+      if (seenTags.has(normalizedTag)) return false;
+      seenTags.add(normalizedTag);
+      return true;
+    });
+  const leadingWhitespace = taskLine.match(/^\s*/)?.[0] ?? "";
+  const content = taskLine
+    .slice(leadingWhitespace.length)
+    .replace(tagPattern, (match) => (match.startsWith("#") ? "" : " "))
+    .replace(/[ \t]{2,}/g, " ")
+    .trimEnd();
+
+  return {
+    taskLine: leadingWhitespace + content,
+    tags,
+  };
+}
+
+export function restoreTaskLineTags(
+  taskLine: string,
+  originalTags: string[]
+): string {
+  const existingTags = new Set(
+    Array.from(taskLine.matchAll(/(?:^|\s)#(\S+)/g)).map((match) =>
+      match[1].toLowerCase()
+    )
+  );
+  const tagsToRestore = originalTags.filter((tag) => {
+    const normalizedTag = tag.toLowerCase();
+    if (existingTags.has(normalizedTag)) return false;
+    existingTags.add(normalizedTag);
+    return true;
+  });
+
+  if (tagsToRestore.length === 0) return taskLine;
+
+  return `${taskLine.trimEnd()} ${tagsToRestore
+    .map((tag) => `#${tag}`)
+    .join(" ")}`;
+}
+
 export async function editTaskWithTasksModal(
   task: BaseTask,
   app: App
@@ -268,8 +318,13 @@ export async function editTaskWithTasksModal(
       return null;
     }
 
-    const newTaskLine = await tasksApi.editTaskLineModal(lines[taskLineIdx]);
-    if (!newTaskLine?.trim()) return null;
+    const preparedTask = stripTaskLineTags(lines[taskLineIdx]);
+    const editedTaskLine = await tasksApi.editTaskLineModal(
+      preparedTask.taskLine
+    );
+    if (!editedTaskLine?.trim()) return null;
+
+    const newTaskLine = restoreTaskLineTags(editedTaskLine, preparedTask.tags);
 
     lines[taskLineIdx] = newTaskLine;
     await app.vault.modify(file, lines.join("\n"));
