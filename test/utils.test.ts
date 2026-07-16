@@ -14,6 +14,7 @@ import {
   partitionTasksByProject,
   addSignToTaskInFile,
   removeSignFromTaskInFile,
+  getTaskDateProperties,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
 import { Vault } from "./mocks/obsidian";
@@ -81,6 +82,40 @@ function getAxisGap(
   }
   return 0;
 }
+
+describe("getTaskDateProperties", () => {
+  it("extracts all Tasks emoji date properties in display order", () => {
+    const result = getTaskDateProperties(
+      "Task ➕ 2025-01-01 ⏳ 2025-01-10 🛫 2025-01-11 📅 2025-01-15 ✅ 2025-01-14 ❌ 2025-01-16"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-01-15" },
+      { type: "scheduled", date: "2025-01-10" },
+      { type: "start", date: "2025-01-11" },
+      { type: "created", date: "2025-01-01" },
+      { type: "done", date: "2025-01-14" },
+      { type: "canceled", date: "2025-01-16" },
+    ]);
+  });
+
+  it("extracts Dataview and text date fields", () => {
+    const result = getTaskDateProperties(
+      "Task [due:: 2025-03-01] [[scheduled::2025-02-20]] start:2025-02-21 completion:2025-03-02"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-03-01" },
+      { type: "scheduled", date: "2025-02-20" },
+      { type: "start", date: "2025-02-21" },
+      { type: "done", date: "2025-03-02" },
+    ]);
+  });
+
+  it("returns no properties when the task has no dates", () => {
+    expect(getTaskDateProperties("Task without dates")).toEqual([]);
+  });
+});
 
 describe("addDateToTask", () => {
   it("adds an emoji-format due date to a plain task", () => {

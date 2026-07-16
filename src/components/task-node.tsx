@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from "react";
+import React, { useState, useContext, useCallback, useMemo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { setTooltip } from "obsidian";
 import { Plus } from "lucide-react";
@@ -19,9 +19,12 @@ import {
   removeTagFromTaskInVault,
   addTagToTaskInVault,
   addStarToTaskInVault,
+  getTaskDateProperties,
   removeStarFromTaskInVault,
+  type TaskDateType,
 } from "../lib/utils";
 import { TagsContext } from "../contexts/context";
+import { t } from "../i18n";
 
 export const NODEWIDTH = 250;
 
@@ -35,6 +38,15 @@ const PROJECT_DOT_COLORS = [
   "var(--color-pink)",
   "var(--color-yellow)",
 ];
+
+const TASK_DATE_EMOJIS: Record<TaskDateType, string> = {
+  due: "📅",
+  scheduled: "⏳",
+  start: "🛫",
+  created: "➕",
+  done: "✅",
+  canceled: "❌",
+};
 export const NODEHEIGHT = 120;
 
 interface ProjectDotProps {
@@ -88,6 +100,10 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   const [tagError, setTagError] = useState(false);
   const app = useApp();
   const summaryRef = useSummaryRenderer(task.summary, app);
+  const taskDates = useMemo(
+    () => getTaskDateProperties(task.text),
+    [task.text]
+  );
 
   const isVertical = layoutDirection === "Vertical";
   const targetPosition = isVertical ? Position.Top : Position.Left;
@@ -185,7 +201,25 @@ export default function TaskNode({ data, selected }: NodeProps<TaskNodeData>) {
   };
 
   return (
-    <div>
+    <div className="tasks-map-task-node-root">
+      {selected && taskDates.length > 0 && (
+        <div
+          className="tasks-map-task-date-bar"
+          aria-label={t("task_dates.title")}
+        >
+          {taskDates.map(({ type, date }) => (
+            <span className="tasks-map-task-date-item" key={type}>
+              <span className="tasks-map-task-date-emoji" aria-hidden="true">
+                {TASK_DATE_EMOJIS[type]}
+              </span>
+              <span className="tasks-map-task-date-label">
+                {t(`task_dates.${type}`)}
+              </span>
+              <span className="tasks-map-task-date-value">{date}</span>
+            </span>
+          ))}
+        </div>
+      )}
       <Handle type="target" position={targetPosition} />
       <Handle type="source" position={sourcePosition} />
       <TaskBackground
