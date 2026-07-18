@@ -17,6 +17,7 @@ import {
   stripTaskLineTags,
   restoreTaskLineTags,
   editTaskWithTasksModal,
+  getTaskDateProperties,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
 import { App, Vault } from "./mocks/obsidian";
@@ -155,6 +156,40 @@ describe("task line tags in Tasks editor", () => {
       "- [ ] Updated task #new [id:: abc123] #work #project/docs"
     );
     expect(updatedTask?.tags).toEqual(["new", "work", "project/docs"]);
+  });
+});
+
+describe("getTaskDateProperties", () => {
+  it("extracts all Tasks emoji date properties in display order", () => {
+    const result = getTaskDateProperties(
+      "Task ➕ 2025-01-01 ⏳ 2025-01-10 🛫 2025-01-11 📅 2025-01-15 ✅ 2025-01-14 ❌ 2025-01-16"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-01-15" },
+      { type: "scheduled", date: "2025-01-10" },
+      { type: "start", date: "2025-01-11" },
+      { type: "created", date: "2025-01-01" },
+      { type: "done", date: "2025-01-14" },
+      { type: "canceled", date: "2025-01-16" },
+    ]);
+  });
+
+  it("extracts Dataview and text date fields", () => {
+    const result = getTaskDateProperties(
+      "Task [due:: 2025-03-01] [[scheduled::2025-02-20]] start:2025-02-21 completion:2025-03-02"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-03-01" },
+      { type: "scheduled", date: "2025-02-20" },
+      { type: "start", date: "2025-02-21" },
+      { type: "done", date: "2025-03-02" },
+    ]);
+  });
+
+  it("returns no properties when the task has no dates", () => {
+    expect(getTaskDateProperties("Task without dates")).toEqual([]);
   });
 });
 
@@ -527,8 +562,12 @@ describe("getLayoutedElements", () => {
       "y"
     );
 
-    expect(positionById.get("A")?.x).toBeLessThan(positionById.get("B")?.x || 0);
-    expect(positionById.get("C")?.x).toBeLessThan(positionById.get("D")?.x || 0);
+    expect(positionById.get("A")?.x).toBeLessThan(
+      positionById.get("B")?.x || 0
+    );
+    expect(positionById.get("C")?.x).toBeLessThan(
+      positionById.get("D")?.x || 0
+    );
     expect(Math.max(horizontalGap, verticalGap)).toBeGreaterThanOrEqual(100);
   });
 
@@ -558,8 +597,12 @@ describe("getLayoutedElements", () => {
       "y"
     );
 
-    expect(positionById.get("A")?.y).toBeLessThan(positionById.get("B")?.y || 0);
-    expect(positionById.get("C")?.y).toBeLessThan(positionById.get("D")?.y || 0);
+    expect(positionById.get("A")?.y).toBeLessThan(
+      positionById.get("B")?.y || 0
+    );
+    expect(positionById.get("C")?.y).toBeLessThan(
+      positionById.get("D")?.y || 0
+    );
     expect(Math.max(horizontalGap, verticalGap)).toBeGreaterThanOrEqual(100);
   });
 });
@@ -836,7 +879,9 @@ describe("removeSignFromTaskInFile", () => {
     const vault = makeVault("- [ ] Test task [id:: abc123]");
     const task = makeTask({ text: "Test task", link: "tasks/test.md" });
     await removeSignFromTaskInFile(vault as any, task, "id", "abc123");
-    expect(vault.getFileContent("tasks/test.md")).not.toContain("[id:: abc123]");
+    expect(vault.getFileContent("tasks/test.md")).not.toContain(
+      "[id:: abc123]"
+    );
   });
 
   it("removes individual stop sign", async () => {
@@ -863,14 +908,31 @@ describe("removeSignFromTaskInFile", () => {
   });
 
   it("removes one hash from dataview dependsOn, keeping others", async () => {
-    const vault = makeVault(
-      "- [ ] Test task [dependsOn:: abc123, def456]"
-    );
+    const vault = makeVault("- [ ] Test task [dependsOn:: abc123, def456]");
     const task = makeTask({ text: "Test task", link: "tasks/test.md" });
     await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
     const content = vault.getFileContent("tasks/test.md");
     expect(content).toContain("[dependsOn:: def456]");
     expect(content).not.toContain("abc123");
+  });
+
+  it("removes consecutive hashes when the task text still has stale metadata", async () => {
+    const vault = makeVault(
+      "- [ ] Test task [dependsOn:: abc123, def456, ghi789]"
+    );
+    const task = makeTask({
+      id: "target1",
+      text: "Test task [dependsOn:: abc123, def456, ghi789]",
+      link: "tasks/test.md",
+    });
+
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    await removeSignFromTaskInFile(vault as any, task, "stop", "def456");
+
+    const content = vault.getFileContent("tasks/test.md");
+    expect(content).toContain("[dependsOn:: ghi789]");
+    expect(content).not.toContain("abc123");
+    expect(content).not.toContain("def456");
   });
 
   it("removes entire dataview dependsOn block when last hash removed", async () => {

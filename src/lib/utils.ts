@@ -149,6 +149,46 @@ export function findTaskLineByIdOrText(
   return taskLineIdx;
 }
 
+function parseMetadataIds(value: string): string[] {
+  return value
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+}
+
+function lineContainsDependencyHash(line: string, hash: string): boolean {
+  const dataviewMatches = [
+    ...line.matchAll(/\[dependsOn::\s*([^\]]+)\]/gi),
+    ...line.matchAll(/\(dependsOn::\s*([^)]+)\)/gi),
+  ];
+
+  if (
+    dataviewMatches.some((match) => parseMetadataIds(match[1]).includes(hash))
+  ) {
+    return true;
+  }
+
+  return line.includes(hash);
+}
+
+function findTaskLineForSignRemoval(
+  lines: string[],
+  task: BaseTask,
+  type: "stop" | "id",
+  hash: string
+): number {
+  const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+  if (taskLineIdx !== -1) return taskLineIdx;
+
+  if (type === "id") {
+    return lines.findIndex(
+      (line) => line.includes(hash) && line.toLowerCase().includes("id::")
+    );
+  }
+
+  return lines.findIndex((line) => lineContainsDependencyHash(line, hash));
+}
+
 export async function updateTaskStatusInVault(
   task: BaseTask,
   newStatus: TaskStatus,
@@ -300,6 +340,65 @@ export async function editTaskWithTasksModal(
     console.error("Error processing task:", error);
     return null;
   }
+}
+
+export type TaskDateType =
+  "due" | "scheduled" | "start" | "created" | "done" | "canceled";
+
+export interface TaskDateProperty {
+  type: TaskDateType;
+  date: string;
+}
+
+const TASK_DATE_DEFINITIONS: Array<{
+  type: TaskDateType;
+  emoji: string;
+  fields: string[];
+}> = [
+  { type: "due", emoji: "📅", fields: ["due"] },
+  { type: "scheduled", emoji: "⏳", fields: ["scheduled"] },
+  { type: "start", emoji: "🛫", fields: ["start"] },
+  { type: "created", emoji: "➕", fields: ["created"] },
+  { type: "done", emoji: "✅", fields: ["completion", "done"] },
+  {
+    type: "canceled",
+    emoji: "❌",
+    fields: ["canceled", "cancelled"],
+  },
+];
+
+export function getTaskDateProperties(taskText: string): TaskDateProperty[] {
+  const datePattern = "(\\d{4}-\\d{2}-\\d{2})";
+
+  return TASK_DATE_DEFINITIONS.flatMap(({ type, emoji, fields }) => {
+    const emojiMatch = taskText.match(
+      new RegExp(`${emoji}\\s*${datePattern}`, "u")
+    );
+    if (emojiMatch) {
+      return [{ type, date: emojiMatch[1] }];
+    }
+
+    for (const field of fields) {
+      const dataviewMatch = taskText.match(
+        new RegExp(
+          `(?:\\[\\[?|\\()${field}::\\s*${datePattern}(?:\\]\\]?|\\))`,
+          "i"
+        )
+      );
+      if (dataviewMatch) {
+        return [{ type, date: dataviewMatch[1] }];
+      }
+
+      const textMatch = taskText.match(
+        new RegExp(`(?:^|\\s)${field}:\\s*${datePattern}(?=\\s|$)`, "i")
+      );
+      if (textMatch) {
+        return [{ type, date: textMatch[1] }];
+      }
+    }
+
+    return [];
+  });
 }
 
 export async function deleteTaskFromVault(
@@ -1114,7 +1213,7 @@ export async function addSignToTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
@@ -1250,7 +1349,7 @@ export async function removeSignFromTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+    const taskLineIdx = findTaskLineForSignRemoval(lines, task, type, hash);
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {

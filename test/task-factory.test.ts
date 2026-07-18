@@ -277,6 +277,19 @@ describe("TaskFactory", () => {
       };
       expect(factory.parse(raw).summary).not.toContain("⛔");
     });
+
+    it("strips Dataview and text date fields from the summary", () => {
+      const raw: RawTask = {
+        status: " ",
+        text: "Ship release [due:: 2026-08-01] [[scheduled::2026-07-25]] start:2026-07-20 [id:: abc123]",
+        link: { path: "t.md" },
+      };
+      const summary = factory.parse(raw).summary;
+      expect(summary).toBe("Ship release");
+      expect(summary).not.toContain("due::");
+      expect(summary).not.toContain("scheduled");
+      expect(summary).not.toContain("2026");
+    });
   });
 
   describe("text cleaning", () => {

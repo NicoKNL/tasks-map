@@ -61,6 +61,10 @@ interface TaskMapGraphViewProps {
   reloadRef?: React.MutableRefObject<(() => void) | null>;
 }
 
+interface ReloadTasksOptions {
+  preserveViewport?: boolean;
+}
+
 export default function TaskMapGraphView({
   settings,
   filterState,
@@ -162,31 +166,41 @@ export default function TaskMapGraphView({
     }
   }, [hideTags]);
 
-  const reloadTasks = useCallback(() => {
-    setIsLoading(true);
-    // Reset dropped state on reload so unlinked tasks return to sidebar
-    setDroppedTaskIds(new Set());
-    setNewlyCreatedTaskIds(new Set());
-    droppedNodePositions.current = new Map();
-    // Use setTimeout to allow the loading UI to render before heavy computation
-    window.setTimeout(() => {
-      const newTasks = getAllTasks(app);
-      setTasks(newTasks);
-      const newRegistry = new Map<string, string[]>();
-      newTasks.forEach((task) => {
-        newRegistry.set(task.id, task.tags);
-      });
-      setTaskTagsRegistry(newRegistry);
-      setIsLoading(false);
-      new Notice("Tasks reloaded");
-    }, 0);
-  }, [app]);
+  const reloadTasks = useCallback(
+    ({ preserveViewport = false }: ReloadTasksOptions = {}) => {
+      setIsLoading(true);
+      // Use setTimeout to allow the loading UI to render before heavy computation
+      window.setTimeout(() => {
+        if (preserveViewport) {
+          skipFitViewRef.current = true;
+        }
+        // Reset dropped state on reload so unlinked tasks return to sidebar
+        setDroppedTaskIds(new Set());
+        setNewlyCreatedTaskIds(new Set());
+        droppedNodePositions.current = new Map();
+        const newTasks = getAllTasks(app);
+        setTasks(newTasks);
+        const newRegistry = new Map<string, string[]>();
+        newTasks.forEach((task) => {
+          newRegistry.set(task.id, task.tags);
+        });
+        setTaskTagsRegistry(newRegistry);
+        setIsLoading(false);
+        new Notice("Tasks reloaded");
+      }, 0);
+    },
+    [app]
+  );
+
+  const handleReloadTasks = useCallback(() => {
+    reloadTasks({ preserveViewport: true });
+  }, [reloadTasks]);
 
   useEffect(() => {
     if (reloadRef) {
-      reloadRef.current = reloadTasks;
+      reloadRef.current = handleReloadTasks;
     }
-  }, [reloadRef, reloadTasks]);
+  }, [reloadRef, handleReloadTasks]);
 
   const updateTaskTags = useCallback((taskId: string, newTags: string[]) => {
     setTaskTagsRegistry((prevRegistry) => {
@@ -1083,7 +1097,7 @@ export default function TaskMapGraphView({
                 showTags={settings.showTags}
                 hideTags={hideTags}
                 setHideTags={toggleHideTags}
-                reloadTasks={reloadTasks}
+                reloadTasks={handleReloadTasks}
                 showUnlinkedPanel={embed.showUnlinkedPanel}
                 hideUnlinkedTasks={hideUnlinkedTasks}
                 setHideUnlinkedTasks={setHideUnlinkedTasks}
