@@ -19,7 +19,7 @@ metadata is only there so the tasks show up as connected nodes on the map.
 
 ## Inline Dataview format
 
-- [ ] Dataview · due + scheduled + start #dates [due:: 2026-08-01] [scheduled:: 2026-07-25] [start:: 2026-07-20] [id:: ddv1]
+- [ ] Dataview · due + scheduled + start #dates [due:: 2026-08-01] [scheduled:: 2026-07-25] [start:: 2026-07-20] [id:: ddv1] 📅 2026-07-19
 - [ ] Dataview · created + completion(=done) #dates [created:: 2026-07-01] [completion:: 2026-07-30] [dependsOn:: ddv1] [id:: ddv2]
 
 ## Plain-text format
