@@ -22,6 +22,22 @@ export const DATAVIEW_BRACKET_DEPENDS_PATTERN =
 export const DATAVIEW_PARENTHESES_DEPENDS_PATTERN =
   /\(dependsOn::\s*([a-zA-Z0-9_-]+(?:,\s*[a-zA-Z0-9_-]+)*)\)/g;
 
+// Date field names recognized by the Tasks plugin / Dataview
+export const DATE_FIELD_NAMES =
+  "due|scheduled|start|created|completion|done|canceled|cancelled";
+
+// Dataview date fields: [due:: 2025-01-01], [[due::2025-01-01]], (due:: 2025-01-01)
+export const DATAVIEW_DATE_FIELD_REMOVAL = new RegExp(
+  `[[(]{1,2}(?:${DATE_FIELD_NAMES})::\\s*\\d{4}-\\d{2}-\\d{2}[\\])]{1,2}`,
+  "gi"
+);
+
+// Plain-text date fields: due:2025-01-01, scheduled: 2025-01-01
+export const TEXT_DATE_FIELD_REMOVAL = new RegExp(
+  `(?:^|\\s)(?:${DATE_FIELD_NAMES}):\\s*\\d{4}-\\d{2}-\\d{2}(?=\\s|$)`,
+  "gi"
+);
+
 // Cleaning patterns - for removing metadata (no capture groups)
 export const EMOJI_ID_REMOVAL = /🆔\s+\S+/g;
 export const DATAVIEW_BRACKET_ID_REMOVAL = /\[id::\s*\S+\]/g;

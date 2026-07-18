@@ -16,6 +16,8 @@ import {
   INDIVIDUAL_LINKS_PATTERN,
   DATAVIEW_BRACKET_DEPENDS_PATTERN,
   DATAVIEW_PARENTHESES_DEPENDS_PATTERN,
+  DATAVIEW_DATE_FIELD_REMOVAL,
+  TEXT_DATE_FIELD_REMOVAL,
   STAR_PATTERN,
   STAR_PATTERN_GLOBAL,
 } from "./task-regex";
@@ -176,9 +178,12 @@ export class TaskFactory {
       .replace(INDIVIDUAL_LINKS_PATTERN, "") // Remove individual links: ⛔ abc123
       .replace(DATAVIEW_BRACKET_DEPENDS_PATTERN, "") // Remove Dataview dependencies: [dependsOn:: abc123,def456]
       .replace(DATAVIEW_PARENTHESES_DEPENDS_PATTERN, "") // Remove Dataview dependencies: (dependsOn:: abc123,def456)
+      .replace(DATAVIEW_DATE_FIELD_REMOVAL, "") // Remove Dataview dates: [due:: 2025-01-01]
+      .replace(TEXT_DATE_FIELD_REMOVAL, "") // Remove plain-text dates: due:2025-01-01
       .replace(STAR_PATTERN_GLOBAL, "") // Remove star emoji: ⭐
       .replace(/([\p{Extended_Pictographic}]+(\s*[#a-zA-Z0-9_-]+)?)/gu, "") // Remove other emojis
       .replace(/([\p{Extended_Pictographic}]+)/gu, "") // Remove remaining emojis
+      .replace(/\s{2,}/g, " ") // Collapse gaps left by removed metadata
       .trim();
   }
 }
