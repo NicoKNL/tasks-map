@@ -149,6 +149,46 @@ export function findTaskLineByIdOrText(
   return taskLineIdx;
 }
 
+function parseMetadataIds(value: string): string[] {
+  return value
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+}
+
+function lineContainsDependencyHash(line: string, hash: string): boolean {
+  const dataviewMatches = [
+    ...line.matchAll(/\[dependsOn::\s*([^\]]+)\]/gi),
+    ...line.matchAll(/\(dependsOn::\s*([^)]+)\)/gi),
+  ];
+
+  if (
+    dataviewMatches.some((match) => parseMetadataIds(match[1]).includes(hash))
+  ) {
+    return true;
+  }
+
+  return line.includes(hash);
+}
+
+function findTaskLineForSignRemoval(
+  lines: string[],
+  task: BaseTask,
+  type: "stop" | "id",
+  hash: string
+): number {
+  const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+  if (taskLineIdx !== -1) return taskLineIdx;
+
+  if (type === "id") {
+    return lines.findIndex(
+      (line) => line.includes(hash) && line.toLowerCase().includes("id::")
+    );
+  }
+
+  return lines.findIndex((line) => lineContainsDependencyHash(line, hash));
+}
+
 export async function updateTaskStatusInVault(
   task: BaseTask,
   newStatus: TaskStatus,
@@ -1014,7 +1054,7 @@ export async function addSignToTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
@@ -1150,7 +1190,7 @@ export async function removeSignFromTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+    const taskLineIdx = findTaskLineForSignRemoval(lines, task, type, hash);
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
