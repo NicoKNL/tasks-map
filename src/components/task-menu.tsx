@@ -6,17 +6,26 @@ import { CirclePlus, SquarePen } from "lucide-react";
 import {
   addTaskLineToVault,
   deleteTaskFromVault,
-  findTaskLineByIdOrText,
+  editTaskWithTasksModal,
   getTasksApi,
+  parseTaskLine,
 } from "../lib/utils";
 
 interface TaskMenuProps {
   task: BaseTask;
   app: App;
   onTaskDeleted?: () => void;
+  onTaskCreated?: (_newTask: BaseTask) => void;
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void;
 }
 
-const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
+const TaskMenu = ({
+  task,
+  app,
+  onTaskDeleted,
+  onTaskCreated,
+  onTaskEdited,
+}: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +80,11 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
     // It's just a string containing the Markdown for the task.
     // console.log(taskLine);
     await addTaskLineToVault(task, taskLine, app);
+
+    const newTask = parseTaskLine(taskLine, task.link);
+    if (newTask) {
+      onTaskCreated?.(newTask);
+    }
   };
 
   const handleEdit = async (e: React.MouseEvent) => {
@@ -79,43 +93,9 @@ const TaskMenu = ({ task, app, onTaskDeleted }: TaskMenuProps) => {
 
     setIsOpen(false);
 
-    if (!task.link) return;
-
-    const vault = app?.vault;
-    if (!vault) return;
-
-    const file = vault.getFileByPath(task.link);
-    if (!file) return;
-
-    const tasksApi = getTasksApi(app);
-    if (!tasksApi) {
-      console.error("Tasks plugin not found or API not available");
-      return;
-    }
-
-    try {
-      const fileContent = await vault.read(file);
-      const lines = fileContent.split(/\r?\n/);
-      const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
-
-      if (taskLineIdx === -1) {
-        console.warn("Task line not found");
-        return;
-      }
-
-      const taskLine = lines[taskLineIdx];
-      // console.log("before: ", taskLine);
-
-      const newTaskLine = await tasksApi.editTaskLineModal(taskLine);
-      if (!newTaskLine?.trim()) {
-        return;
-      }
-      // console.log("after: ", newTaskLine);
-
-      lines[taskLineIdx] = newTaskLine;
-      await vault.modify(file, lines.join("\n"));
-    } catch (error) {
-      console.error("Error processing task:", error);
+    const updatedTask = await editTaskWithTasksModal(task, app);
+    if (updatedTask) {
+      onTaskEdited?.(task.id, updatedTask);
     }
   };
 

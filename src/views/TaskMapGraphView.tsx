@@ -79,6 +79,9 @@ export default function TaskMapGraphView({
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [tasks, setTasks] = React.useState<BaseTask[]>([]);
+  const [newlyCreatedTaskIds, setNewlyCreatedTaskIds] = React.useState<
+    Set<string>
+  >(new Set());
   const [selectedEdge, setSelectedEdge] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const reactFlowInstance = useReactFlow();
@@ -173,6 +176,7 @@ export default function TaskMapGraphView({
         }
         // Reset dropped state on reload so unlinked tasks return to sidebar
         setDroppedTaskIds(new Set());
+        setNewlyCreatedTaskIds(new Set());
         droppedNodePositions.current = new Map();
         const newTasks = getAllTasks(app);
         setTasks(newTasks);
@@ -209,12 +213,77 @@ export default function TaskMapGraphView({
   const handleDeleteTask = useCallback((taskId: string) => {
     skipFitViewRef.current = true;
     setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+    setNewlyCreatedTaskIds((prevTaskIds) => {
+      if (!prevTaskIds.has(taskId)) return prevTaskIds;
+
+      const nextTaskIds = new Set(prevTaskIds);
+      nextTaskIds.delete(taskId);
+      return nextTaskIds;
+    });
     setTaskTagsRegistry((prevRegistry) => {
       const newRegistry = new Map(prevRegistry);
       newRegistry.delete(taskId);
       return newRegistry;
     });
   }, []);
+
+  const handleTaskCreated = useCallback((newTask: BaseTask) => {
+    skipFitViewRef.current = true;
+    setNewlyCreatedTaskIds((prevTaskIds) =>
+      new Set(prevTaskIds).add(newTask.id)
+    );
+    setTasks((prevTasks) =>
+      prevTasks.some((task) => task.id === newTask.id)
+        ? prevTasks
+        : [...prevTasks, newTask]
+    );
+  }, []);
+
+  const handleTaskEdited = useCallback(
+    (taskId: string, updatedTask: BaseTask) => {
+      skipFitViewRef.current = true;
+      setTasks((prevTasks) =>
+        prevTasks.map((task) => (task.id === taskId ? updatedTask : task))
+      );
+      setTaskTagsRegistry((prevRegistry) => {
+        const newRegistry = new Map(prevRegistry);
+        if (taskId !== updatedTask.id) {
+          newRegistry.delete(taskId);
+        }
+        newRegistry.set(updatedTask.id, updatedTask.tags);
+        return newRegistry;
+      });
+
+      if (taskId === updatedTask.id) return;
+
+      setNewlyCreatedTaskIds((prevTaskIds) => {
+        if (!prevTaskIds.has(taskId)) return prevTaskIds;
+
+        const nextTaskIds = new Set(prevTaskIds);
+        nextTaskIds.delete(taskId);
+        nextTaskIds.add(updatedTask.id);
+        return nextTaskIds;
+      });
+
+      setDroppedTaskIds((prevDroppedTaskIds) => {
+        if (!prevDroppedTaskIds.has(taskId)) {
+          return prevDroppedTaskIds;
+        }
+
+        const nextDroppedTaskIds = new Set(prevDroppedTaskIds);
+        nextDroppedTaskIds.delete(taskId);
+        nextDroppedTaskIds.add(updatedTask.id);
+        return nextDroppedTaskIds;
+      });
+
+      const droppedPosition = droppedNodePositions.current.get(taskId);
+      if (droppedPosition) {
+        droppedNodePositions.current.delete(taskId);
+        droppedNodePositions.current.set(updatedTask.id, droppedPosition);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     // Get the Dataview plugin to check index status
@@ -258,8 +327,9 @@ export default function TaskMapGraphView({
     const filteredIds = new Set(
       getFilteredNodeIds(undroppedUnlinked, filterState)
     );
+    newlyCreatedTaskIds.forEach((taskId) => filteredIds.add(taskId));
     return undroppedUnlinked.filter((t) => filteredIds.has(t.id));
-  }, [allUnlinkedTasks, droppedTaskIds, filterState]);
+  }, [allUnlinkedTasks, droppedTaskIds, filterState, newlyCreatedTaskIds]);
 
   // Tasks that are linked OR have been dropped onto the canvas this session
   // OR all tasks when hideUnlinkedTasks is disabled (unlinked appear as isolated nodes)
@@ -280,7 +350,9 @@ export default function TaskMapGraphView({
       settings.debugVisualization,
       handleDeleteTask,
       groupByProject,
-      settings.tagColorPalette
+      settings.tagColorPalette,
+      handleTaskEdited,
+      handleTaskCreated
     );
     let newEdges = createEdgesFromTasks(
       graphTasks,
@@ -291,6 +363,11 @@ export default function TaskMapGraphView({
     );
 
     const filteredNodeIds = getFilteredNodeIds(graphTasks, filterState);
+    newlyCreatedTaskIds.forEach((taskId) => {
+      if (!filteredNodeIds.includes(taskId)) {
+        filteredNodeIds.push(taskId);
+      }
+    });
     const filteredTasks = graphTasks.filter((t) =>
       filteredNodeIds.includes(t.id)
     );
@@ -339,6 +416,9 @@ export default function TaskMapGraphView({
     setNodes,
     setEdges,
     handleDeleteTask,
+    handleTaskEdited,
+    handleTaskCreated,
+    newlyCreatedTaskIds,
     droppedTaskIds,
     groupByProject,
   ]);
@@ -372,22 +452,66 @@ export default function TaskMapGraphView({
     setSelectedEdge(null);
   }, [setSelectedEdge]);
 
-  const onDeleteSelectedEdge = useCallback(async () => {
-    if (!selectedEdge) return;
+  const getSelectedEdgeTasks = useCallback(() => {
+    if (!selectedEdge) return null;
 
     const edge = edges.find((e) => e.id === selectedEdge);
-    if (!edge || !edge.data?.hash) return;
+    if (!edge) return null;
 
     const sourceTask = tasks.find((t) => t.id === edge.source);
     const targetTask = tasks.find((t) => t.id === edge.target);
-    if (!sourceTask || !targetTask) return;
+    if (!sourceTask || !targetTask) return null;
+
+    return { edge, sourceTask, targetTask };
+  }, [selectedEdge, edges, tasks]);
+
+  const createUpdatedTask = useCallback(
+    (task: BaseTask, incomingLinks: string[]) =>
+      Object.assign(Object.create(Object.getPrototypeOf(task)), task, {
+        incomingLinks,
+      }) as BaseTask,
+    []
+  );
+
+  const updateTaskIncomingLinks = useCallback(
+    (
+      taskId: string,
+      updateIncomingLinks: (_incomingLinks: string[]) => string[]
+    ) => {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? createUpdatedTask(task, updateIncomingLinks(task.incomingLinks))
+            : task
+        )
+      );
+    },
+    [createUpdatedTask]
+  );
+
+  const onDeleteSelectedEdge = useCallback(async () => {
+    const selected = getSelectedEdgeTasks();
+    if (!selected) return;
+
+    const { edge, sourceTask, targetTask } = selected;
+    if (!edge || !edge.data?.hash) return;
 
     if (vault) {
       await removeLinkSignsBetweenTasks(vault, targetTask, sourceTask.id);
+      skipFitViewRef.current = true;
+      updateTaskIncomingLinks(targetTask.id, (incomingLinks) =>
+        incomingLinks.filter((id) => id !== sourceTask.id)
+      );
       setEdges((eds) => eds.filter((e) => e.id !== selectedEdge));
       setSelectedEdge(null);
     }
-  }, [selectedEdge, edges, tasks, vault, setEdges]);
+  }, [
+    selectedEdge,
+    vault,
+    setEdges,
+    getSelectedEdgeTasks,
+    updateTaskIncomingLinks,
+  ]);
 
   const onConnect = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow Connection type is not exported
@@ -401,6 +525,10 @@ export default function TaskMapGraphView({
 
       if (!vault || !sourceTask || !targetTask) return;
 
+      if (targetTask.incomingLinks.includes(sourceTask.id)) {
+        return;
+      }
+
       if (sourceTask.type !== targetTask.type) {
         new Notice(t("errors.cannot_create_edges_different_types"), 5000);
         return;
@@ -413,6 +541,12 @@ export default function TaskMapGraphView({
         settings.linkingStyle
       );
       if (hash) {
+        skipFitViewRef.current = true;
+        updateTaskIncomingLinks(targetTask.id, (incomingLinks) =>
+          incomingLinks.includes(sourceTask.id)
+            ? incomingLinks
+            : [...incomingLinks, sourceTask.id]
+        );
         setEdges((eds) =>
           addEdge(
             {
@@ -433,18 +567,11 @@ export default function TaskMapGraphView({
       vault,
       tasks,
       setEdges,
+      updateTaskIncomingLinks,
       settings.layoutDirection,
       settings.debugVisualization,
       settings.linkingStyle,
     ]
-  );
-
-  const createUpdatedTask = useCallback(
-    (task: BaseTask, incomingLinks: string[]) =>
-      Object.assign(Object.create(Object.getPrototypeOf(task)), task, {
-        incomingLinks,
-      }) as BaseTask,
-    []
   );
 
   const createConnectedTask = useCallback(
@@ -505,6 +632,9 @@ export default function TaskMapGraphView({
         }
 
         skipFitViewRef.current = true;
+        setNewlyCreatedTaskIds((prevTaskIds) =>
+          new Set(prevTaskIds).add(newTask.id)
+        );
         setTasks((prevTasks) => {
           const nextTasks =
             relation === "after"
@@ -846,14 +976,16 @@ export default function TaskMapGraphView({
       traversalMode: "match",
     });
     const idSet = new Set(filteredIds);
+    newlyCreatedTaskIds.forEach((taskId) => idSet.add(taskId));
     return graphTasks.filter((t) => idSet.has(t.id));
-  }, [graphTasks, filterState]);
+  }, [graphTasks, filterState, newlyCreatedTaskIds]);
 
   const filteredTasks = useMemo(() => {
     const filteredIds = getFilteredNodeIds(graphTasks, filterState);
     const idSet = new Set(filteredIds);
+    newlyCreatedTaskIds.forEach((taskId) => idSet.add(taskId));
     return graphTasks.filter((t) => idSet.has(t.id));
-  }, [graphTasks, filterState]);
+  }, [graphTasks, filterState, newlyCreatedTaskIds]);
 
   const searchResultCount = useMemo(() => {
     if (!filterState.searchQuery.trim()) return null;
