@@ -14,9 +14,13 @@ import {
   partitionTasksByProject,
   addSignToTaskInFile,
   removeSignFromTaskInFile,
+  stripTaskLineTags,
+  restoreTaskLineTags,
+  editTaskWithTasksModal,
+  getTaskDateProperties,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
-import { Vault } from "./mocks/obsidian";
+import { App, Vault } from "./mocks/obsidian";
 
 function makeTask(
   overrides: Partial<ConstructorParameters<typeof NoteTask>[0]> = {}
@@ -81,6 +85,113 @@ function getAxisGap(
   }
   return 0;
 }
+
+describe("task line tags in Tasks editor", () => {
+  it("removes existing tags while preserving task indentation and metadata", () => {
+    const result = stripTaskLineTags(
+      "  - [ ] Write docs #work #project/docs [id:: abc123]"
+    );
+
+    expect(result).toEqual({
+      taskLine: "  - [ ] Write docs [id:: abc123]",
+      tags: ["work", "project/docs"],
+    });
+  });
+
+  it("restores original tags and keeps tags added in the Tasks editor", () => {
+    const result = restoreTaskLineTags("- [ ] Update docs #new", [
+      "work",
+      "project/docs",
+    ]);
+
+    expect(result).toBe("- [ ] Update docs #new #work #project/docs");
+  });
+
+  it("does not duplicate tags re-added in the Tasks editor", () => {
+    const result = restoreTaskLineTags("- [ ] Update docs #work", [
+      "Work",
+      "work",
+      "project",
+    ]);
+
+    expect(result).toBe("- [ ] Update docs #work #project");
+  });
+
+  it("hides original tags from the modal and restores them after editing", async () => {
+    const app = new App();
+    const editTaskLineModal = jest
+      .fn<Promise<string>, [string]>()
+      .mockResolvedValue("- [ ] Updated task #new [id:: abc123]");
+    const appWithPlugins = app as App & {
+      plugins: {
+        plugins: {
+          "obsidian-tasks-plugin": {
+            apiV1: { editTaskLineModal: typeof editTaskLineModal };
+          };
+        };
+      };
+    };
+    appWithPlugins.plugins = {
+      plugins: {
+        "obsidian-tasks-plugin": {
+          apiV1: { editTaskLineModal },
+        },
+      },
+    };
+    app.vault.setFileContent(
+      "tasks/test.md",
+      "- [ ] Original task #work #project/docs [id:: abc123]"
+    );
+    const task = makeTask({
+      text: "Original task #work #project/docs [id:: abc123]",
+      tags: ["work", "project/docs"],
+    });
+
+    const updatedTask = await editTaskWithTasksModal(task, appWithPlugins);
+
+    expect(editTaskLineModal).toHaveBeenCalledWith(
+      "- [ ] Original task [id:: abc123]"
+    );
+    expect(app.vault.getFileContent("tasks/test.md")).toBe(
+      "- [ ] Updated task #new [id:: abc123] #work #project/docs"
+    );
+    expect(updatedTask?.tags).toEqual(["new", "work", "project/docs"]);
+  });
+});
+
+describe("getTaskDateProperties", () => {
+  it("extracts all Tasks emoji date properties in display order", () => {
+    const result = getTaskDateProperties(
+      "Task ➕ 2025-01-01 ⏳ 2025-01-10 🛫 2025-01-11 📅 2025-01-15 ✅ 2025-01-14 ❌ 2025-01-16"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-01-15" },
+      { type: "scheduled", date: "2025-01-10" },
+      { type: "start", date: "2025-01-11" },
+      { type: "created", date: "2025-01-01" },
+      { type: "done", date: "2025-01-14" },
+      { type: "canceled", date: "2025-01-16" },
+    ]);
+  });
+
+  it("extracts Dataview and text date fields", () => {
+    const result = getTaskDateProperties(
+      "Task [due:: 2025-03-01] [[scheduled::2025-02-20]] start:2025-02-21 completion:2025-03-02"
+    );
+
+    expect(result).toEqual([
+      { type: "due", date: "2025-03-01" },
+      { type: "scheduled", date: "2025-02-20" },
+      { type: "start", date: "2025-02-21" },
+      { type: "done", date: "2025-03-02" },
+    ]);
+  });
+
+  it("returns no properties when the task has no dates", () => {
+    expect(getTaskDateProperties("Task without dates")).toEqual([]);
+  });
+});
 
 describe("addDateToTask", () => {
   it("adds an emoji-format due date to a plain task", () => {
@@ -365,6 +476,24 @@ describe("createNodesFromTasks", () => {
     expect(nodes[0].data.showPriorities).toBe(false);
     expect(nodes[0].data.showTags).toBe(false);
     expect(nodes[0].data.debugVisualization).toBe(true);
+  });
+
+  it("passes through the task edit callback", () => {
+    const task = makeTask();
+    const handleTaskEdited = jest.fn();
+    const nodes = createNodesFromTasks(
+      [task],
+      "Horizontal",
+      true,
+      true,
+      false,
+      undefined,
+      true,
+      "rainbow",
+      handleTaskEdited
+    );
+
+    expect(nodes[0].data.onTaskEdited).toBe(handleTaskEdited);
   });
 });
 
@@ -795,6 +924,25 @@ describe("removeSignFromTaskInFile", () => {
     const content = vault.getFileContent("tasks/test.md");
     expect(content).toContain("[dependsOn:: def456]");
     expect(content).not.toContain("abc123");
+  });
+
+  it("removes consecutive hashes when the task text still has stale metadata", async () => {
+    const vault = makeVault(
+      "- [ ] Test task [dependsOn:: abc123, def456, ghi789]"
+    );
+    const task = makeTask({
+      id: "target1",
+      text: "Test task [dependsOn:: abc123, def456, ghi789]",
+      link: "tasks/test.md",
+    });
+
+    await removeSignFromTaskInFile(vault as any, task, "stop", "abc123");
+    await removeSignFromTaskInFile(vault as any, task, "stop", "def456");
+
+    const content = vault.getFileContent("tasks/test.md");
+    expect(content).toContain("[dependsOn:: ghi789]");
+    expect(content).not.toContain("abc123");
+    expect(content).not.toContain("def456");
   });
 
   it("removes entire dataview dependsOn block when last hash removed", async () => {

@@ -149,6 +149,47 @@ export function findTaskLineByIdOrText(
   return taskLineIdx;
 }
 
+function parseMetadataIds(value: string): string[] {
+  return value
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+}
+
+function lineContainsDependencyHash(line: string, hash: string): boolean {
+  const dataviewMatches = [
+    ...line.matchAll(/\[dependsOn::\s*([^\]]+)\]/gi),
+    ...line.matchAll(/\(dependsOn::\s*([^)]+)\)/gi),
+  ];
+
+  if (
+    dataviewMatches.some((match) => parseMetadataIds(match[1]).includes(hash))
+  ) {
+    return true;
+  }
+
+  return line.includes(hash);
+}
+
+function findTaskLineForSignRemoval(
+  lines: string[],
+  task: BaseTask,
+  type: "stop" | "id",
+  hash: string
+): number {
+  const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+  if (taskLineIdx !== -1) return taskLineIdx;
+
+  if (type === "id") {
+    return lines.findIndex(
+      (line) =>
+        line.includes(hash) && line.toLowerCase().includes("id::")
+    );
+  }
+
+  return lines.findIndex((line) => lineContainsDependencyHash(line, hash));
+}
+
 export async function updateTaskStatusInVault(
   task: BaseTask,
   newStatus: TaskStatus,
@@ -200,6 +241,170 @@ export function parseTaskLine(
     text,
     link: { path: linkPath },
   });
+}
+
+export type TaskDateType =
+  | "due"
+  | "scheduled"
+  | "start"
+  | "created"
+  | "done"
+  | "canceled";
+
+export interface TaskDateProperty {
+  type: TaskDateType;
+  date: string;
+}
+
+const TASK_DATE_DEFINITIONS: Array<{
+  type: TaskDateType;
+  emoji: string;
+  fields: string[];
+}> = [
+  { type: "due", emoji: "📅", fields: ["due"] },
+  { type: "scheduled", emoji: "⏳", fields: ["scheduled"] },
+  { type: "start", emoji: "🛫", fields: ["start"] },
+  { type: "created", emoji: "➕", fields: ["created"] },
+  { type: "done", emoji: "✅", fields: ["completion", "done"] },
+  {
+    type: "canceled",
+    emoji: "❌",
+    fields: ["canceled", "cancelled"],
+  },
+];
+
+export function getTaskDateProperties(taskText: string): TaskDateProperty[] {
+  const datePattern = "(\\d{4}-\\d{2}-\\d{2})";
+
+  return TASK_DATE_DEFINITIONS.flatMap(({ type, emoji, fields }) => {
+    const emojiMatch = taskText.match(
+      new RegExp(`${emoji}\\s*${datePattern}`, "u")
+    );
+    if (emojiMatch) {
+      return [{ type, date: emojiMatch[1] }];
+    }
+
+    for (const field of fields) {
+      const dataviewMatch = taskText.match(
+        new RegExp(
+          `(?:\\[\\[?|\\()${field}::\\s*${datePattern}(?:\\]\\]?|\\))`,
+          "i"
+        )
+      );
+      if (dataviewMatch) {
+        return [{ type, date: dataviewMatch[1] }];
+      }
+
+      const textMatch = taskText.match(
+        new RegExp(`(?:^|\\s)${field}:\\s*${datePattern}(?=\\s|$)`, "i")
+      );
+      if (textMatch) {
+        return [{ type, date: textMatch[1] }];
+      }
+    }
+
+    return [];
+  });
+}
+
+export function stripTaskLineTags(taskLine: string): {
+  taskLine: string;
+  tags: string[];
+} {
+  const tagPattern = /(?:^|\s)#(\S+)/g;
+  const seenTags = new Set<string>();
+  const tags = Array.from(taskLine.matchAll(tagPattern))
+    .map((match) => match[1])
+    .filter((tag) => {
+      const normalizedTag = tag.toLowerCase();
+      if (seenTags.has(normalizedTag)) return false;
+      seenTags.add(normalizedTag);
+      return true;
+    });
+  const leadingWhitespace = taskLine.match(/^\s*/)?.[0] ?? "";
+  const content = taskLine
+    .slice(leadingWhitespace.length)
+    .replace(tagPattern, (match) => (match.startsWith("#") ? "" : " "))
+    .replace(/[ \t]{2,}/g, " ")
+    .trimEnd();
+
+  return {
+    taskLine: leadingWhitespace + content,
+    tags,
+  };
+}
+
+export function restoreTaskLineTags(
+  taskLine: string,
+  originalTags: string[]
+): string {
+  const existingTags = new Set(
+    Array.from(taskLine.matchAll(/(?:^|\s)#(\S+)/g)).map((match) =>
+      match[1].toLowerCase()
+    )
+  );
+  const tagsToRestore = originalTags.filter((tag) => {
+    const normalizedTag = tag.toLowerCase();
+    if (existingTags.has(normalizedTag)) return false;
+    existingTags.add(normalizedTag);
+    return true;
+  });
+
+  if (tagsToRestore.length === 0) return taskLine;
+
+  return `${taskLine.trimEnd()} ${tagsToRestore
+    .map((tag) => `#${tag}`)
+    .join(" ")}`;
+}
+
+export async function editTaskWithTasksModal(
+  task: BaseTask,
+  app: App
+): Promise<BaseTask | null> {
+  if (!task.link) return null;
+
+  const file = app.vault.getFileByPath(task.link);
+  if (!file) return null;
+
+  const tasksApi = getTasksApi(app);
+  if (!tasksApi) {
+    console.error("Tasks plugin not found or API not available");
+    return null;
+  }
+
+  try {
+    const fileContent = await app.vault.read(file);
+    const lines = fileContent.split(/\r?\n/);
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
+
+    if (taskLineIdx === -1) {
+      console.warn("Task line not found");
+      return null;
+    }
+
+    const preparedTask = stripTaskLineTags(lines[taskLineIdx]);
+    const editedTaskLine = await tasksApi.editTaskLineModal(
+      preparedTask.taskLine
+    );
+    if (!editedTaskLine?.trim()) return null;
+
+    const newTaskLine = restoreTaskLineTags(editedTaskLine, preparedTask.tags);
+
+    lines[taskLineIdx] = newTaskLine;
+    await app.vault.modify(file, lines.join("\n"));
+
+    const updatedTask = parseTaskLine(newTaskLine, task.link);
+    if (!updatedTask) return null;
+
+    if (!newTaskLine.includes(updatedTask.id)) {
+      updatedTask.id = task.id;
+    }
+    updatedTask.projects = task.projects;
+    return updatedTask;
+  } catch (error) {
+    console.error("Error processing task:", error);
+    return null;
+  }
 }
 
 export async function deleteTaskFromVault(
@@ -1014,7 +1219,7 @@ export async function addSignToTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+    const taskLineIdx = findTaskLineByIdOrText(lines, task.id, task.text);
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
@@ -1150,7 +1355,7 @@ export async function removeSignFromTaskInFile(
 
   await vault.process(file, (fileContent) => {
     const lines = fileContent.split(/\r?\n/);
-    const taskLineIdx = lines.findIndex((line) => line.includes(task.text));
+    const taskLineIdx = findTaskLineForSignRemoval(lines, task, type, hash);
     if (taskLineIdx === -1) return fileContent;
 
     if (type === "id") {
@@ -1515,7 +1720,9 @@ export function createNodesFromTasks(
   // eslint-disable-next-line no-unused-vars -- callback parameter convention
   onDeleteTask?: (taskId: string) => void,
   groupByProject: boolean = true,
-  tagColorPalette: TagColorPalette = "rainbow"
+  tagColorPalette: TagColorPalette = "rainbow",
+  onTaskEdited?: (_taskId: string, _updatedTask: BaseTask) => void,
+  onTaskCreated?: (_newTask: BaseTask) => void
 ): TaskNode[] {
   const isVertical = layoutDirection === "Vertical";
   const sourcePosition = isVertical ? Position.Bottom : Position.Right;
@@ -1533,6 +1740,8 @@ export function createNodesFromTasks(
       groupByProject,
       tagColorPalette,
       onDeleteTask,
+      onTaskEdited,
+      onTaskCreated,
     },
     type: "task" as const,
     sourcePosition,

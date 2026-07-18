@@ -86,11 +86,14 @@ If your plugin does not need CSS, delete this file.
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.tasks-map-delete-edge-button {
+.tasks-map-delete-edge-button,
+.tasks-map-insert-task-button {
   padding: 10px;
-  background: var(--tasks-map-color-red);
   color: var(--tasks-map-color-white);
   border: none;
   border-radius: 6px;
@@ -98,8 +101,20 @@ If your plugin does not need CSS, delete this file.
   cursor: pointer;
 }
 
+.tasks-map-delete-edge-button {
+  background: var(--tasks-map-color-red);
+}
+
 .tasks-map-delete-edge-button:hover {
   background: var(--tasks-map-color-red-hover, #c53030);
+}
+
+.tasks-map-insert-task-button {
+  background: var(--interactive-accent);
+}
+
+.tasks-map-insert-task-button:hover {
+  background: var(--interactive-accent-hover);
 }
 
 /* Link Button Styles */
@@ -1208,6 +1223,62 @@ If your plugin does not need CSS, delete this file.
   gap: 4px;
   position: relative;
   transition: width 0.2s;
+}
+
+.tasks-map-task-node-root {
+  position: relative;
+}
+
+.tasks-map-task-date-bar {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 560px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-normal);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.tasks-map-task-date-item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 4px;
+  min-height: 20px;
+  padding: 2px 9px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+  background: var(--background-primary);
+  box-shadow: 0 2px 6px rgba(var(--tasks-map-color-black-rgb), 0.12);
+  font-size: 11px;
+  line-height: 18px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.tasks-map-task-date-emoji {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tasks-map-task-date-label {
+  color: var(--text-muted);
+}
+
+.tasks-map-task-date-value {
+  color: var(--text-normal);
+  font-variant-numeric: tabular-nums;
 }
 
 .tasks-map-task-background--expanded {
