@@ -7,8 +7,12 @@ import ReactFlow, {
   useReactFlow,
   type NodeDragHandler,
   type SelectionDragHandler,
+  type EdgeMouseHandler,
+  type OnConnect,
+  type OnConnectStart,
 } from "reactflow";
-import { Notice } from "obsidian";
+import { Notice, Events } from "obsidian";
+import { AppWithPlugins } from "src/types/obsidian-internals";
 import { useApp } from "src/hooks/hooks";
 import {
   addLinkSignsBetweenTasks,
@@ -287,16 +291,18 @@ export default function TaskMapGraphView({
 
   useEffect(() => {
     // Get the Dataview plugin to check index status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-    const dataviewPlugin = (app as any).plugins?.plugins?.["dataview"];
+    const dataviewPlugin = (app as AppWithPlugins).plugins?.plugins?.[
+      "dataview"
+    ];
 
     // Check if Dataview index is already initialized
     if (dataviewPlugin?.index?.initialized) {
       // Index already ready, load tasks immediately
       reloadTasks();
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose metadataCache events
-      const metadataCache = (app as any).metadataCache;
+      // `dataview:index-ready` is a custom event, so access it through the
+      // generic `Events` base type rather than MetadataCache's typed overloads.
+      const metadataCache: Events = app.metadataCache;
       const eventRef = metadataCache.on("dataview:index-ready", () => {
         reloadTasks();
       });
@@ -435,9 +441,8 @@ export default function TaskMapGraphView({
     [tasks]
   );
 
-  const onEdgeClick = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow event/edge types lack exported union
-    (event: any, edge: any) => {
+  const onEdgeClick = useCallback<EdgeMouseHandler>(
+    (event, edge) => {
       event.stopPropagation();
       setSelectedEdge(edge.id);
     },
@@ -622,9 +627,8 @@ export default function TaskMapGraphView({
     vault,
   ]);
 
-  const onConnect = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow Connection type is not exported
-    async (params: any) => {
+  const onConnect = useCallback<OnConnect>(
+    async (params) => {
       // Reset so onConnectEnd (which fires after onConnect) does not
       // misinterpret this as a canvas-drop and open the create modal.
       connectStartRef.current = null;
@@ -780,21 +784,17 @@ export default function TaskMapGraphView({
     [app, createUpdatedTask, settings.linkingStyle, vault]
   );
 
-  const onConnectStart = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReactFlow OnConnectStartParams type is not exported
-    (_event: any, params: any) => {
-      if (!params?.nodeId || !params?.handleType) {
-        connectStartRef.current = null;
-        return;
-      }
+  const onConnectStart = useCallback<OnConnectStart>((_event, params) => {
+    if (!params?.nodeId || !params?.handleType) {
+      connectStartRef.current = null;
+      return;
+    }
 
-      connectStartRef.current = {
-        nodeId: params.nodeId,
-        handleType: params.handleType,
-      };
-    },
-    []
-  );
+    connectStartRef.current = {
+      nodeId: params.nodeId,
+      handleType: params.handleType,
+    };
+  }, []);
 
   const onConnectEnd = useCallback(
     async (event: MouseEvent | TouchEvent) => {
