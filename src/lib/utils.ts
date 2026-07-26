@@ -1,7 +1,15 @@
 // Task utility functions - refactored to use OOP with polymorphism
 import dagre from "@dagrejs/dagre";
-import { App, TFile, Vault } from "obsidian";
+import {
+  App,
+  TFile,
+  TAbstractFile,
+  Vault,
+  CachedMetadata,
+  FrontMatterCache,
+} from "obsidian";
 import { TaskStatus, TaskNode, TaskEdge, RawTask } from "src/types/task";
+import { AppWithPlugins } from "src/types/obsidian-internals";
 import { BaseTask, TaskInsertPosition } from "src/types/base-task";
 import { NODEHEIGHT, NODEWIDTH } from "src/components/task-node";
 import { TaskFactory } from "./task-factory";
@@ -212,8 +220,9 @@ interface TasksApiV1 {
 }
 
 export function getTasksApi(app: App): TasksApiV1 | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-  const tasksPlugin = (app as any).plugins?.plugins?.["obsidian-tasks-plugin"];
+  const tasksPlugin = (app as AppWithPlugins).plugins?.plugins?.[
+    "obsidian-tasks-plugin"
+  ];
 
   if (!tasksPlugin?.apiV1) {
     return null;
@@ -1430,9 +1439,7 @@ export async function removeSignFromTaskInFile(
   });
 }
 
-// TODO: Improve typing for app parameter
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-export function getAllTasks(app: any): BaseTask[] {
+export function getAllTasks(app: App): BaseTask[] {
   // Central function to gather tasks from all available sources
   const allTasks: BaseTask[] = [];
 
@@ -1445,13 +1452,13 @@ export function getAllTasks(app: any): BaseTask[] {
   return allTasks;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-export function getAllDataviewTasks(app: any): BaseTask[] {
+export function getAllDataviewTasks(app: App): BaseTask[] {
   let tasks: RawTask[] = [];
 
-  // plugins exists, just not on the Obsidian App API?:
+  // `plugins` exists at runtime, it is just not on the public Obsidian App API:
   //     https://blacksmithgu.github.io/obsidian-dataview/api/intro/#plugin-access
-  const dataviewApi = app.plugins!.plugins?.["dataview"]?.api;
+  const dataviewApi = (app as AppWithPlugins).plugins?.plugins?.["dataview"]
+    ?.api;
   if (dataviewApi && dataviewApi.pages) {
     const pages = dataviewApi.pages();
     for (const page of pages) {
@@ -1467,8 +1474,7 @@ export function getAllDataviewTasks(app: any): BaseTask[] {
   return parsedTasks.filter((task) => !factory.isEmptyTask(task));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-export function getNoteTasks(app: any): BaseTask[] {
+export function getNoteTasks(app: App): BaseTask[] {
   const tasks: BaseTask[] = [];
   const vault = app.vault;
   const metadataCache = app.metadataCache;
@@ -1528,9 +1534,12 @@ function normalizeNotePriority(priority: string): string {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-function parseTaskNote(file: any, cache: any, app: any): BaseTask | null {
-  const frontmatter = cache.frontmatter || {};
+function parseTaskNote(
+  file: TFile,
+  cache: CachedMetadata,
+  app: App
+): BaseTask | null {
+  const frontmatter: FrontMatterCache = cache.frontmatter || {};
   const factory = new TaskFactory();
 
   // Extract task properties from frontmatter
@@ -1613,8 +1622,7 @@ function parseTaskNote(file: any, cache: any, app: any): BaseTask | null {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-function parseBlockedByLinks(blockedBy: any, app: any): string[] {
+function parseBlockedByLinks(blockedBy: unknown, app: App): string[] {
   const links: string[] = [];
   const vault = app.vault;
 
@@ -1663,12 +1671,12 @@ function parseBlockedByLinks(blockedBy: any, app: any): string[] {
       }
 
       // Try to find the file by name and get its path
-      let file = null;
+      let file: TAbstractFile | null = null;
       try {
         file = vault.getAbstractFileByPath(pageName + ".md");
         if (!file) {
           const markdownFiles = vault.getMarkdownFiles();
-          file = markdownFiles.find((f: any) => f.basename === pageName); // eslint-disable-line @typescript-eslint/no-explicit-any -- Obsidian TFile type not available in this context
+          file = markdownFiles.find((f) => f.basename === pageName) ?? null;
         }
       } catch {
         continue;
@@ -1963,9 +1971,8 @@ function layoutNodesWithDagreInternal(
  * @param app Obsidian App instance
  * @returns object with isInstalled, isEnabled, and getMessage() function
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Obsidian App type does not expose plugins property
-export function checkDataviewPlugin(app: any) {
-  const plugins = app.plugins;
+export function checkDataviewPlugin(app: App) {
+  const plugins = (app as AppWithPlugins).plugins;
 
   // Check if plugin is installed (available in plugins list)
   const installedPlugins = plugins?.manifests || {};

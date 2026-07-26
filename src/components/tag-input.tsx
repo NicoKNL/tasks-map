@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
+import { SelectInstance } from "react-select";
 
 interface TagInputProps {
   allTags: string[];
@@ -18,7 +19,7 @@ export function TagInput({
   onCancel,
   hasError = false,
 }: TagInputProps) {
-  const selectRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any -- react-select ref type is not exported
+  const selectRef = useRef<SelectInstance<TagOption> | null>(null);
   const hasSelectedRef = useRef(false);
   const [inputValue, setInputValue] = React.useState("");
   const [hasSpaceError, setHasSpaceError] = React.useState(false);
