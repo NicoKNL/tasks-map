@@ -12,6 +12,11 @@
 			"allowedVersions": "<2.0.0",
 			"description": "Pin dagre to v1.x - v2 has bundling issues with external graphlib dependency"
 		},
+		{
+			"matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+			"allowedVersions": "<19",
+			"description": "Pin React to v18 - v19's bundle trips Obsidian's obfuscation scanner (see #442); we use no v19-specific APIs"
+		},
         {
             "matchUpdateTypes": ["major"],
             "automerge": false,
