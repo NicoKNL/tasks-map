@@ -140,8 +140,20 @@ describe("DataviewTask", () => {
       expect(updated).toContain("⭐");
     });
 
+    it("places the star in front of the Tasks metadata", async () => {
+      const content = "- [ ] Test task ⛔ def456 🆔 abc123";
+      vault.setFileContent("tasks/test.md", content);
+
+      const task = makeDataviewTask();
+      await task.addStar(app);
+
+      expect(vault.getFileContent("tasks/test.md")).toBe(
+        "- [ ] Test task ⭐ ⛔ def456 🆔 abc123"
+      );
+    });
+
     it("does not add duplicate star", async () => {
-      const content = "- [ ] Test task 🆔 abc123 ⭐";
+      const content = "- [ ] Test task ⭐ 🆔 abc123";
       vault.setFileContent("tasks/test.md", content);
 
       const task = makeDataviewTask();
@@ -155,14 +167,15 @@ describe("DataviewTask", () => {
 
   describe("removeStar", () => {
     it("removes star emoji from task line", async () => {
-      const content = "- [ ] Test task 🆔 abc123 ⭐";
+      const content = "- [ ] Test task ⭐ 🆔 abc123";
       vault.setFileContent("tasks/test.md", content);
 
       const task = makeDataviewTask();
       await task.removeStar(app);
 
-      const updated = vault.getFileContent("tasks/test.md");
-      expect(updated).not.toContain("⭐");
+      expect(vault.getFileContent("tasks/test.md")).toBe(
+        "- [ ] Test task 🆔 abc123"
+      );
     });
   });
 

@@ -55,3 +55,32 @@ export const PRIORITY_PATTERN =
 // Star pattern - for detecting starred tasks
 export const STAR_PATTERN = /⭐/;
 export const STAR_PATTERN_GLOBAL = /⭐/g;
+
+// Obsidian Tasks signifiers. The Tasks plugin parses these from the end of a
+// task line, so any text we append must stay in front of them or the last
+// field gets absorbed into the description.
+// See: https://publish.obsidian.md/tasks/Reference/Task+Formats/Tasks+Emoji+Format
+export const TASKS_SIGNIFIERS = [
+  "\u{1F194}", // 🆔 id
+  "\u{26D4}", // ⛔ blocked by
+  "\u{1F53A}", // 🔺 highest priority
+  "\u{23EB}", // ⏫ high priority
+  "\u{1F53C}", // 🔼 medium priority
+  "\u{1F53D}", // 🔽 low priority
+  "\u{23EC}", // ⏬ lowest priority
+  "\u{1F501}", // 🔁 recurrence
+  "\u{2795}", // ➕ created
+  "\u{1F6EB}", // 🛫 start
+  "\u{23F3}", // ⏳ scheduled
+  "\u{1F4C5}", // 📅 due
+  "\u{2705}", // ✅ done
+  "\u{274C}", // ❌ cancelled
+  "\u{1F3C1}", // 🏁 on completion
+] as const;
+
+// Start of the trailing metadata block: either a Tasks signifier or a Dataview
+// inline field such as [id:: abc123] / (dependsOn:: abc123).
+export const TASKS_METADATA_START_PATTERN = new RegExp(
+  `(?:${TASKS_SIGNIFIERS.join("|")}|[[(][^\\]\\)]*::)`,
+  "u"
+);

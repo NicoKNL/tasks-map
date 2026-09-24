@@ -10,6 +10,8 @@ import {
   getTodayDate,
   addSignToTaskInFile,
   removeSignFromTaskInFile,
+  addStarToTaskLine,
+  removeStarFromTaskLine,
 } from "../lib/utils";
 import {
   EMOJI_ID_REMOVAL,
@@ -143,10 +145,8 @@ export class DataviewTask extends BaseTask {
 
       if (taskLineIdx === -1) return fileContent;
 
-      // Add star emoji if not present
-      if (!lines[taskLineIdx].includes("⭐")) {
-        lines[taskLineIdx] = lines[taskLineIdx] + " ⭐";
-      }
+      // Add the star in front of any trailing Tasks metadata
+      lines[taskLineIdx] = addStarToTaskLine(lines[taskLineIdx]);
       return lines.join("\n");
     });
   }
@@ -165,7 +165,7 @@ export class DataviewTask extends BaseTask {
       if (taskLineIdx === -1) return fileContent;
 
       // Remove star emoji
-      lines[taskLineIdx] = lines[taskLineIdx].replace(/\s*⭐\s*/g, " ").trim();
+      lines[taskLineIdx] = removeStarFromTaskLine(lines[taskLineIdx]);
       return lines.join("\n");
     });
   }
