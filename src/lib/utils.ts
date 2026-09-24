@@ -16,6 +16,7 @@ import { TaskFactory } from "./task-factory";
 import { Position, Node, Edge } from "reactflow";
 import { t } from "../i18n";
 import { TagColorPalette } from "./tag-color-manager";
+import { STAR_PATTERN, TASKS_METADATA_START_PATTERN } from "./task-regex";
 
 export const statusSymbols = {
   todo: "[ ]",
@@ -556,6 +557,54 @@ export async function removeTagFromTaskInVault(
   app: App
 ): Promise<void> {
   await task.removeTag(tagToRemove, app);
+}
+
+/**
+ * Removes the star from a task line, preserving the line's indentation.
+ * @param {string} taskLine - The task line to strip
+ * @returns {string} The task line without a star
+ */
+export function removeStarFromTaskLine(taskLine: string): string {
+  return taskLine.replace(/[ \t]*⭐/gu, "");
+}
+
+/**
+ * Adds a star to a task line, placing it at the end of the description but
+ * in front of the trailing Obsidian Tasks metadata. Appending the star after
+ * the metadata makes Tasks read it as part of the last field's value, which
+ * silently drops that field (see issue #475).
+ *
+ * Any star already on the line is repositioned, so this doubles as a repair
+ * for lines written by earlier versions.
+ *
+ * @param {string} taskLine - The task line to star
+ * @returns {string} The task line with a correctly placed star
+ */
+export function addStarToTaskLine(taskLine: string): string {
+  const cleanedLine = removeStarFromTaskLine(taskLine);
+  const metadataMatch = cleanedLine.match(TASKS_METADATA_START_PATTERN);
+
+  if (metadataMatch?.index === undefined) {
+    return `${cleanedLine.trimEnd()} ⭐`;
+  }
+
+  const description = cleanedLine.slice(0, metadataMatch.index).trimEnd();
+  const metadata = cleanedLine.slice(metadataMatch.index);
+
+  return `${description} ⭐ ${metadata}`;
+}
+
+/**
+ * Moves a misplaced star in front of the Tasks metadata, leaving unstarred
+ * lines untouched. Used after writing metadata to a line that may still carry
+ * a trailing star from an earlier version of the plugin.
+ *
+ * @param {string} taskLine - The task line to normalize
+ * @returns {string} The task line with the star in a Tasks-safe position
+ */
+export function normalizeStarPositionInTaskLine(taskLine: string): string {
+  if (!STAR_PATTERN.test(taskLine)) return taskLine;
+  return addStarToTaskLine(taskLine);
 }
 
 export async function addStarToTaskInVault(
@@ -1329,6 +1378,10 @@ export async function addSignToTaskInFile(
         }
       }
     }
+
+    // Lines written by earlier versions may carry a trailing star, which would
+    // now sit behind the sign we just appended and hide it from Tasks
+    lines[taskLineIdx] = normalizeStarPositionInTaskLine(lines[taskLineIdx]);
 
     return lines.join("\n");
   });

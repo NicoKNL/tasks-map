@@ -18,6 +18,9 @@ import {
   restoreTaskLineTags,
   editTaskWithTasksModal,
   getTaskDateProperties,
+  addStarToTaskLine,
+  removeStarFromTaskLine,
+  normalizeStarPositionInTaskLine,
 } from "../src/lib/utils";
 import { NoteTask } from "../src/types/note-task";
 import { App, Vault } from "./mocks/obsidian";
@@ -781,6 +784,15 @@ describe("addSignToTaskInFile", () => {
     expect(vault.getFileContent("tasks/test.md")).toContain("🆔 abc123");
   });
 
+  it("moves a legacy trailing star in front of the new sign", async () => {
+    const vault = makeVault("- [ ] Test task ⭐");
+    const task = makeTask({ text: "Test task", link: "tasks/test.md" });
+    await addSignToTaskInFile(vault as any, task, "id", "abc123");
+    expect(vault.getFileContent("tasks/test.md")).toBe(
+      "- [ ] Test task ⭐ 🆔 abc123"
+    );
+  });
+
   it("appends dataview ID sign when linkingStyle is dataview", async () => {
     const vault = makeVault("- [ ] Test task");
     const task = makeTask({ text: "Test task", link: "tasks/test.md" });
@@ -1053,5 +1065,111 @@ describe("parseTaskLine edge cases", () => {
     const task = parseTaskLine("- [ ] My task #work #urgent", "test.md");
     expect(task?.tags).toContain("work");
     expect(task?.tags).toContain("urgent");
+  });
+});
+
+describe("addStarToTaskLine", () => {
+  it("appends the star when the line has no metadata", () => {
+    expect(addStarToTaskLine("- [ ] Test task")).toBe("- [ ] Test task ⭐");
+  });
+
+  it.each([
+    ["- [ ] Test task 🆔 abc123", "- [ ] Test task ⭐ 🆔 abc123"],
+    ["- [ ] Test task ⛔ def456", "- [ ] Test task ⭐ ⛔ def456"],
+    ["- [ ] Test task 📅 2026-01-01", "- [ ] Test task ⭐ 📅 2026-01-01"],
+    ["- [ ] Test task ⏫", "- [ ] Test task ⭐ ⏫"],
+    ["- [ ] Test task [id:: abc123]", "- [ ] Test task ⭐ [id:: abc123]"],
+  ])("places the star in front of %s", (line, expected) => {
+    expect(addStarToTaskLine(line)).toBe(expected);
+  });
+
+  it("keeps the star in front of a full metadata block", () => {
+    const line = "- [ ] Test task ⛔ def456 🆔 abc123 📅 2026-01-01";
+
+    expect(addStarToTaskLine(line)).toBe(
+      "- [ ] Test task ⭐ ⛔ def456 🆔 abc123 📅 2026-01-01"
+    );
+  });
+
+  it("keeps tags with the description", () => {
+    expect(addStarToTaskLine("- [ ] Test task #work 🆔 abc123")).toBe(
+      "- [ ] Test task #work ⭐ 🆔 abc123"
+    );
+  });
+
+  it("preserves indentation of nested tasks", () => {
+    expect(addStarToTaskLine("    - [ ] Nested task 🆔 abc123")).toBe(
+      "    - [ ] Nested task ⭐ 🆔 abc123"
+    );
+  });
+
+  it("is idempotent", () => {
+    const once = addStarToTaskLine("- [ ] Test task 🆔 abc123");
+
+    expect(addStarToTaskLine(once)).toBe(once);
+  });
+
+  it("repositions a star left behind by an earlier version", () => {
+    expect(addStarToTaskLine("- [ ] Test task 🆔 abc123 ⭐")).toBe(
+      "- [ ] Test task ⭐ 🆔 abc123"
+    );
+  });
+
+  describe("edge cases", () => {
+    it("does not mistake brackets in the description for metadata", () => {
+      expect(addStarToTaskLine("- [ ] Read [book] later 🆔 abc123")).toBe(
+        "- [ ] Read [book] later ⭐ 🆔 abc123"
+      );
+    });
+
+    it("does not treat the checkbox as metadata", () => {
+      expect(addStarToTaskLine("- [x] Done task")).toBe("- [x] Done task ⭐");
+    });
+  });
+});
+
+describe("removeStarFromTaskLine", () => {
+  it("removes a trailing star", () => {
+    expect(removeStarFromTaskLine("- [ ] Test task ⭐")).toBe(
+      "- [ ] Test task"
+    );
+  });
+
+  it("removes a star placed before metadata", () => {
+    expect(removeStarFromTaskLine("- [ ] Test task ⭐ 🆔 abc123")).toBe(
+      "- [ ] Test task 🆔 abc123"
+    );
+  });
+
+  it("preserves indentation of nested tasks", () => {
+    expect(removeStarFromTaskLine("    - [ ] Nested task ⭐ 🆔 abc123")).toBe(
+      "    - [ ] Nested task 🆔 abc123"
+    );
+  });
+
+  it("leaves unstarred lines untouched", () => {
+    const line = "- [ ] Test task 🆔 abc123";
+
+    expect(removeStarFromTaskLine(line)).toBe(line);
+  });
+});
+
+describe("normalizeStarPositionInTaskLine", () => {
+  it("moves a trailing star in front of the metadata", () => {
+    expect(
+      normalizeStarPositionInTaskLine("- [ ] Test task 🆔 abc123 ⭐")
+    ).toBe("- [ ] Test task ⭐ 🆔 abc123");
+  });
+
+  it("leaves unstarred lines untouched", () => {
+    const line = "- [ ] Test task 🆔 abc123";
+
+    expect(normalizeStarPositionInTaskLine(line)).toBe(line);
+  });
+
+  it("leaves correctly placed stars untouched", () => {
+    const line = "- [ ] Test task ⭐ 🆔 abc123";
+
+    expect(normalizeStarPositionInTaskLine(line)).toBe(line);
   });
 });
